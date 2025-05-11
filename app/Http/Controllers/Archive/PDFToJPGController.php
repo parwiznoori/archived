@@ -21,7 +21,7 @@ class PDFToJPGController extends Controller
         if (!file_exists($outputDir)) {
             mkdir($outputDir, 0777, true);
         }
-
+//test
         $imagick = new Imagick();
 
         // Set the resolution for the images (DPI)
