@@ -12,7 +12,7 @@ class PDFToJPGController extends Controller
         $request->validate([
             'path.*' => 'required|image|mimes:pdf,jpeg,png,jpg,gif,svg|max:1000000', 
         ]);
-        doc_name
+        
         $pdf = $request->file('path');
         $pdfPath = $pdf->getPathName();
         $outputDir = public_path() . '/archivefiles/' . $request->book_name . '/';
