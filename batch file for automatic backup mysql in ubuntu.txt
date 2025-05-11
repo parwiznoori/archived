@@ -1,0 +1,7 @@
+#!/bin/bash
+now=$(date +%Y-%m-%d-%H:%M:%S)
+filename=$1
+backupfilename=$1-$now
+mysqldump -u root -pHemis@master hemis > /var/hemisdbbackup/backup_hemis$backupfilename.sql
+zip -r /var/hemisdbbackup/backup_hemis$backupfilename.zip /var/hemisdbbackup/backup_hemis$backupfilename.sql
+rm /var/hemisdbbackup/backup_hemis$backupfilename.sql

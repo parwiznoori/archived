@@ -1,0 +1,95 @@
+{
+    "name": "laravel/laravel",
+    "description": "The Laravel Framework.",
+    "keywords": ["framework", "laravel"],
+    "license": "MIT",
+    "type": "project",
+    "require": {
+        "php": ">=8.0",
+        "ext-pcntl": "*",
+        "carlos-meneses/laravel-mpdf": "^2.1",
+        "doctrine/dbal": "^2.6",
+        "fideloper/proxy": "^4.0",
+        "intervention/image": "^2.4",
+        "khill/lavacharts": "4.0.*",
+        "laravel/framework": "6.*",
+        "laravel/helpers": "^1.4",
+        "laravel/horizon": "*",
+        "laravel/passport": "*",
+        "laravel/tinker": "~1.0",
+        "laravelcollective/html": "^6.0",
+        "maatwebsite/excel": "^3.1",
+        "maennchen/zipstream-php": "^2.1",
+        "morilog/jalali": "^3.4",
+        "pavel-mironchik/laravel-backup-panel": "*",
+        "pusher/pusher-php-server": "^4.0",
+        "spatie/laravel-activitylog": "^3.5",
+        "spatie/laravel-backup": "*",
+        "spatie/laravel-permission": "^4.0.0",
+        "unisharp/laravel-filemanager": "^2.1",
+        "yadahan/laravel-authentication-log": "^1.2",
+        "yajra/laravel-datatables-buttons": "^4.0",
+        "yajra/laravel-datatables-oracle": "~9.0"
+    },
+    "require-dev": {
+        "barryvdh/laravel-debugbar": "^3.5",
+        "filp/whoops": "~2.0",
+        "fzaninotto/faker": "*",
+        "mockery/mockery": "~1.0",
+        "phpunit/phpunit": "~8.0",
+        "symfony/thanks": "^1.0"
+    },
+    "autoload": {        
+        "classmap": [
+            "database/seeds",
+            "database/factories",
+            "packages/sallar/jdatetime/jdatetime.class.php"
+        ],
+        "psr-4": {
+            "App\\": "app/"        
+        },
+        "files": [
+            "app/Http/helpers.php"
+        ]
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Tests\\": "tests/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "dont-discover": [
+            ]
+        }
+    },
+    "scripts": {
+        "post-root-package-install": [
+            "@php -r \"file_exists('.env') || copy('.env.example', '.env');\""
+        ],
+        "post-create-project-cmd": [
+            "@php artisan key:generate"
+        ],
+        "post-autoload-dump": [
+            "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",
+            "@php artisan package:discover"
+        ]
+    },
+    "config": {
+        "platform-check": false,
+        "preferred-install": "dist",
+        "sort-packages": true,
+        "optimize-autoloader": true,
+        "allow-plugins": {
+            "symfony/thanks": true
+        }
+    },
+    "repositories": [
+        {
+            "type": "path",
+            "url": "./nova"
+        }
+    ],
+    "minimum-stability": "dev",
+    "prefer-stable": true
+}

@@ -1,0 +1,11 @@
+.dataTables_wrapper > .top {
+    padding-bottom: 30px;
+}
+
+.dropdown-menu>li>a>.badge {
+    float: left;
+    position: relative; 
+    margin-top: 2px;
+    left: 10px;
+    display: inline;
+}
