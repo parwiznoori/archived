@@ -127,7 +127,7 @@
                         <td>
                             <a href="{{ route('archiverole.edit', $archiveRole->id) }}" class="btn btn-warning btn-sm">{{ trans('general.edit') }}</a>
 
-
+    {{-- coment --}}
                            {{-- <form action="{{ route('archiverole.destroy', $archiveRole->id) }}" method="POST" style="display:inline;" onsubmit="return confirm('آیا مطمئن هستید که می‌خواهید این وظیفه را حذف کنید؟');">
                                @csrf
                                @method('DELETE')
