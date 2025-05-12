@@ -125,14 +125,14 @@
                         <td>{{ $archiveRole->created_at ? $archiveRole->created_at->diffForHumans() : 'N/A' }}</td>
 
                         <td>
-                            {{-- <a href="{{ route('archiverole.edit', $archiveRole->id) }}" class="btn btn-warning btn-sm">{{ trans('general.edit') }}</a> --}}
+                            <a href="{{ route('archiverole.edit', $archiveRole->id) }}" class="btn btn-warning btn-sm">{{ trans('general.edit') }}</a>
 
 
-{{--                            <form action="{{ route('archiverole.destroy', $archiveRole->id) }}" method="POST" style="display:inline;" onsubmit="return confirm('آیا مطمئن هستید که می‌خواهید این وظیفه را حذف کنید؟');">--}}
-{{--                                @csrf--}}
-{{--                                @method('DELETE')--}}
-{{--                                <button type="submit" class="btn btn-danger btn-sm">{{ trans('general.delete') }}</button>--}}
-{{--                            </form>--}}
+                           {{-- <form action="{{ route('archiverole.destroy', $archiveRole->id) }}" method="POST" style="display:inline;" onsubmit="return confirm('آیا مطمئن هستید که می‌خواهید این وظیفه را حذف کنید؟');">
+                               @csrf
+                               @method('DELETE')
+                               <button type="submit" class="btn btn-danger btn-sm">{{ trans('general.delete') }}</button>
+                           </form> --}}
 
                         </td>
 
