@@ -148,7 +148,7 @@ class ArchivedataDataTable extends DataTable
         $roles = [];
 
 // Check the role of the authenticated user
-        if (auth()->user()->hasRole('system-developer')) {
+        if (auth()->user()->hasRole('system-developer') || auth()->user()->hasRole('super-admin')) {
             // System developer: Show all roles and all data
             $roles = Role::all();
         } elseif (
