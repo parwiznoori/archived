@@ -14,12 +14,12 @@ class Archivedata extends Model
     use SoftDeletes,UseByGrade, LogsActivity;
 
     protected $table = 'archivedatas';
-    protected $fillable = ['archive_id','archiveimage_id','name','last_name','father_name','grandfather_name',
-   'school','school_graduation_year','tazkira_number','birth_date',
+    protected $fillable = ['archive_id','archiveimage_id','name','previous_name','updateName_img','last_name','father_name','previous_father_name','grandfather_name','previous_grandfather_name',
+   'school','school_graduation_year','tazkira_number','birth_date','previous_birth_date',
     'birth_place','time','kankor_id','semester_type_id','year_of_inclusion','graduated_year','transfer_year',
     'leave_year','failled_year','monograph_date','monograph_number','monograph_title',
      'averageOfScores','grade_id','status_id','qc_status_id',
-    'description','column_number','university_id', 'faculty_id', 'department_id','monograph_doc_date','monograph_doc_number'];
+    'description','column_number','university_id', 'faculty_id', 'department_id','kankor_year','kankor_result','monograph_doc_date','monograph_doc_number'];
          
     protected $guarded = [];
     protected static $logUnguarded = true;

@@ -336,7 +336,7 @@ class ArchiveController extends Controller
         if (auth()->user()->can('reset-qc-user')) {
             // Set qc_status_id to null for the specified archive
             $archive->update(['qc_user_id' => null]);
-
+            // $archive->update(['status_id' => null]);
             return redirect()->back()->with('success', 'QC User reset successfully.');
         }
 
@@ -350,7 +350,7 @@ class ArchiveController extends Controller
         if (auth()->user()->can('reset-de-user')) {
             // Set qc_status_id to null for the specified archive
             $archive->update(['de_user_id' => null]);
-
+            // $archive->update(['status_id' => null]);
             return redirect()->back()->with('success', 'DE User reset successfully.');
         }
 
@@ -390,9 +390,9 @@ class ArchiveController extends Controller
 
 
         // "Check user authentication in url page number
-        if($archive==null || $archive->de_user_id==null || $archive->de_user_id!=auth()->user()->id){
-            return back();
-        }
+        // if($archive==null || $archive->de_user_id==null || $archive->de_user_id!=auth()->user()->id){
+        //     return back();
+        // }
 
 
         $universities = University::pluck('name', 'id');

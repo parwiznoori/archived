@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Archive;
 
 use App\DataTables\ArchivedataDataTable;
+use App\DataTables\SelectForNameUpdatDataTable;
 use App\Http\Controllers\Controller;
 use App\Models\Archive;
 use App\Models\Archivedata;
@@ -184,6 +185,10 @@ class ArchivedataController extends Controller
 
         });
 
+
+
+        
+
         $archiveImageRecord = Archiveimage::where('id', $request->archive_image_id)->first();
         $archiveRecord = Archive::where('id', $request->archivedata_id)->first();
         $dataCount = Archivedata::where('archiveimage_id', $request->archive_image_id)->count();
@@ -200,8 +205,106 @@ class ArchivedataController extends Controller
             $archiveRecord->save();
         }
 
+
+
         return $this->archiveBookDataEntryPageData($request->archive_image_id, $request->archivedata_id, $request->column_number);
     }
+
+
+     public function selectForNameUpdate(SelectForNameUpdatDataTable $dataTable)
+    {
+        $records = Archivedata::all();
+
+        return $dataTable->render('archivedata.select-for-update', [
+            'title' => trans('general.search'),
+            'description' => trans('general.archivesearch'),
+            'records' => $records,
+        ]);
+    }
+
+
+
+   public function showEditNameForm(Archivedata $archivedata)
+{
+    // Authorize the action
+    $this->authorize('update-name', $archivedata);
+    
+    return view('archivedata.edit-name', ['archiveData' => $archivedata]);
+}
+
+// Controller Method (Updated)
+public function updateName(Request $request, Archivedata $archivedata)
+{
+    $request->validate([
+        'name' => 'required|string|max:255',
+        'father_name' => 'required|string|max:255',
+        'grandfather_name' => 'required|string|max:255',
+        'birth_date' => 'required|date',
+        'updateName_img' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:5120'
+    ]);
+
+    // Store previous values
+    $archivedata->previous_name = $archivedata->name;
+    $archivedata->previous_father_name = $archivedata->father_name;
+    $archivedata->previous_grandfather_name = $archivedata->grandfather_name;
+    $archivedata->previous_birth_date = $archivedata->birth_date;
+
+    // Update with new values
+    $archivedata->name = $request->name;
+    $archivedata->father_name = $request->father_name;
+    $archivedata->grandfather_name = $request->grandfather_name;
+    $archivedata->birth_date = $request->birth_date;
+
+    // Handle image upload
+    if ($request->hasFile('updateName_img')) {
+        // Delete old image if exists
+        if ($archivedata->updateName_img) {
+            $oldImagePath = public_path($archivedata->updateName_img);
+            if (file_exists($oldImagePath)) {
+                unlink($oldImagePath);
+            }
+        }
+
+        // Create directory if doesn't exist
+        $uploadPath = public_path('/updateNameimg');
+        if (!file_exists($uploadPath)) {
+            mkdir($uploadPath, 0777, true);
+        }
+
+        // Process new image
+        $image = $request->file('updateName_img');
+        $imageName = time().'_'.$image->getClientOriginalName();
+        
+        // Move image to public directory
+        $image->move($uploadPath, $imageName);
+        
+        // Save relative path to database
+        $archivedata->updateName_img = '/updateNameimg/'.$imageName;
+    }
+
+    if ($archivedata->save()) {
+        return response()->json([
+            'success' => 'اطلاعات با موفقیت به روز رسانی شد',
+            'new_values' => [
+                'name' => $archivedata->name,
+                'father_name' => $archivedata->father_name,
+                'grandfather_name' => $archivedata->grandfather_name,
+                'birth_date' => $archivedata->birth_date,
+                'previous_name' => $archivedata->previous_name,
+                'previous_father_name' => $archivedata->previous_father_name,
+                'previous_grandfather_name' => $archivedata->previous_grandfather_name,
+                'previous_birth_date' => $archivedata->previous_birth_date,
+                'updateName_img' => $archivedata->updateName_img
+            ]
+        ]);
+    }
+
+    return response()->json(['error' => 'خطا در ذخیره سازی'], 500);
+}
+
+
+
+
 
 
     public function loadPage($bookId)

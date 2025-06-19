@@ -256,6 +256,72 @@
             </li>
 
 
+                 @if (auth()->user()->can(['update-kankor-result']))
+                    <li class="nav-item start {{ request()->is('kankor_results*') ? 'active' : '' }}">
+                        <a href="#" class="nav-link nav-toggle">
+                            <i class="icon-grid"></i>
+                            <span class="title">{{ trans('general.kankorResults') }}</span>
+                            <span class="arrow {{ request()->is('kankor_results*') ? 'open' : '' }}"></span>
+                        </a>
+                        <ul class="sub-menu">
+                            
+                            {{-- @if (auth()->user()->hasRole('super-admin')|| auth()->user()->hasRole('system-developer'))
+                                <li class="nav-item {{ request()->is('kankor_results/university_id') ? 'active' : '' }}">
+                                    <a href="{{ route('kankor_results.show_university') }}" class="nav-link">
+                                        <i class="icon-grid"></i>
+                                        <span class="title">{{ trans('general.update_university_id') }}</span>
+                                    </a>
+                                </li>
+                                <hr>
+                                <li class="nav-item {{ request()->is('kankor_results/university_id_by_kankor_results') ? 'active' : '' }}">
+                                    <a href="{{ route('kankor_results.show_university_by_kankor_results') }}" class="nav-link">
+                                        <i class="icon-grid"></i>
+                                        <span class="title">{{ trans('general.update_university_id_by_kankor_results') }}</span>
+                                    </a>
+                                </li>
+                                <hr>
+                                <li class="nav-item {{ request()->is('kankor_results/koochi/university_id_by_kankor_results') ? 'active' : '' }}">
+                                    <a href="{{ route('kankor_results.show_university_by_kankor_results_koochi') }}" class="nav-link">
+                                        <i class="icon-grid"></i>
+                                        <span class="title">{{ trans('general.koochi_kankor_results') }}</span>
+                                    </a>
+                                </li>
+
+                                <li class="nav-item {{ request()->is('kankor_results/show-enrollment-type-form') ? 'active' : '' }}">
+                                    <a href="{{ route('kankor_results.show_enrollment_type_form') }}" class="nav-link">
+                                        <i class="icon-grid"></i>
+                                        <span class="title">{{ trans('general.update_enrollment_type') }}</span>
+                                    </a>
+                                </li>
+                            @endif --}}
+
+
+                            @if (auth()->user()->can(['update-department-after-kankor']))
+                                <li class="nav-item {{ request()->is('kankor_results/department_id') ? 'active' : '' }}">
+                                    <a href="{{ route('kankor_results.show_department') }}" class="nav-link">
+                                        <i class="icon-grid"></i>
+                                        <span class="title">{{ trans('general.update_department_id') }}</span>
+                                    </a>
+                                </li>
+                            @endif
+                        </ul>
+                    </li>
+                 @endif
+
+
+                  
+
+
+                            @if (auth()->user()->can('update-name'))
+                                <li class="nav-item {{ request()->is('update-name') ? 'active' : '' }}">
+                                    <a href="{{ route('archivedata.select-for-update') }}" class="nav-link">
+                                        <i class="icon-grid"></i>
+                                        <span class="title">{{ trans('general.update-name') }}</span>
+                                    </a>
+                                </li>
+                            @endif
+                  
+
 
 
             @if (auth()->user()->can(['view-university']))

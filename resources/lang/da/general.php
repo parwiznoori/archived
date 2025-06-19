@@ -148,6 +148,11 @@ return [
     'print_diploma'=>'چاپ دیپلوم ',
 
     'name' => 'نام',
+    'previous_name' => 'نام قبلی',
+    'previous_father_name' => 'نام پدر قبلی',
+    'previous_grandfather_name' => 'نام قبلی پدرکلان',
+    'previous_birth_date' => 'تاریخ قبلی تولد',
+    
     'father_name' => 'نام پدر',
     'grandfather_name' => 'نام پدرکلان',
     'last_name' => 'نام فامیلی',
@@ -320,7 +325,7 @@ return [
     'archivedata_detials'=>'جزئیات محصل',
     'column_number'=>'نمبر محصل در صفحه',
     'update_date'=>'تاریخ اپدیت',
-
+    'update-name'=>'اصلاح نام محصل',
 
 
 

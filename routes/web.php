@@ -292,6 +292,24 @@ Route::group(['middleware' => 'auth'], function() {
         Route::resource('archivedata', 'ArchivedataController');
         Route::get('/archiveLoadPage/{id}','ArchivedataController@loadPage');
 
+       
+        // Route::get('/archivedata/{id}/edit-name', 'ArchivedataController@showEditNameForm')->name('archivedata.edit-name');
+        // Route::put('/archivedata/{id}/update-name', 'ArchivedataController@updateName')->name('archivedata.update-name');
+
+
+            // Selection page (no ID needed)
+        Route::get('/update-name', 'ArchivedataController@selectForNameUpdate')
+            ->name('archivedata.select-for-update')
+            ->middleware('can:update-name');
+
+        // Edit page (requires ID)
+        Route::get('/archivedata/{archivedata}/edit-name', 'ArchivedataController@showEditNameForm')
+            ->name('archivedata.edit-name');
+            
+
+     Route::put('/archivedata/{archivedata}/update-name', 'ArchivedataController@updateName')
+    ->name('archivedata.update-name');
+
 
         Route::get('/archive/view/{archiveId}', 'ArchiveController@viewCsv')->name('archive.view');
         Route::post('/import', 'ArchiveController@import')->name('archivedata.import');
@@ -411,16 +429,29 @@ Route::group(['middleware' => 'auth'], function() {
         Route::post('statistics/student/show_by_grade' , 'StudentsStatisticsController@show_by_grade')->name('statistics.student.by_grade');
     });
 
+    // Route::group(['namespace' => 'KankorDataMigration'], function(){
+    //     // Route::get('kankor_results/university_id' , 'KankorResultsController@show_university')->name('kankor_results.show_university');
+    //     // Route::post('kankor_results/university_id/store' , 'KankorResultsController@store_university')->name('kankor_results.store_university');
+
+    //     // Route::get('kankor_results/show-enrollment-type-form' , 'KankorResultsController@show_enrollment_type_form')->name('kankor_results.show_enrollment_type_form');
+    //     // Route::post('kankor_results/store-enrollment-type' , 'KankorResultsController@store_enrollment_type')->name('kankor_results.store_enrollment_type');
+
+    //     Route::get('kankor_results/department_id' , 'KankorResultsController@show_department')->name('kankor_results.show_department');
+    //     Route::post('kankor_results/department_id/store' , 'KankorResultsController@store_department')->name('kankor_results.store_department');
+
+    //     // Route::get('kankor_results/university_id_by_kankor_results' , 'KankorResultsController@show_university_by_kankor_results')->name('kankor_results.show_university_by_kankor_results');
+    //     // Route::post('kankor_results/university_id_by_kankor_results/store' , 'KankorResultsController@store_university_by_kankor_results')->name('kankor_results.store_university_by_kankor_results');
+
+    //     // Route::get('kankor_results/koochi/university_id_by_kankor_results' , 'KankorResultsController@show_university_by_kankor_results_koochi')->name('kankor_results.show_university_by_kankor_results_koochi');
+    //     // Route::post('kankor_results/koochi/university_id_by_kankor_results/store' , 'KankorResultsController@store_university_by_kankor_results_koochi')->name('kankor_results.store_university_by_kankor_results_koochi');
+    // });
+
+
     Route::group(['namespace' => 'KankorDataMigration'], function(){
-        Route::get('kankor_results/university_id' , 'KankorResultsController@show_university')->name('kankor_results.show_university');
-        Route::post('kankor_results/university_id/store' , 'KankorResultsController@store_university')->name('kankor_results.store_university');
 
-        Route::get('kankor_results/department_id' , 'KankorResultsController@show_department')->name('kankor_results.show_department');
-        Route::post('kankor_results/department_id/store' , 'KankorResultsController@store_department')->name('kankor_results.store_department');
-
-        Route::get('kankor_results/university_id_by_kankor_results' , 'KankorResultsController@show_university_by_kankor_results')->name('kankor_results.show_university_by_kankor_results');
-        Route::post('kankor_results/university_id_by_kankor_results/store' , 'KankorResultsController@store_university_by_kankor_results')->name('kankor_results.store_university_by_kankor_results');
-    });
+    Route::get('kankor_results/department_id', 'KankorResultsController@show_department')->name('kankor_results.show_department');
+    Route::post('kankor_results/department_id/store', 'KankorResultsController@store_department')->name('kankor_results.store_department');
+     });
 
     //attachments link
     Route::get('getAttachment/{file_name}', function($filename){
