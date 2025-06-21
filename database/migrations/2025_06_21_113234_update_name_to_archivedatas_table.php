@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class AddPreviousNameToArchivedatasTable extends Migration
+class UpdateNameToArchivedatasTable extends Migration
 {
     /**
      * Run the migrations.
@@ -31,7 +31,7 @@ class AddPreviousNameToArchivedatasTable extends Migration
     public function down()
     {
         Schema::table('archivedatas', function (Blueprint $table) {
-            $table->dropColumn([
+              $table->dropColumn([
                 'previous_name',
                 'previous_father_name',
                 'previous_grandfather_name',
