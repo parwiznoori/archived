@@ -111,7 +111,7 @@
                         </div>
                     </div>
                     
-
+{{-- for desc --}}
                       <div class="form-group">
                         <label for="updateName_desc">تشریحات:</label>
                         <textarea class="form-control" id="updateName_desc" name="updateName_desc" rows="3"></textarea>
