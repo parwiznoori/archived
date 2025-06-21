@@ -14,7 +14,7 @@ class Archivedata extends Model
     use SoftDeletes,UseByGrade, LogsActivity;
 
     protected $table = 'archivedatas';
-    protected $fillable = ['archive_id','archiveimage_id','name','previous_name','updateName_img','last_name','father_name','previous_father_name','grandfather_name','previous_grandfather_name',
+    protected $fillable = ['archive_id','archiveimage_id','name','previous_name','updateName_img','updateName_desc','last_name','father_name','previous_father_name','grandfather_name','previous_grandfather_name',
    'school','school_graduation_year','tazkira_number','birth_date','previous_birth_date',
     'birth_place','time','kankor_id','semester_type_id','year_of_inclusion','graduated_year','transfer_year',
     'leave_year','failled_year','monograph_date','monograph_number','monograph_title',

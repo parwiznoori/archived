@@ -19,6 +19,7 @@ class AddPreviousNameToArchivedatasTable extends Migration
             $table->string('previous_grandfather_name')->nullable()->after('grandfather_name');
             $table->string('previous_birth_date')->nullable()->after('birth_date');
             $table->string('updateName_img')->nullable()->after('previous_name');
+            $table->text('updateName_desc')->nullable()->after('updateName_img');
         });
     }
 
@@ -35,7 +36,8 @@ class AddPreviousNameToArchivedatasTable extends Migration
                 'previous_father_name',
                 'previous_grandfather_name',
                 'previous_birth_date',
-                'updateName_img'
+                'updateName_img',
+                'updateName_desc'
             ]);
         });
     }

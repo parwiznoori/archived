@@ -124,6 +124,7 @@ class SelectForNameUpdatDataTable extends DataTable
             'archiveimages.id as archiveimage',
             'archivedatas.name',
             'archivedatas.updateName_img',
+            'archivedatas.updateName_desc',
             'archivedatas.previous_name',
             'last_name',
             'father_name',
@@ -249,6 +250,7 @@ class SelectForNameUpdatDataTable extends DataTable
             'grandfather_name'    => ['name' => 'grandfather_name', 'title' => trans('general.grandfather_name')],
             'birth_date'    => ['name' => 'birth_date', 'title' => trans('general.birth_date')],
             'previous_birth_date'    => ['name' => 'previous_birth_date', 'title' => trans('general.previous_birth_date')],
+            'updateName_desc'    => ['name' => 'updateName_desc', 'title' => trans('general.updateName_desc')],
 
         ];
     

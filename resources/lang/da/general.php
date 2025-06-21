@@ -152,6 +152,8 @@ return [
     'previous_father_name' => 'نام پدر قبلی',
     'previous_grandfather_name' => 'نام قبلی پدرکلان',
     'previous_birth_date' => 'تاریخ قبلی تولد',
+    'updateName_desc' => 'تشریحات',
+
     
     'father_name' => 'نام پدر',
     'grandfather_name' => 'نام پدرکلان',

@@ -254,7 +254,7 @@ public function updateName(Request $request, Archivedata $archivedata)
     $archivedata->father_name = $request->father_name;
     $archivedata->grandfather_name = $request->grandfather_name;
     $archivedata->birth_date = $request->birth_date;
-
+    $archivedata->updateName_desc = $request->updateName_desc;
     // Handle image upload
     if ($request->hasFile('updateName_img')) {
         // Delete old image if exists
@@ -294,7 +294,10 @@ public function updateName(Request $request, Archivedata $archivedata)
                 'previous_father_name' => $archivedata->previous_father_name,
                 'previous_grandfather_name' => $archivedata->previous_grandfather_name,
                 'previous_birth_date' => $archivedata->previous_birth_date,
-                'updateName_img' => $archivedata->updateName_img
+                'updateName_img' => $archivedata->updateName_img,
+                'updateName_desc' => $archivedata->updateName_desc
+
+                
             ]
         ]);
     }

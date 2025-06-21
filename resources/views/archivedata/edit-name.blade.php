@@ -111,6 +111,13 @@
                         </div>
                     </div>
                     
+
+                      <div class="form-group">
+                        <label for="updateName_desc">تشریحات:</label>
+                        <textarea class="form-control" id="updateName_desc" name="updateName_desc" rows="3"></textarea>
+                        <small class="text-muted">توضیحات اختیاری درباره تغییر نام</small>
+                    </div>
+
                     <div class="form-group">
                         <label for="updateName_img">تصویر سند تغیر نام:</label>
                         <input type="file" class="form-control-file" id="updateName_img" name="updateName_img">
