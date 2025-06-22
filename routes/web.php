@@ -281,6 +281,8 @@ Route::group(['middleware' => 'auth'], function() {
 
         Route::resource('monographs', 'MonographController');
     });
+
+    
     //archive rout
 
     Route::get('departments/{facultyId}', [DepartmentsController::class, 'getDepartments']);
@@ -293,9 +295,7 @@ Route::group(['middleware' => 'auth'], function() {
         Route::get('/archiveLoadPage/{id}','ArchivedataController@loadPage');
 
        
-        // Route::get('/archivedata/{id}/edit-name', 'ArchivedataController@showEditNameForm')->name('archivedata.edit-name');
-        // Route::put('/archivedata/{id}/update-name', 'ArchivedataController@updateName')->name('archivedata.update-name');
-
+       
 
             // Selection page (no ID needed)
         Route::get('/update-name', 'ArchivedataController@selectForNameUpdate')
@@ -307,8 +307,8 @@ Route::group(['middleware' => 'auth'], function() {
             ->name('archivedata.edit-name');
             
 
-     Route::put('/archivedata/{archivedata}/update-name', 'ArchivedataController@updateName')
-    ->name('archivedata.update-name');
+        Route::put('/archivedata/{archivedata}/update-name', 'ArchivedataController@updateName')
+        ->name('archivedata.update-name');
 
 
         Route::get('/archive/view/{archiveId}', 'ArchiveController@viewCsv')->name('archive.view');

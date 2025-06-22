@@ -24,11 +24,11 @@
                             </a>
                         @endif
 
-                        @if (auth()->user()->can('archive_monograph'))
+                        {{-- @if (auth()->user()->can('archive_monograph'))
                             <a class="dropdown-item" href="{{ route('archive_monograph', $archivedata) }}" target="_blank" style="font-size: 20px;">
                                 <i class="fa fa-pencil text-warning mr-2"></i> {{ trans('general.archive_monograph') }}
                             </a>
-                        @endif
+                        @endif --}}
 
                         @if (auth()->user()->can('print-archivedoc'))
 {{--                            <a class="dropdown-item" href="{{ route('print-archivedoc', $archivedata) }}" target="_blank" style="font-size: 20px;">--}}

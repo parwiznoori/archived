@@ -18,6 +18,7 @@ use App\Models\SemesterType;
 use App\Models\University;
 use DB;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 
 
 class ArchivedataController extends Controller
@@ -232,77 +233,69 @@ class ArchivedataController extends Controller
     return view('archivedata.edit-name', ['archiveData' => $archivedata]);
 }
 
-// Controller Method (Updated)
 public function updateName(Request $request, Archivedata $archivedata)
 {
     $request->validate([
-        'name' => 'required|string|max:255',
-        'father_name' => 'required|string|max:255',
-        'grandfather_name' => 'required|string|max:255',
-        'birth_date' => 'required|date',
-        'updateName_img' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:5120'
+        'name' => 'nullable|string|max:255',
+        'father_name' => 'nullable|string|max:255',
+        'grandfather_name' => 'nullable|string|max:255',
+        'birth_date' => 'nullable|date',
+        'updateName_img' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:5120',
+        'updateName_desc' => 'nullable|string'
     ]);
 
-    // Store previous values
-    $archivedata->previous_name = $archivedata->name;
-    $archivedata->previous_father_name = $archivedata->father_name;
-    $archivedata->previous_grandfather_name = $archivedata->grandfather_name;
-    $archivedata->previous_birth_date = $archivedata->birth_date;
+    try {
+        DB::transaction(function () use ($request, $archivedata) {
+            // Store original values for history
+            $originalValues = $archivedata->getOriginal();
+            $fields = ['name', 'father_name', 'grandfather_name', 'birth_date', 'updateName_desc'];
 
-    // Update with new values
-    $archivedata->name = $request->name;
-    $archivedata->father_name = $request->father_name;
-    $archivedata->grandfather_name = $request->grandfather_name;
-    $archivedata->birth_date = $request->birth_date;
-    $archivedata->updateName_desc = $request->updateName_desc;
-    // Handle image upload
-    if ($request->hasFile('updateName_img')) {
-        // Delete old image if exists
-        if ($archivedata->updateName_img) {
-            $oldImagePath = public_path($archivedata->updateName_img);
-            if (file_exists($oldImagePath)) {
-                unlink($oldImagePath);
+            foreach ($fields as $field) {
+                if ($request->has($field) && $request->$field !== null) {
+                    $archivedata->{"previous_$field"} = $originalValues[$field] ?? null;
+                    $archivedata->$field = $request->$field;
+                }
             }
-        }
 
-        // Create directory if doesn't exist
-        $uploadPath = public_path('/updateNameimg');
-        if (!file_exists($uploadPath)) {
-            mkdir($uploadPath, 0777, true);
-        }
+            // Handle file upload for `updateName_img`
+            if ($request->hasFile('updateName_img')) {
+                // Delete the old image if it exists
+                if ($archivedata->updateName_img) {
+                    $oldImagePath = public_path($archivedata->updateName_img);
+                    if (file_exists($oldImagePath)) {
+                        @unlink($oldImagePath);
+                    }
+                }
 
-        // Process new image
-        $image = $request->file('updateName_img');
-        $imageName = time().'_'.$image->getClientOriginalName();
-        
-        // Move image to public directory
-        $image->move($uploadPath, $imageName);
-        
-        // Save relative path to database
-        $archivedata->updateName_img = '/updateNameimg/'.$imageName;
-    }
+                // Define upload directory
+                $uploadPath = public_path('uploads/updateName_img');
+                if (!file_exists($uploadPath)) {
+                    mkdir($uploadPath, 0755, true);
+                }
 
-    if ($archivedata->save()) {
+                // Generate unique file name
+                $image = $request->file('updateName_img');
+                $imageName = Str::random(40) . '.' . $image->getClientOriginalExtension();
+
+                // Move the file to the destination
+                $image->move($uploadPath, $imageName);
+                $archivedata->updateName_img = '/uploads/updateName_img/' . $imageName;
+            }
+
+            $archivedata->save();
+        });
+
         return response()->json([
             'success' => 'اطلاعات با موفقیت به روز رسانی شد',
-            'new_values' => [
-                'name' => $archivedata->name,
-                'father_name' => $archivedata->father_name,
-                'grandfather_name' => $archivedata->grandfather_name,
-                'birth_date' => $archivedata->birth_date,
-                'previous_name' => $archivedata->previous_name,
-                'previous_father_name' => $archivedata->previous_father_name,
-                'previous_grandfather_name' => $archivedata->previous_grandfather_name,
-                'previous_birth_date' => $archivedata->previous_birth_date,
-                'updateName_img' => $archivedata->updateName_img,
-                'updateName_desc' => $archivedata->updateName_desc
-
-                
-            ]
+            'new_values' => $archivedata->fresh()->toArray()
         ]);
+    } catch (\Exception $e) {
+        \Log::error('Update failed: ' . $e->getMessage());
+        return response()->json([
+            'error' => 'خطا در ذخیره سازی',
+            'details' => 'An unexpected error occurred while updating the data.'
+        ], 500);
     }
-
-    return response()->json(['error' => 'خطا در ذخیره سازی'], 500);
 }
 
 

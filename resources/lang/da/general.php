@@ -153,8 +153,6 @@ return [
     'previous_grandfather_name' => 'نام قبلی پدرکلان',
     'previous_birth_date' => 'تاریخ قبلی تولد',
     'updateName_desc' => 'تشریحات',
-
-    
     'father_name' => 'نام پدر',
     'grandfather_name' => 'نام پدرکلان',
     'last_name' => 'نام فامیلی',
@@ -293,6 +291,9 @@ return [
     'transfer_year' => ' سال تبدیلی',
     'failled_year' => ' سال محرومی',
     'monograph_number' => ' نمر مونوگراف ',
+    'monograph_desc' => ' تشریحات  ',
+    'monograph_img' => ' عکس مکتوب مونوگراف ',
+    
     'book_pagenumber' => ' تعداد صفحه',
     'book_description' => 'تشریحات',
     'book_name' => 'نام کتاب',
