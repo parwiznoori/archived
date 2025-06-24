@@ -334,9 +334,13 @@ class ArchiveController extends Controller
     {
         // Authorization check
         if (auth()->user()->can('reset-qc-user')) {
-            // Set qc_status_id to null for the specified archive
-            $archive->update(['qc_user_id' => null]);
-            // $archive->update(['status_id' => null]);
+          
+
+             $archive->update([
+                'qc_user_id' => null,
+                'qc_status_id' => 1 // Set to a valid status ID instead of null
+            ]);
+          
             return redirect()->back()->with('success', 'QC User reset successfully.');
         }
 
@@ -344,18 +348,20 @@ class ArchiveController extends Controller
     }
 
 
-    public function resetDeUser(Archive $archive)
-    {
-        // Authorization check
-        if (auth()->user()->can('reset-de-user')) {
-            // Set qc_status_id to null for the specified archive
-            $archive->update(['de_user_id' => null]);
-            // $archive->update(['status_id' => null]);
+        public function resetDeUser(Archive $archive)
+        {
+            if (!auth()->user()->can('reset-de-user')) {
+                return redirect()->back()->with('error', 'Unauthorized action.');
+            }
+
+            // Find a default status (e.g., "unassigned" status with ID 1)
+            $archive->update([
+                'de_user_id' => null,
+                'status_id' => 1 // Set to a valid status ID instead of null
+            ]);
+
             return redirect()->back()->with('success', 'DE User reset successfully.');
         }
-
-        return redirect()->back()->with('error', 'Unauthorized action.');
-    }
 
 
     public function destroy($archive_id)
