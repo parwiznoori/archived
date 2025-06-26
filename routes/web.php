@@ -383,6 +383,9 @@ Route::group(['middleware' => 'auth'], function() {
         Route::get('archive_monograph/{id}', 'ArchiveMonographController@show')->name('archive_monograph');
         Route::post('archive_monograph_update/{id}', 'ArchiveMonographController@insert')->name('archive_monograph_update');
 
+        Route::get('archive_baqidari/{id}', 'ArchiveBaqidariController@show')->name('archive_baqidari');
+        Route::post('archive_baqidari_update/{id}', 'ArchiveBaqidariController@insert')->name('archive_baqidari_update');
+
 
     });
 

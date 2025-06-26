@@ -74,11 +74,11 @@
                         <th>{{ trans('general.transfer_year') }}</th>
                         <th>{{ trans('general.leave_year') }}</th>
                         <th>{{ trans('general.failled_year') }}</th>
-                        <th>{{ trans('general.monograph_date') }}</th>
+                        {{-- <th>{{ trans('general.monograph_date') }}</th>
                         <th>{{ trans('general.monograph_number') }}</th>
                         <th>{{ trans('general.monograph_title') }}</th>
                         <th>{{ trans('general.monograph_doc_date') }}</th>
-                        <th>{{ trans('general.monograph_doc_number') }}</th>
+                        <th>{{ trans('general.monograph_doc_number') }}</th> --}}
                         <th>{{ trans('general.time') }}</th>
                         <th>{{ trans('general.kankor_id') }}</th>
                         <th>{{ trans('general.half_year') }}</th>
@@ -117,11 +117,11 @@
                         <td>{{ $archivedata->transfer_year }}</td>
                         <td>{{ $archivedata->leave_year }}</td>
                         <td>{{ $archivedata->failled_year }}</td>
-                        <td>{{ $archivedata->monograph_date }}</td>
+                        {{-- <td>{{ $archivedata->monograph_date }}</td>
                         <td>{{ $archivedata->monograph_number }}</td>
                         <td>{{ $archivedata->monograph_title }}</td>
                         <td>{{ $archivedata->monograph_doc_date }}</td>
-                        <td>{{ $archivedata->monograph_doc_number }}</td>
+                        <td>{{ $archivedata->monograph_doc_number }}</td> --}}
                         <td>{{ $archivedata->time }}</td>
                         <td>{{ $archivedata->kankor_id }}</td>
                         <td>{{ $semester_types[$archivedata->semester_type_id] ?? 'N/A' }}</td>

@@ -81,7 +81,7 @@
                                     <div class="card-body">
                                         <!-- Description Field -->
                                         <div class="form-group row mb-4 {{ $errors->has('monograph_desc') ? 'has-error' : '' }}">
-                                            {!! Form::label('monograph_desc', trans('general.monograph_desc'), ['class' => 'col-md-4 col-form-label font-weight-bold']) !!}
+                                            {{-- {!! Form::label('monograph_desc', trans('general.monograph_desc'), ['class' => 'col-md-4 col-form-label font-weight-bold']) !!}
                                             <div class="col-md-8">
                                                 {!! Form::textarea('monograph_desc', null, [
                                                     'class' => 'form-control',
@@ -91,7 +91,7 @@
                                                 @if ($errors->has('monograph_desc'))
                                                     <span class="text-danger small">{{ $errors->first('monograph_desc') }}</span>
                                                 @endif
-                                            </div>
+                                            </div> --}}
                                         </div>
                                         
                                         <!-- Image Upload -->
@@ -117,7 +117,7 @@
                                                 
                                                     <img src="{{ asset($archivedata->monograph_img) }}" 
                                                         
-                                                        style="max-height: 50px;"
+                                                        style="max-height: 70px;"
                                                         alt="Monograph Image">
                                                     
                                                 </div>
@@ -161,7 +161,7 @@
                                         <th>{{ trans('general.monograph_title') }}</th>
                                         <th>{{ trans('general.monograph_doc_date') }}</th>
                                         <th>{{ trans('general.monograph_doc_number') }}</th>
-                                        <th>{{ trans('general.monograph_desc') }}</th>
+                                        {{-- <th>{{ trans('general.monograph_desc') }}</th> --}}
                                         <th class="text-center">{{ trans('general.monograph_img') }}</th>
                                     </tr>
                                 </thead>
@@ -172,7 +172,7 @@
                                         <td>{{ $archivedata->monograph_title }}</td>
                                         <td>{{ $archivedata->monograph_doc_date }}</td>
                                         <td>{{ $archivedata->monograph_doc_number }}</td>
-                                        <td>{{ $archivedata->monograph_desc ?: 'N/A' }}</td>
+                                        {{-- <td>{{ $archivedata->monograph_desc ?: 'N/A' }}</td> --}}
                                         <td class="text-center">
                                             @if ($archivedata->monograph_img)
                                                 <a href="{{ asset($archivedata->monograph_img) }}" 

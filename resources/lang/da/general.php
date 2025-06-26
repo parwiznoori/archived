@@ -320,6 +320,8 @@ return [
     'archive_doc_form_type'=>' نوع مکتوب  ',
     'content'=>' متن مکتوب  ',
     'archive_monograph'=>' بخش مونوگراف ',
+    'archive_baqidari'=>' بخش باقیداری ',
+    'baqidari_img'=>'عکس مکتوب باقیداری',
     'monograph_doc_date'=>' تاریخ مکتوب مونوگراف ',
     'monograph_doc_number'=>' شماره مکتوب مونوگراف ',
     'archivedata_monograph'=>' اطلاعات بخش مونوگراف محصل',
