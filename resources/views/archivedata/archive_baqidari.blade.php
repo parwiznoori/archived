@@ -211,7 +211,7 @@
                                             </select>
                                             </div>
                                         <div class="col-md-4">
-                                            <label for="monoghraph" class="form-label">مونوگراف</label>
+                                            <label for="monoghraph" class="form-label">نمبر مونوگراف / مضمون</label>
                                             <input type="number" step="0.01" class="form-control" id="monoghraph" name="monoghraph" 
                                                 value="{{ old('monoghraph', $data->monoghraph ?? '') }}">
                                         </div>
@@ -393,11 +393,11 @@
                                 <thead>
                                     <tr>
                                         <th>سمستر</th>
-                                        <th>نام مضمون</th>
-                                        <th>نمبر چانس اول</th>
+                                        <th>مضمون / مونوگراف </th>
+                                        <th>نمبر مونوگراف / مضمون</th>
+                                        <th> چانس </th>
+                                        <th>نمبر چانس</th>
                                         <th>ضریب کریدت چانس دوم</th>
-                                        <th>نمبر چانس دوم</th>
-                                        <th>مونوگراف</th>
                                         <th>تعداد کریدت</th>
                                         <th>ضریب کریدت</th>
 
@@ -424,10 +424,10 @@
                                                     @endif
                                             </td>
                                             <td>{{ $item->subject ?? 'N/A' }}</td>
-                                            <td>{{ $item->chance_numbe ?? '0' }}</td>
-                                            <td>{{ $item->zarib_chance ?? '0' }}</td>
-                                            <td>{{ $item->chance_number2 ?? '0' }}</td>
                                             <td>{{ $item->monoghraph ?? '0' }}</td>
+                                             <td>{{ $item->chance ?? '0' }}</td>
+                                            <td>{{ $item->chance_number ?? '0' }}</td>
+                                            <td>{{ $item->zarib_chance ?? '0' }}</td>
                                             <td>{{ $item->credit ?? '0' }}</td>
                                             <td>{{ $item->zarib_credite ?? '0' }}</td>
                                             <th>مجموعه کریدت</th>
@@ -451,10 +451,10 @@
                                                 <tr>
                                             <th>مجموع </th>
                                             <td></td>
-                                            <td>{{ $item->chance_numbe ?? '0' }}</td>
-                                            <td>{{ $item->zarib_chance ?? '0' }}</td>
-                                            <td>{{ $item->chance_number2 ?? '0' }}</td>
                                             <td>{{ $item->monoghraph ?? '0' }}</td>
+                                            <td></td>
+                                            <td>{{ $item->chance_number ?? '0' }}</td>
+                                            <td>{{ $item->zarib_chance ?? '0' }}</td>
                                             <td>{{ $item->credit ?? '0' }}</td>
                                             <td>{{ $item->zarib_credite ?? '0' }}</td>
                                             <td>{{ $item->total_credit ?? '0' }}</td>
