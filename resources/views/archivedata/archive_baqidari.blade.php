@@ -137,8 +137,8 @@
                                     
                                     <div class="row g-3">
                                         <div class="col-md-4">
-                                            <label for="semester" class="form-label">سمستر</label>
-                                            <select class="form-select" id="semester" name="semester" required>
+                                            <label for="semester" class="form-label ">سمستر</label>
+                                            <select class="form-select select2 form-control " id="semester" name="semester" required>
                                                 <option value="">سمستر را انتخاب کنید</option>
                                                 @for ($i = 1; $i <= 8; $i++)
                                                     <option value="semester{{ $i }}" 
@@ -150,11 +150,14 @@
                                         
                                         </div>
 
+                                      
                                         <div class="col-md-4">
-                                            <label for="subject" class="form-label">مضمون</label>
-                                            <input type="text" class="form-control" id="subject" name="subject" 
-                                                value="{{ old('subject', $data->subject ?? '') }}">
+                                            <label for="credit" class="form-label">تعداد کریدت</label>
+                                            <input type="number" step="0.01" class="form-control" id="credit" name="credit" 
+                                                value="{{ old('credit', $data->credit ?? '') }}">
                                         </div>
+                                            
+
                                     </div>
                                 </div>
 
@@ -164,10 +167,23 @@
                                     </h5>
                                     
                                     <div class="row g-3">
+                                      
+
                                         <div class="col-md-4">
-                                            <label for="chance_number" class="form-label">نمبر چانس اول</label>
+                                            <label for="chance_number" class="form-label">نوع چانس</label>
+                                            <select class="form-control select2" id="chance" name="chance" required>
+                                                <option value="">-- انتخاب نوع چانس --</option>
+                                                <option value="چانس اول" {{ old('chance', $data->chance ?? '') == 'چانس اول' ? 'selected' : '' }}>چانس اول</option>
+                                                <option value="چانس دوم" {{ old('chance', $data->chance ?? '') == 'چانس دوم' ? 'selected' : '' }}>چانس دوم</option>
+                                                <option value="چانس سوم" {{ old('chance', $data->chance ?? '') == 'چانس سوم' ? 'selected' : '' }}>چانس سوم</option>
+                                                <option value="چانس چهارم" {{ old('chance', $data->chance ?? '') == 'چانس چهارم' ? 'selected' : '' }}>چانس چهارم</option>
+                                            </select>
+                                        </div>
+
+                                        <div class="col-md-4">
+                                            <label for="chance_number" class="form-label">نمبر چانس</label>
                                             <input type="number" step="0.01" class="form-control" id="chance_number" name="chance_number" 
-                                                value="{{ old('chance_number', $data->chance_number ?? '') }}">
+                                                value="{{ old('chance_number', $data->chance_number ?? '') }}" required>
                                         </div>
 
                                         <div class="col-md-4">
@@ -176,11 +192,7 @@
                                                 value="{{ old('zarib_chance', $data->zarib_chance ?? '') }}">
                                         </div>
 
-                                        <div class="col-md-4">
-                                            <label for="chance_number2" class="form-label">نمبر چانس دوم</label>
-                                            <input type="number" step="0.01" class="form-control" id="chance_number2" name="chance_number2" 
-                                                value="{{ old('chance_number2', $data->chance_number2 ?? '') }}">
-                                        </div>
+                                       
                                     </div>
                                 </div>
 
@@ -189,17 +201,22 @@
                                    
                                     <h5 class="mb-3 text-primary section-title"></h5>
                                     <div class="row g-3">
+
+                                        <div class="col-md-4">
+                                            <label for="subject" class="form-label">مضمون / مونوگراف </label>
+                                            <select class="form-control select2" id="subject" name="subject" required>
+                                                <option value="">-- انتخاب نوع سند --</option>
+                                                <option value="مونوگراف" {{ old('subject', $data->subject ?? '') == 'مونوگراف' ? 'selected' : '' }}>مونوگراف</option>
+                                                <option value="مضمون" {{ old('subject', $data->subject ?? '') == 'مضمون' ? 'selected' : '' }}>مضمون</option>
+                                            </select>
+                                            </div>
                                         <div class="col-md-4">
                                             <label for="monoghraph" class="form-label">مونوگراف</label>
                                             <input type="number" step="0.01" class="form-control" id="monoghraph" name="monoghraph" 
                                                 value="{{ old('monoghraph', $data->monoghraph ?? '') }}">
                                         </div>
 
-                                         <div class="col-md-4">
-                                            <label for="credit" class="form-label">تعداد کریدت</label>
-                                            <input type="number" step="0.01" class="form-control" id="credit" name="credit" 
-                                                value="{{ old('credit', $data->credit ?? '') }}">
-                                        </div>
+                                        
 
                                         <div class="col-md-4">
                                             <label for="zarib_credite" class="form-label">ضریب کریدت</label>

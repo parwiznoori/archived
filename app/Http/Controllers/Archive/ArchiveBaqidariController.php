@@ -36,9 +36,9 @@ public function insert(Request $request, $id)
     $validated = $request->validate([
         'semester' => 'nullable|in:semester1,semester2,semester3,semester4,semester5,semester6,semester7,semester8',
         'subject' => 'nullable|string|max:255',
+        'chance' => 'nullable|string|max:255',
         'chance_number' => 'nullable|numeric|between:0,99999999.99',
         'zarib_chance' => 'nullable|numeric|between:0,999.99',
-        'chance_number2' => 'nullable|numeric|between:0,99999999.99',
         'monoghraph' => 'nullable|numeric|between:0,99999999.99',
         'zarib_credite' => 'nullable|numeric|between:0,999.99',
         'credit' => 'nullable|numeric|between:0,999.99',
