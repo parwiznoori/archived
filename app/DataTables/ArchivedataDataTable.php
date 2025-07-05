@@ -148,39 +148,64 @@ class ArchivedataDataTable extends DataTable
      * @return \Illuminate\Database\Eloquent\Builder
      */
     public function query(Archivedata $model)
-    {
-        $wheres = [];
-        $orWheres = [];
-        $roles = [];
+{
+    $wheres = [];
+    $orWheres = [];
+    $roles = [];
 
-// Check the role of the authenticated user
-        if (auth()->user()->hasRole('system-developer') || auth()->user()->hasRole('super-admin')) {
-            // System developer: Show all roles and all data
-            $roles = Role::all();
-        } elseif (
-            Archive::where('de_user_id', auth()->user()->id)->exists() ||
-            Archive::where('qc_user_id', auth()->user()->id)->exists()
-        ) {
-            // Specific user: Show only their data
-            $wheres[] = ['archives.de_user_id', '=', auth()->user()->id];
-            $orWheres[] = ['archives.qc_user_id', '=', auth()->user()->id];
-            $roles = Role::all(); // Roles can be fetched if needed
-        } else {
-              $wheres[] = ['archives.de_user_id', '=', -1];
-            // All other users: Show all data
-            $roles = Role::all();
-        }
+    // Check the role of the authenticated user
+    if (auth()->user()->hasRole('system-developer') || auth()->user()->hasRole('super-admin')) {
+        // System developer/Super Admin: Show all data
+        $roles = Role::all();
+    } elseif (
+        Archive::where('de_user_id', auth()->user()->id)->exists() ||
+        Archive::where('qc_user_id', auth()->user()->id)->exists()
+    ) {
+        // DE or QC user: Show only their data
+        $wheres[] = ['archives.de_user_id', '=', auth()->user()->id];
+        $orWheres[] = ['archives.qc_user_id', '=', auth()->user()->id];
+        $roles = Role::all();
+    } elseif (auth()->user()->hasRole('visitor')) {
+        // Visitor: Only show data from their university
+        $universityId = auth()->user()->university->id;
+        $wheres[] = ['archives.university_id', '=', $universityId];
+        $roles = Role::whereIn('name', ['visitor'])->get(); // Only show visitor role
+    } else {
+        // All other users: Show nothing (or adjust as needed)
+        $wheres[] = ['archives.de_user_id', '=', -1];
+        $roles = Role::all();
+    }
 
-// Apply $wheres and $orWheres to the query as needed
-        $query = Archive::query();
-        if (!empty($wheres)) {
-            $query->where($wheres);
-        }
-        if (!empty($orWheres)) {
-            $query->orWhere($orWheres);
-        }
+    // Build the query
+    $query = Archive::query();
+    
+    // Apply where conditions
+    if (!empty($wheres)) {
+        $query->where(function($q) use ($wheres, $orWheres) {
+            foreach ($wheres as $where) {
+                $q->where($where[0], $where[1], $where[2]);
+            }
+            
+            if (!empty($orWheres)) {
+                $q->orWhere(function($orQuery) use ($orWheres) {
+                    foreach ($orWheres as $where) {
+                        $orQuery->where($where[0], $where[1], $where[2]);
+                    }
+                });
+            }
+        });
+    }
 
-        $data = $query->get();
+// // Apply $wheres and $orWheres to the query as needed
+//         $query = Archive::query();
+//         if (!empty($wheres)) {
+//             $query->where($wheres);
+//         }
+//         if (!empty($orWheres)) {
+//             $query->orWhere($orWheres);
+//         }
+
+//         $data = $query->get();
 
 
 

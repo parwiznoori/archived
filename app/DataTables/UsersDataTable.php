@@ -212,7 +212,7 @@ class UsersDataTable extends DataTable
         $columns = [  
             'id'     => ['title' => trans('general.id')],            
             'name'     => ['title' => trans('general.name')],            
-           //'university' => ['name' => 'university.name' ,'title' => trans('general.university')],
+            'university' => ['name' => 'university.name' ,'title' => trans('general.university')],
             'rolesNames' => ['name' => 'rolesNames.title' ,'title' => trans('general.role')],
             'position' => ['title' => trans('general.position')],
             'email'    => ['title' => trans('general.email')], 

@@ -1,5 +1,4 @@
 @extends('layouts.app')
-
 @section('content')
     <div class="portlet box">        
         <div class="portlet-body">
@@ -96,53 +95,51 @@
                             </ul>
                     </div>
                     <hr>
-{{--                    @if (auth()->user()->allUniversities())--}}
-{{--                    <div class="form-group {{ $errors->has('university') ? ' has-error' : '' }}">--}}
-{{--                        {!! Form::label('university', trans('general.university'), ['class' => 'control-label col-sm-3']) !!}                                --}}
-{{--                        <div class="col-sm-4">--}}
-{{--                            {!! Form::select('university_id', $universities, null, ['class' => 'form-control select2' ,'placeholder' => trans('general.select')]) !!}     --}}
-{{--                            @if ($errors->has('university'))--}}
-{{--                                <span class="help-block">--}}
-{{--                                    <strong>{{ $errors->first('university') }}</strong>--}}
-{{--                                </span>--}}
-{{--                            @endif                                                                                                   --}}
-{{--                        </div>--}}
-{{--                    </div> --}}
-{{--                    @else--}}
-{{--                    <input type="hidden" name="university_id" value="{{ auth()->user()->university_id }}">--}}
-{{--                    @endif                   --}}
-{{--                    <div class="form-group {{ $errors->has('department') ? ' has-error' : '' }}">--}}
-{{--                        {!! Form::label('department', trans('general.department'), ['class' => 'control-label col-sm-3']) !!}                                --}}
-{{--                        <div class="col-sm-4">--}}
-{{--                            {!! Form::select('departments[]', $departments, null, ['class' => 'form-control select2-ajax', 'remote-url' => route('api.departments'), 'remote-param' => '[name="university_id"]', "multiple" =>"multiple"]) !!}--}}
-{{--                            <span class="help-block">--}}
-{{--                                    <strong>در صورت خالی بودن دیپارتمنت, تمامی دیپارتمنت ها قابل دسترس می باشد.</strong>--}}
-{{--                                </span>                                                                                                   --}}
-{{--                        </div>--}}
-{{--                    </div>--}}
-{{--                    <div class="form-group {{ $errors->has('grade') ? ' has-error' : '' }}">--}}
-{{--                        {!! Form::label('grade', trans('general.grade'), ['class' => 'control-label col-sm-3']) !!}                                --}}
-{{--                        <div class="col-sm-4">--}}
-{{--                            {!! Form::select('grades[]', $grades, null, ['class' => 'form-control select2', "multiple" =>"multiple"]) !!}--}}
-{{--                            --}}
-{{--                                <span class="help-block">--}}
-{{--                                    <strong>در صورت خالی بودن مقطع تحصیلی, تمامی مقاطع تحصیلی قابل دسترس می باشد.</strong>--}}
-{{--                                </span>--}}
-{{--                                                                                                                               --}}
-{{--                        </div>--}}
-{{--                    </div>--}}
-
-                    {{-- <div class="form-group {{ $errors->has('active') ? ' has-error' : '' }}">
-                        {!! Form::label('active', trans('general.status'), ['class' => 'control-label col-sm-3']) !!}
+                    @if (auth()->user()->allUniversities())
+                    <div class="form-group {{ $errors->has('university') ? ' has-error' : '' }}">
+                        {!! Form::label('university', trans('general.university'), ['class' => 'control-label col-sm-3']) !!}                                
                         <div class="col-sm-4">
-                            <div >
-                                <label class="checkbox-inline">
-                                <input type="checkbox" name="active" value="1" {{ $user->active ? "checked" : "" }}> {{ trans('general.active') }}
-                                </label>
-                            </div>
+                            {!! Form::select('university_id', $universities, null, ['class' => 'form-control select2','id' => 'university' ,'placeholder' => trans('general.select')]) !!}     
+                            @if ($errors->has('university'))
+                                <span class="help-block">
+                                    <strong>{{ $errors->first('university') }}</strong>
+                                </span>
+                            @endif                                                                                                   
+                        </div>
+                    </div> 
+                    @else
+                    <input type="hidden" name="university_id" id="university" value="{{ auth()->user()->university_id }}">
+                    @endif                   
+                    {{-- <div class="form-group {{ $errors->has('department') ? ' has-error' : '' }}">
+                        {!! Form::label('department', trans('general.department'), ['class' => 'control-label col-sm-3']) !!}                                
+                        <div class="col-sm-4">
+                            {!! Form::select('departments[]', $departments, null, ['class' => 'form-control select2', 'id' => 'departments' , 'remote-url' => route('api.departments'), 'remote-param' => '[name="university_id"]', "multiple" =>"multiple"]) !!}
+                            <span class="help-block">
+                                    <strong>در صورت خالی بودن دیپارتمنت, تمامی دیپارتمنت ها قابل دسترس می باشد.</strong>
+                                </span>                                                                                                   
                         </div>
                     </div> --}}
-
+                    {{-- <div class="form-group {{ $errors->has('grade') ? ' has-error' : '' }}">
+                        {!! Form::label('grade', trans('general.grade'), ['class' => 'control-label col-sm-3']) !!}                                
+                        <div class="col-sm-4">
+                            {!! Form::select('grades[]', $grades, null, ['class' => 'form-control select2', "multiple" =>"multiple"]) !!}
+                            
+                                <span class="help-block">
+                                    <strong>در صورت خالی بودن مقطع تحصیلی, تمامی مقاطع تحصیلی قابل دسترس می باشد.</strong>
+                                </span>
+                                                                                                                               
+                        </div>
+                    </div> --}}
+                    <div class="form-group {{ $errors->has('active') ? ' has-error' : '' }}">
+                        {!! Form::label('active', trans('general.status'), ['class' => 'control-label col-sm-3']) !!}                                
+                        <div class="col-sm-4">                 
+                            <div >
+                                <label class="checkbox-inline">
+                                <input type="checkbox" name="active" value="1" {{ $user->active ? "checked" : "" }}> {{ trans('general.active') }}                               
+                                </label>                                                       
+                            </div>                                               
+                        </div>
+                    </div>
                     <hr>
                     <div class="form-group">
                         {!! Form::label('roles[]', trans('general.roles'), ['class' => 'control-label col-sm-4']) !!}
@@ -171,13 +168,40 @@
         </div>
     </div>
 @endsection('content')
-
 @push('scripts')
 <script>
-    $(function () {
-        $('.select2').change(function () {
-            $('.select2-ajax').val(null).trigger('change');
-        })
-    })
+    // $(function () {
+    //     $('.select2').change(function () {
+    //         $('.select2-ajax').val(null).trigger('change');
+    //     })
+    // })
+</script>
+<script>
+    $(document).ready(function() {
+        $('#university').select2();
+        $('#departments').select2();
+        $('#university').on('change', function() {
+            var universityId = $(this).val();
+            if (universityId) {
+                $.ajax({
+                    url: $("#departments").attr('remote-url') + ($("#departments").attr('remote-param') ? '/' + $($("#departments").attr('remote-param')).val() : ''),
+                    type: 'GET',
+                    dataType: 'json',
+                    success: function(data) {
+                        //console.log(data);
+                        $('#departments').empty();
+                        $('#departments').append('<option value="">انتخاب</option>');
+                        $.each(data, function(key,value) {
+                            // console.log(key,value);
+                            $('#departments').append('<option value="' + value.id + '">' + value.text + '</option>');
+                        });
+                    }
+                });
+            } else {
+                $('#departments').empty();
+                $('#departments').append('<option value="">Select Department</option>');
+            }
+        });
+    });
 </script>
 @endpush
