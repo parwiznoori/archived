@@ -1,7 +1,11 @@
 @extends('layouts.app')
 
 @section('content')
-
+@if(session('success'))
+        <div class="alert alert-success">
+            {{ session('success') }}
+        </div>
+    @endif
 <style>
     .alert {
         transition: all 0.3s ease;
@@ -97,45 +101,24 @@
 
                         <div class="card-body">
                             <!-- Enhanced Alert Messages -->
-                            @if (session('success') || session('error') || $errors->any())
-                                <div class="alert-container mb-4">
-                                    @if (session('success'))
-                                        <div class="alert alert-success alert-dismissible fade show">
-                                            <i class="fas fa-check-circle me-2"></i>
-                                            {{ session('success') }}
-                                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                                        </div>
-                                    @endif
-
-                                    @if (session('error'))
-                                        <div class="alert alert-danger alert-dismissible fade show">
-                                            <i class="fas fa-exclamation-circle me-2"></i>
-                                            {{ session('error') }}
-                                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                                        </div>
-                                    @endif
-
-                                    @if ($errors->any()))
-                                        <div class="alert alert-danger alert-dismissible fade show">
-                                            <i class="fas fa-exclamation-triangle me-2"></i>
-                                            <ul class="mb-0" style="direction: rtl; text-align: right;">
-                                                @foreach ($errors->all() as $error)
-                                                    <li>{{ $error }}</li>
-                                                @endforeach
-                                            </ul>
-                                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                                        </div>
-                                    @endif
-                                </div>
-                            @endif
+                     
 
                             <form method="POST" action="{{ route('archive_baqidari_update', $archive->id) }}" enctype="multipart/form-data" class="needs-validation" novalidate>                                @csrf
                             @csrf
                                 <!-- Basic Information Section -->
-                                <div class="mb-4 p-3 ">
+                                 <div class="row g-3">  
                                   
+                                     
+                                        <div class="col-md-4">
+                                            <label for="subject" class="form-label">مضمون / مونوگراف </label>
+                                            <select class="form-control select2" id="subject" name="subject" required>
+                                                <option value="">-- انتخاب نوع سند --</option>
+                                                <option value="مونوگراف" {{ old('subject', $data->subject ?? '') == 'مونوگراف' ? 'selected' : '' }}>مونوگراف</option>
+                                                <option value="مضمون" {{ old('subject', $data->subject ?? '') == 'مضمون' ? 'selected' : '' }}>مضمون</option>
+                                            </select>
+                                            </div>
                                     
-                                    <div class="row g-3">
+                                   
                                         <div class="col-md-4">
                                             <label for="semester" class="form-label ">سمستر</label>
                                             <select class="form-select select2 form-control " id="semester" name="semester" required>
@@ -149,27 +132,7 @@
                                             </select>
                                         
                                         </div>
-
-                                      
-                                        <div class="col-md-4">
-                                            <label for="credit" class="form-label">تعداد کریدت</label>
-                                            <input type="number" step="0.01" class="form-control" id="credit" name="credit" 
-                                                value="{{ old('credit', $data->credit ?? '') }}">
-                                        </div>
-                                            
-
-                                    </div>
-                                </div>
-
-                                <!-- Chance Information Section -->
-                                <div class="mb-4 p-3 ">
-                                 <h5 class="mb-3 text-primary section-title">
-                                    </h5>
-                                    
-                                    <div class="row g-3">
-                                      
-
-                                        <div class="col-md-4">
+                                            <div class="col-md-4">
                                             <label for="chance_number" class="form-label">نوع چانس</label>
                                             <select class="form-control select2" id="chance" name="chance" required>
                                                 <option value="">-- انتخاب نوع چانس --</option>
@@ -179,7 +142,13 @@
                                                 <option value="چانس چهارم" {{ old('chance', $data->chance ?? '') == 'چانس چهارم' ? 'selected' : '' }}>چانس چهارم</option>
                                             </select>
                                         </div>
-
+                                      
+                                        <div class="col-md-4">
+                                            <label for="credit" class="form-label">تعداد کریدت</label>
+                                            <input type="number" step="0.01" class="form-control" id="credit" name="credit" 
+                                                value="{{ old('credit', $data->credit ?? '') }}">
+                                        </div>
+                                            
                                         <div class="col-md-4">
                                             <label for="chance_number" class="form-label">نمبر چانس</label>
                                             <input type="number" step="0.01" class="form-control" id="chance_number" name="chance_number" 
@@ -202,14 +171,17 @@
                                     <h5 class="mb-3 text-primary section-title"></h5>
                                     <div class="row g-3">
 
-                                        <div class="col-md-4">
-                                            <label for="subject" class="form-label">مضمون / مونوگراف </label>
-                                            <select class="form-control select2" id="subject" name="subject" required>
-                                                <option value="">-- انتخاب نوع سند --</option>
-                                                <option value="مونوگراف" {{ old('subject', $data->subject ?? '') == 'مونوگراف' ? 'selected' : '' }}>مونوگراف</option>
-                                                <option value="مضمون" {{ old('subject', $data->subject ?? '') == 'مضمون' ? 'selected' : '' }}>مضمون</option>
-                                            </select>
-                                            </div>
+                                      
+
+
+                                           <div class="col-md-4">
+                                            <label for="title" class="form-label">نام مونوگراف / مضمون</label>
+                                            <input type="text" class="form-control" id="title" name="title" 
+                                                value="{{ old('title', $data->title ?? '') }}" 
+                                                placeholder="عنوان را وارد کنید">
+                                           </div>
+
+
                                         <div class="col-md-4">
                                             <label for="monoghraph" class="form-label">نمبر مونوگراف / مضمون</label>
                                             <input type="number" step="0.01" class="form-control" id="monoghraph" name="monoghraph" 
@@ -386,7 +358,7 @@
                             </form>
                             
                             
-                            <!-- Results Table -->
+                            {{-- <!-- Results Table -->
                             <h4 class="table-title">جدول نتایج سمسترها</h4>
                             <div class="results-table table-responsive">
                             <table class="table">
@@ -493,7 +465,7 @@
                             </div>
                         </div>
 
-                         <div class="card-body">
+                        <div class="card-body">
                         <div class="table-responsive">
                             <table class="table table-bordered table-hover">
                                 <thead class="thead-dark">
@@ -531,8 +503,8 @@
                                     </tr>
                                 </tbody>
                             </table>
+                        </div> --}}
                         </div>
-                    </div>
 
                     </div>
                 </div>

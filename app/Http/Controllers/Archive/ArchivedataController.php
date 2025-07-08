@@ -19,6 +19,7 @@ use App\Models\University;
 use DB;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
+use App\Models\Baqidari;
 
 
 class ArchivedataController extends Controller
@@ -440,6 +441,12 @@ public function updateName(Request $request, Archivedata $archivedata)
     // app/Http/Controllers/YourController.php
     public function show($id)
     {
+        //baqidari part
+        $baqidaris = Baqidari::all();
+        $archive = Archivedata::findOrFail($id);
+        $baqidari = Baqidari::where('archivedata_id', $id)->first();
+
+
         // Fetch the specific archivedata record with the related archiveimage
         $archivedata = Archivedata::with('archiveimage')->findOrFail($id);
 
@@ -475,6 +482,12 @@ public function updateName(Request $request, Archivedata $archivedata)
             'archivedatastatus' => $archivedatastatus,
             'archiveqcstatus' => $archiveqcstatus,
             'archiveimage' => $archivedata->archiveimage, // Pass the related archiveimage
+            
+            //baqidari part
+            'archive' => $archive,
+            'data' => $baqidari,
+            'id' => $id,
+            'baqidaris' => $baqidaris
         ]);
     }
 

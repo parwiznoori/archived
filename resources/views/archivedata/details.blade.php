@@ -2,7 +2,10 @@
 
 @section('content')
 
-
+<div class="portlet box">
+    <div class="portlet-body">
+        <div class="panel-body">
+            <div class="container-fluid">
     <div class="portlet box shadow-sm">
         <div class="portlet-body p-4">
             <div class="text-left mb-4">
@@ -137,6 +140,161 @@
                     </tbody>
                 </table>
             </div>
+
+              <!-- Results Table -->
+                            <h2 class="table-title text-center mb-4 text-primary ">جدول باقیداری </h2>
+                            <div class="results-table table-responsive">
+                            <table class="table table-bordered table-striped table-hover shadow">
+                                <thead>
+                                    <tr>
+                                        <th>سمستر</th>
+                                        <th>مضمون / مونوگراف </th>
+                                        <th>عنوان </th>
+                                        <th>نمبر مونوگراف / مضمون</th>
+                                        <th> چانس </th>
+                                        <th>نمبر چانس</th>
+                                        <th>ضریب کریدت چانس دوم</th>
+                                        <th>تعداد کریدت</th>
+                                        <th>ضریب کریدت</th>
+
+                                        <th colspan="3"class="text-center">نتیجه سمستر قبل از دفاع</th>
+                                        <th colspan="3"class="text-center">نتیجه سمستر بعد از دفاع</th>
+                                        <th colspan="3"class="text-center">نتیجه هشت سمستر قبل از دفاع</th>
+                                        <th colspan="3"class="text-center">نتیجه هشت سمستر بعد از دفاع</th>
+                                        <th rowspan="1" class="text-center">عکس مکتوب باقیداری</th>
+
+                                     
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @forelse ($baqidaris as $index => $item)
+                                        <tr>
+                                            <td>
+                                                    @if(isset($item->semester))
+                                                        @php
+                                                            $semesterNumber = str_replace('semester', '', $item->semester);
+                                                            echo 'سمستر ' . $semesterNumber;
+                                                        @endphp
+                                                    @else
+                                                        N/A
+                                                    @endif
+                                            </td>
+                                            <td>{{ $item->subject ?? 'N/A' }}</td>
+                                            <td>{{ $item->title ?? 'N/A' }}</td>
+                                            <td>{{ $item->monoghraph ?? '0' }}</td>
+                                             <td>{{ $item->chance ?? '0' }}</td>
+                                            <td>{{ $item->chance_number ?? '0' }}</td>
+                                            <td>{{ $item->zarib_chance ?? '0' }}</td>
+                                            <td>{{ $item->credit ?? '0' }}</td>
+                                            <td>{{ $item->zarib_credite ?? '0' }}</td>
+                                            <th>مجموعه کریدت</th>
+                                            <th>مجموع نمرات</th>
+                                            <th>فیصدی سمستر</th>
+
+                                            <th>مجموعه کریدت</th>
+                                            <th>مجموع نمرات</th>
+                                            <th>فیصدی سمستر</th>
+
+                                            <th>مجموعه کریدت</th>
+                                            <th>مجموع نمرات</th>
+                                            <th> اوسط هشت سمستر</th>
+
+                                            <th>مجموعه کریدت</th>
+                                            <th>مجموع نمرات</th>
+                                            <th> اوسط هشت سمستر</th>
+                                            <th> </th> 
+ 
+                                        </tr>
+                                                <tr>
+                                            <th>مجموع </th>
+                                            <td></td>
+                                            <td></td>
+                                            <td>{{ $item->monoghraph ?? '0' }}</td>
+                                            <td></td>
+                                            <td>{{ $item->chance_number ?? '0' }}</td>
+                                            <td>{{ $item->zarib_chance ?? '0' }}</td>
+                                            <td>{{ $item->credit ?? '0' }}</td>
+                                            <td>{{ $item->zarib_credite ?? '0' }}</td>
+                                            <td>{{ $item->total_credit ?? '0' }}</td>
+                                            <td>{{ $item->total_numbers ?? '0' }}</td>
+                                            <td>{{ $item->semester_percentage ?? '0' }}</td>
+                                            <td>{{ $item->total_credit2 ?? '0' }}</td>
+                                            <td>{{ $item->total_numbers2 ?? '0' }}</td>
+                                            <td>{{ $item->semester_percentage2 ?? '0' }}</td>
+                                            <td>{{ $item->total_credit3 ?? '0' }}</td>
+                                            <td>{{ $item->total_numbers3 ?? '0' }}</td>
+                                            <td>{{ $item->eight_semester_percentage3 ?? '0' }}</td>
+                                            <td>{{ $item->total_credit4 ?? '0' }}</td>
+                                            <td>{{ $item->total_numbers4 ?? '0' }}</td>
+                                            <td>{{ $item->eight_semester_percentage4 ?? '0' }}</td> 
+                                            <td class="text-center">
+                                            @if ($item->baqidari_img)
+                                                <a href="{{ asset($item->baqidari_img) }}" 
+                                                target="_blank"
+                                                class="btn btn-sm btn-outline-primary"
+                                                data-toggle="tooltip" 
+                                                title="{{ trans('general.view_full_size') }}">
+                                                     {{ trans('general.view') }}
+                                                </a>
+                                            @else
+                                                <span class="text-muted">N/A</span>
+                                            @endif
+                                        </td> 
+                                        </tr>
+                                    @empty
+                                        <tr>
+                                            <td colspan="9" class="no-data">No data available</td>
+                                        </tr>
+                                    @endforelse
+                                </tbody>
+                            </table>
+                            </div>
+
+
+                            <h2 class="table-title text-center mb-4 text-primary ">جدول مونوگراف </h2>
+
+                        <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-striped table-hover shadow">
+                                <thead class="thead-dark">
+                                    <tr>
+                                        <th>{{ trans('general.monograph_date') }}</th>
+                                        <th>{{ trans('general.monograph_number') }}</th>
+                                        <th>{{ trans('general.monograph_title') }}</th>
+                                        <th>{{ trans('general.monograph_doc_date') }}</th>
+                                        <th>{{ trans('general.monograph_doc_number') }}</th>
+                                        <th>{{ trans('general.monograph_desc') }}</th>
+                                        <th class="text-center">{{ trans('general.monograph_img') }}</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>{{ $archive->monograph_date }}</td>
+                                        <td>{{ $archive->monograph_number }}</td>
+                                        <td>{{ $archive->monograph_title }}</td>
+                                        <td>{{ $archive->monograph_doc_date }}</td>
+                                        <td>{{ $archive->monograph_doc_number }}</td>
+                                        <td>{{ $archive->monograph_desc ?: 'N/A' }}</td>
+                                        <td class="text-center">
+                                            @if ($archive->monograph_img)
+                                                <a href="{{ asset($archive->monograph_img) }}" 
+                                                target="_blank"
+                                                class="btn btn-sm btn-outline-primary"
+                                                data-toggle="tooltip" 
+                                                title="{{ trans('general.view_full_size') }}">
+                                                     {{ trans('general.view') }}
+                                                </a>
+                                            @else
+                                                <span class="text-muted">N/A</span>
+                                            @endif
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        </div>
+
+
 
             <!-- Image Section -->
             <div class="card mb-4 shadow-sm">

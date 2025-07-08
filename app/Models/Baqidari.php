@@ -18,6 +18,7 @@ class Baqidari extends Model
             'archivedata_id',
             'semester',
             'subject',
+            'title',
             'chance',
             'chance_number',
             'zarib_chance',
