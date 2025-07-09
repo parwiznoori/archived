@@ -53,7 +53,7 @@ class ArchiveZamayemController extends Controller
     }
 
     return redirect()->route('archive_zamayem', $id)
-        ->with('success', 'Images uploaded successfully.');
+        ->with('success', 'عکس موفقانه اپلود گردید.');
 }
 
  public function destroy($id)
@@ -69,6 +69,6 @@ class ArchiveZamayemController extends Controller
     $zamayem->delete();
     
     return redirect()->route('archive_zamayem', $archiveId)
-        ->with('success', 'Image deleted successfully.');
+        ->with('success', 'عکس موفقانه حذف شد');
 }
 }
