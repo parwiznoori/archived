@@ -96,6 +96,12 @@ class ArchivedataDataTable extends DataTable
                             </a></li>';
                     }
 
+                      if (auth()->user()->can('archive_zamayem')) {
+                        $html .= '<li><a href="' . route('archive_zamayem', $archivedata) . '" target="_blank">
+                            <i class="fa fa-pencil"></i> ' . trans("general.archive_zamayem") . '
+                            </a></li>';
+                    }
+
 /*
                 if (auth()->user()->can('print-archivedoc')) {
                     $html .= '<li><a href="' . route('print-archivedoc', $archivedata) . '" target="_blank">

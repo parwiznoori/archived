@@ -385,7 +385,9 @@ Route::group(['middleware' => 'auth'], function() {
 
         Route::get('archive_baqidari/{id}', 'ArchiveBaqidariController@show')->name('archive_baqidari');
         Route::post('archive_baqidari_update/{id}', 'ArchiveBaqidariController@insert')->name('archive_baqidari_update');
-
+        Route::get('archive_zamayem/{id}', 'ArchiveZamayemController@show')->name('archive_zamayem');
+        Route::post('archive_zamayem_update/{id}', 'ArchiveZamayemController@insert')->name('archive_zamayem_update');
+        Route::delete('archive_zamayem/{id}', 'ArchiveZamayemController@destroy')->name('archive_zamayem.destroy');
 
     });
 

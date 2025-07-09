@@ -321,6 +321,7 @@ return [
     'content'=>' متن مکتوب  ',
     'archive_monograph'=>' بخش مونوگراف ',
     'archive_baqidari'=>' بخش باقیداری ',
+    'archive_zamayem'=>' بخش ضمایم ',
     'baqidari_img'=>'عکس مکتوب باقیداری',
     'monograph_doc_date'=>' تاریخ مکتوب مونوگراف ',
     'monograph_doc_number'=>' شماره مکتوب مونوگراف ',
