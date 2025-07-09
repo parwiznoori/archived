@@ -20,6 +20,8 @@ use DB;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use App\Models\Baqidari;
+use App\Models\Zamayem;
+
 
 
 class ArchivedataController extends Controller
@@ -446,6 +448,10 @@ public function updateName(Request $request, Archivedata $archivedata)
         $archive = Archivedata::findOrFail($id);
         $baqidari = Baqidari::where('archivedata_id', $id)->first();
 
+        //zamayem_part
+        $zamayems = Zamayem::where('archivedata_id', $id)->get();
+        
+
 
         // Fetch the specific archivedata record with the related archiveimage
         $archivedata = Archivedata::with('archiveimage')->findOrFail($id);
@@ -487,7 +493,10 @@ public function updateName(Request $request, Archivedata $archivedata)
             'archive' => $archive,
             'data' => $baqidari,
             'id' => $id,
-            'baqidaris' => $baqidaris
+            'baqidaris' => $baqidaris,
+
+            //zamayem part
+            'zamayems' => $zamayems
         ]);
     }
 

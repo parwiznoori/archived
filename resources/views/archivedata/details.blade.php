@@ -251,9 +251,57 @@
                             </div>
 
 
-                            <h2 class="table-title text-center mb-4 text-primary ">جدول مونوگراف </h2>
+                                  <h2 class="table-title text-center mb-4 text-primary ">جدول ضمایم </h2>
 
-                        <div class="card-body">
+
+                             @if($zamayems->isEmpty())
+                        <div class="alert alert-info">هنوز تصویری آپلود نشده است.</div>
+                    @else
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-striped">
+                                <thead>
+                                    <tr>
+                                        <th width="5%">#</th>
+                                        <th width="20%">تصویر</th>
+                                        <th width="25%">عنوان</th>
+                                        <th width="20%">تاریخ آپلود</th>
+                                        <th width="15%">عملیات</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach($zamayems as $index => $zamayem)
+                                        <tr>
+                                            <td>{{ $index + 1 }}</td>
+                                            <td>
+                                                @if ($zamayem->zamayem_img)
+                                                    <a href="{{ asset($zamayem->zamayem_img) }}" target="_blank">
+                                                        <img src="{{ asset($zamayem->zamayem_img) }}" class="img-thumbnail" width="100" alt="ضمیمه">
+                                                    </a>
+                                                @else
+                                                    <span class="text-muted">بدون تصویر</span>
+                                                @endif
+                                            </td>
+                                            <td>{{ $zamayem->title ?? 'بدون عنوان' }}</td>
+                                            <td>{{ \Morilog\Jalali\Jalalian::fromDateTime($zamayem->created_at)->format('Y/m/d H:i') }}</td>
+                                            <td>
+                                                <form action="{{ route('archive_zamayem.destroy', $zamayem->id) }}" method="POST">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('آیا از حذف این تصویر مطمئن هستید؟')">
+                                                        حذف
+                                                    </button>
+                                                </form>
+                                            </td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                    @endif
+
+                            {{-- <h2 class="table-title text-center mb-4 text-primary ">جدول مونوگراف </h2> --}}
+
+                        {{-- <div class="card-body">
                         <div class="table-responsive">
                             <table class="table table-bordered table-striped table-hover shadow">
                                 <thead class="thead-dark">
@@ -292,7 +340,7 @@
                                 </tbody>
                             </table>
                         </div>
-                        </div>
+                        </div> --}}
 
 
 

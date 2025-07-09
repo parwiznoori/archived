@@ -84,11 +84,11 @@ class ArchivedataDataTable extends DataTable
 //                     </a></li>';
 //                }
 
-                    if (auth()->user()->can('archive_monograph')) {
-                        $html .= '<li><a href="' . route('archive_monograph', $archivedata) . '" target="_blank">
-                            <i class="fa fa-pencil"></i> ' . trans("general.archive_monograph") . '
-                            </a></li>';
-                    }
+                    // if (auth()->user()->can('archive_monograph')) {
+                    //     $html .= '<li><a href="' . route('archive_monograph', $archivedata) . '" target="_blank">
+                    //         <i class="fa fa-pencil"></i> ' . trans("general.archive_monograph") . '
+                    //         </a></li>';
+                    // }
 
                       if (auth()->user()->can('archive_baqidari')) {
                         $html .= '<li><a href="' . route('archive_baqidari', $archivedata) . '" target="_blank">

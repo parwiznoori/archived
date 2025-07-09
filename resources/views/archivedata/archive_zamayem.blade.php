@@ -42,7 +42,7 @@
 
                     
                     
-                    @if($zamayems->isEmpty())
+                    {{-- @if($zamayems->isEmpty())
                         <div class="alert alert-info">هنوز تصویری آپلود نشده است.</div>
                     @else
                         <div class="table-responsive">
@@ -85,7 +85,7 @@
                                 </tbody>
                             </table>
                         </div>
-                    @endif
+                    @endif --}}
                 </div>
             </div>
         </div>
