@@ -2,7 +2,6 @@
 
 namespace App\DataTables;
 
-use Illuminate\Support\Facades\Auth;
 use App\User;
 use Yajra\DataTables\Services\DataTable;
 
@@ -16,69 +15,45 @@ class UsersDataTable extends DataTable
      */
     public function dataTable($query)
     {
-
         $datatables = datatables($query)
             ->editColumn('active', function ($user) {
-                return $user->active ? "<i class='fa fa-check font-green'></i>" : "<i class='fa fa-remove font-red'></i>";
-            })
-            ->editColumn('user_type', function ($user) {
-                if($user->user_type == 1)
-                {
-                    return 'سطح وزارت - همه پوهنتون ها';
-                }
-                elseif($user->user_type == 2)
-                {
-                    return 'سطح وزارت - چند پوهنتون';
-                }
-                elseif($user->user_type == 3)
-                {
-                    return 'سطح پوهنتون';
-                }
-                else {
-                    return '';
-                }
-                
+                return $user->active
+                    ? "<i class='fa fa-check font-green'></i>"
+                    : "<i class='fa fa-remove font-red'></i>";
             })
             ->setRowClass(function ($user) {
-                return isset($user->deleted_at)  ? 'row_deleted' : '';
+                return isset($user->deleted_at) ? 'row_deleted' : '';
             })
-            ->editColumn('username', function ($user) {
-              return $user->user_name;
+            ->editColumn('university', function ($user) {
+                // Check if university relation exists before accessing name
+                return ($user->university_id >= 1 && isset($user->university))
+                    ? $user->university->name
+                    : '';
             })
-            ->editColumn('universitiesName', function ($user) {
-                
-                $i=0;
-                $university_array=array();
-                foreach($user->universities as $university)
-                {
-                    $university_array[$i]=$university->university_name;
-                    $i++;
-                }
-              return implode(',',$university_array);
-            })
-            ->editColumn('rolesNames', function ($user) {
-                $i=0;
-                $role_array=array();
-                foreach($user->rolesNames as $role)
-                {
-                    if(auth()->user()->hasRole('system-developer'))
+
+                ->editColumn('rolesNames', function ($user) {
+                    $i=0;
+                    $role_array=array();
+                    foreach($user->rolesNames as $role)
                     {
-                        $role_array[$i]=$role->title;
-                        $i++;
-                    }
-                    else
-                    {
-                        if($role->priority <= 900)
+                        if(auth()->user()->hasRole('system-developer'))
                         {
                             $role_array[$i]=$role->title;
                             $i++;
                         }
+                        else
+                        {
+                            if($role->priority <= 900)
+                            {
+                                $role_array[$i]=$role->title;
+                                $i++;
+                            }
+                        }
+
+
                     }
-                    
-                    
-                   
-                }
-              return implode(',',$role_array);
+                    return implode(',',$role_array);
+
             })
             ->addColumn('action', function ($user) {
                 $html = '';
@@ -93,7 +68,7 @@ class UsersDataTable extends DataTable
                     $html .= '<li><a href="'. route('users.edit', $user).'"  target="new" title = "'. trans('general.edit').' " > <i class="fa fa-pencil"></i> '. trans("general.edit") .' </a></li>';
                 }
 
-                if(auth()->user()->hasRole('super-admin') ){
+                if(auth()->user()->hasRole('system-developer') ){
                     $html .= '<li><a href="'. route('users.editStatus', $user).'"  target="new" title = "'. trans('general.edit_status').' " > <i class="fa fa-pencil"></i> '. trans("general.edit_status") .' </a></li>';
                 }
 
@@ -135,34 +110,42 @@ class UsersDataTable extends DataTable
      * @param \App\User $model
      * @return \Illuminate\Database\Eloquent\Builder
      */
-      public function query(User $model)
-{
-    $user = Auth::user();
-    $universityIds = $user->universities()->pluck('universities.id');
+    public function query(User $model)
+    {
+        // $users = $model->select('users.id', 'users.name', 'position', 'email', 'phone', 'universities.name as university', 'active')
+        //     ->leftJoin('universities', 'universities.id', '=', 'university_id')
+        //     ;
+        $users=User::select(['users.*'])
+            ->where('type', 1)
+            ->with(['rolesNames:id,title,admin,type_id,priority'])
+            ->with(['university:id,name']);
 
-    $users = User::when(!auth()->user()->allUniversities(), function ($query) use ($universityIds, $user) {
-            return $query->whereHas('universities', function ($q) use ($universityIds) {
-                    $q->whereIn('universities.id', $universityIds);
-                })
-                ->where('id', '!=', $user->id);
-        }, function ($query) {
-            return $query->withTrashed();
-        })
-        ->where('type', 1)
-        ->with([
-            'rolesNames:id,title,admin,type_id,priority',
-            'universities:id,name as university_name'
-        ]);
 
-    // For super-admins, exclude system-developers completely from results
-    if (auth()->user()->hasRole('super-admin')) {
-        $users->whereDoesntHave('roles', function ($q) {
-            $q->where('name', 'system-developer');
-        });
+        if (!auth()->user()->allUniversities()) {
+            $users->where('university_id', auth()->user()->university_id);
+            $users->where('users.id', '!=', auth()->user()->id);
+        }
+
+        if(
+             auth()->user()->hasRole('super-admin') &&
+            !auth()->user()->hasRole('system-developer'))
+        {
+            $users =$users ->whereNotIn(
+            'users.id',
+            function ($query) {
+                $query->select('model_id')
+                    ->from('model_has_roles')
+                    ->whereIn('role_id', [28]);
+            });
+
+            $users =$users->withTrashed();
+
+
+        }
+
+        return $users;
     }
 
-    return $users;
-}
 
     /**
      * Optional method if you want to use html builder.
@@ -184,9 +167,7 @@ class UsersDataTable extends DataTable
                             
                             $('.dt-button.buttons-reset').click(function () {
                                 $('.nav-tabs li').removeClass('active')
-                                $('a[data-status-id=\"all\"]').parent().addClass('active');
-                                $('tfoot input').val('');
-                                $('tfoot select').val('');
+                                $('a[data-status-id=\"all\"]').parent().addClass('active')
                             })
 
                             table.api().columns().every(function () {
@@ -230,8 +211,8 @@ class UsersDataTable extends DataTable
     {
         $columns = [  
             'id'     => ['title' => trans('general.id')],            
-            'name'     => ['name' => 'users.name' ,'title' => trans('general.name')],            
-            'universitiesName' => ['name' => 'universities.name' ,'title' => trans('general.university')],
+            'name'     => ['title' => trans('general.name')],            
+            'university' => ['name' => 'university.name' ,'title' => trans('general.university')],
             'rolesNames' => ['name' => 'rolesNames.title' ,'title' => trans('general.role')],
             'position' => ['title' => trans('general.position')],
             'email'    => ['title' => trans('general.email')], 
@@ -241,7 +222,6 @@ class UsersDataTable extends DataTable
         if(auth()->user()->hasRole('super-admin'))
         {
             $columns['active'] = ['title' => trans('general.active')];
-            $columns['user_type'] = ['title' => trans('general.user_type')];
         }
 
         return $columns;

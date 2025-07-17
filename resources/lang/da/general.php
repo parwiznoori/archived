@@ -39,6 +39,7 @@ return [
     'province_name' => 'ولایت',
 
     'users' => 'یوزرها',
+    
     'users_list' => ' لیست یوزرها',
     'create_account' => 'یوزر جدید',
     'edit_account' => 'تصحیح یوزر',
@@ -332,6 +333,8 @@ return [
     'column_number'=>'نمبر محصل در صفحه',
     'update_date'=>'تاریخ اپدیت',
     'update-name'=>'اصلاح نام محصل',
+    'user_type'=>' نوع یوزر ',
+    
 
 
 

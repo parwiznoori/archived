@@ -7,14 +7,10 @@ use App\Models\Role;
 use App\Models\Grade;
 use App\Models\University;
 use App\Models\Department;
-use App\Models\ArchiveDepartment;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use App\DataTables\UsersDataTable;
-use Illuminate\Support\Facades\Auth;
-
 use App\Http\Controllers\Controller;
-
 class UsersController extends Controller
 {
     public function __construct()
@@ -36,7 +32,6 @@ class UsersController extends Controller
             'description' => trans('general.users_list') 
         ]);
     }
-
     /**
      * Show the form for creating a new resource.
      *
@@ -45,48 +40,31 @@ class UsersController extends Controller
     public function create()
     {   
         $roles = array();
-        $departments = [];
-        $user_types = array( 1  => 'سطح وزارت - همه پوهنتون ها',
-        2 => 'سطح وزارت - چند پوهنتون',
-        3 => 'سطح پوهنتون');
-
-     
+        $university_id= auth()->user()->university_id;
+        if($university_id > 0)
+        {
+            $departments =  Department::where('university_id',$university_id)->pluck('name', 'id');
+        }
+        else{
+            $departments = [];
+        }
         if (auth()->user()->hasRole('system-developer')) {
             $roles = Role::all();
         }
-        elseif(auth()->user()->hasRole('super-admin')) {
-            // For super-admin with user_type = 1 (ministry level)
-            if (auth()->user()->user_type == 1) {
-                $roles = Role::where('archive_type', '<>', 2)->get();
-            }
-            // For regular super-admin
-            else {
-                $roles = Role::where('archive_type', '<>', 2)
-                        ->whereNotIn('name', ['system-developer'])
-                        ->get();
-            }
-        }
-        else {
-            $roles = Role::where('name', '!=', 'super-admin')
-                    ->where('name', '!=', 'system-developer')
-                    ->get();
+        else
+        {
+            $roles = Role::where('name','!=','super-admin')->where('name','!=','system-developer')
+            ->get();
         }  
-
-
-        $grades = Grade::pluck('name', 'id');
-        // dd($user_types);
-
         return view('users.create', [
             'title' => trans('general.users'),
             'description' => trans('general.create_account'),
             'roles' => $roles,            
             'universities' => ['-1' => trans('general.all_options')] + University::pluck('name', 'id')->toArray(),
             'departments' => $departments,
-            'grades' => $grades,
-            'user_types' => $user_types
+            'grades' => Grade::pluck('name', 'id')
         ]);
     }
-
     /**
      * Store a newly created resource in storage.
      *
@@ -100,8 +78,6 @@ class UsersController extends Controller
             'position' => 'required',            
             'email' => 'required|email|unique:users',
             'phone' => 'nullable',
-            'user_type' => 'required|in:1,2,3',
-            'university_id' => 'nullable',
             'password' => [
                 'required',
                 'confirmed',
@@ -114,30 +90,49 @@ class UsersController extends Controller
             ]            
         ]);
         
-        \DB::transaction(function () use ($request) {
+         $user = null;
+
+        \DB::transaction(function () use ($request,&$user) {
             $user = User::create([
                 'name' => $request->name,
                 'position' => $request->position,
                 'email' => $request->email,
                 'phone' => $request->phone,
-                'university_id' =>  null,
+                // 'university_id' => $request->university_id ?? null,
                 'password' => $request->password ?? null,
                 'active' => $request->has('active'),
-                'user_type' => $request->user_type,
             ]);
 
-            $user->universities()->sync($request->university_id ?? []);
+
+        // // Handle university relationship if needed
+        //     if ($request->has('university_id')) {
+        //         // Assuming you want to attach universities to the user
+        //         // $user->universities()->sync($request->university_id);
+                
+        //         // If you really need to create ArchiveDepartment records:
+                
+        //         foreach ($request->university_id as $universityId) {
+        //             ArchiveDepartment::create([
+        //                 'user_id' => $user->id,
+        //                 'university_id' => $universityId
+        //             ]);
+        //         }
+                
+        //     }
+
+
+
+
 
             $user->roles()->sync($request->roles ?? []);
-
             $user->departments()->sync($request->departments ?? []); 
             
             $user->grades()->sync($request->grades ?? []); 
         });
-
         return redirect(route('users.index'));
     }
 
+    
     /**
      * Display the specified resource.
      *
@@ -148,7 +143,6 @@ class UsersController extends Controller
     {
         exit();
     }
-
     /**
      * Show the form for editing the specified resource.
      *
@@ -158,19 +152,26 @@ class UsersController extends Controller
     public function edit($user)
     {    
         $roles = array();
-        $user_types = array( 1  => 'سطح وزارت - همه پوهنتون ها',
-        2 => 'سطح وزارت - چند پوهنتون',
-        3 => 'سطح پوهنتون');
-
-        $universityIds = $user->universities()->pluck('universities.id');
-        
-        $departments = Department::leftJoin('department_types', 'department_types.id', '=', 'departments.department_type_id')
+        $university_id= auth()->user()->university_id;
+        if($university_id > 0)
+        {
+            // $departments =  Department::where('university_id',$university_id)->pluck('name', 'id');
+            $departments =  Department::leftJoin('department_types', 'department_types.id', '=', 'departments.department_type_id')
                             ->leftJoin('faculties', 'faculties.id', '=', 'departments.faculty_id')
                             ->select('departments.id',\DB::raw('CONCAT(departments.name, " [ پوهنځی : ", faculties.name , "] (", department_types.name,")") as text'))
-                            ->whereIn('departments.university_id',$universityIds)
+                            ->where('departments.university_id',$university_id)
                             ->pluck('text', 'id')
                             ;
-        
+        }
+        else{
+            // $departments = Department::where('university_id',$user->university_id)->pluck('name', 'id');
+            $departments = Department::leftJoin('department_types', 'department_types.id', '=', 'departments.department_type_id')
+                            ->leftJoin('faculties', 'faculties.id', '=', 'departments.faculty_id')
+                            ->select('departments.id',\DB::raw('CONCAT(departments.name, " [ پوهنځی : ", faculties.name , "] (", department_types.name,")") as text'))
+                            ->where('departments.university_id',$user->university_id)
+                            ->pluck('text', 'id')
+                            ;
+        }
         if (auth()->user()->hasRole('system-developer')) {
             $roles = Role::all();
         }
@@ -179,7 +180,6 @@ class UsersController extends Controller
             $roles = Role::where('name','!=','super-admin')->where('name','!=','system-developer')
             ->get();
         }  
-
         return view('users.edit', [
             'title' => trans('general.users'),
             'description' => trans('general.edit_account'),
@@ -187,12 +187,9 @@ class UsersController extends Controller
             'roles' => $roles,
             'universities' => ['-1' => trans('general.all_options')] + University::pluck('name', 'id')->toArray(),
             'departments' => $departments,
-            'grades' => Grade::pluck('name', 'id'),
-            'user_types' => $user_types,
-            'universityIds' => $universityIds,
+            'grades' => Grade::pluck('name', 'id')
         ]);
     }
-
     /**
      * Update the specified resource in storage.
      *
@@ -204,8 +201,7 @@ class UsersController extends Controller
     {        
         $validatedData = $request->validate([
             'name' => 'required',
-            'position' => 'required',  
-            'user_type' => 'required|in:1,2,3',          
+            'position' => 'required',            
             'email' => [
                 'required', 
                 Rule::unique('users')->ignore($user->id, 'id')->whereNull('deleted_at')
@@ -230,24 +226,16 @@ class UsersController extends Controller
                 'position' => $request->position,
                 'email' => $request->email,
                 'phone' => $request->phone,
-                'university_id' =>  null,
-                'password' => $request->password ?? null,
-                'active' => $request->has('active'),
-                'user_type' => $request->user_type,
+                'university_id' => $request->university_id ?? null,
+                'password' => $request->password ?? null
             ]);
-
-            $user->universities()->sync($request->university_id ?? []);
-            
             $user->roles()->sync($request->roles ?? []);
             
             $user->departments()->sync($request->departments ?? []);
-
             $user->grades()->sync($request->grades ?? []);
         });
-
         return redirect(route('users.index'));
     }
-
     /**
      * Remove the specified resource from storage.
      *
@@ -257,17 +245,14 @@ class UsersController extends Controller
     public function destroy($user)
     {
         $user->delete();
-
         return redirect(route('users.index'));
     }
-
     public function recover($id)
     {
         $user=User::where('id',$id)->withTrashed()->first();
         $user->restore();
         return redirect(route('users.index'))->with('message', 'یوزر '.$user->name.' موفقانه ریکاور شد.');
     }
-
     public function editStatus($id)
     {   
         $user=User::where('id',$id)->first(); 
@@ -280,7 +265,6 @@ class UsersController extends Controller
         }
         
     }
-
     public function updateStatus(Request $request, $id)
     {   
         $user=User::where('id',$id)->first();     
@@ -289,7 +273,6 @@ class UsersController extends Controller
                 'active' => $request->has('active')
             ]);
         });
-
         return redirect(route('users.index'))->with('message', 'یوزر '.$user->name.' موفقانه تصحیح شد.');
     }
 }

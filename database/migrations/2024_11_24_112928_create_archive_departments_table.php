@@ -16,31 +16,36 @@ class CreateArchiveDepartmentsTable extends Migration
         Schema::create('archive_departments', function (Blueprint $table) {
             $table->bigIncrements('id'); // Primary key
 
-            $table->bigInteger('archive_id')->unsigned()->index();
+            $table->bigInteger('archive_id')->unsigned()->nullable()->index();
             $table->foreign('archive_id')
                 ->references('id')
                 ->on('archives')
                 ->onDelete('cascade');
 
-            $table->integer('university_id')->unsigned()->index();
+            $table->integer('university_id')->unsigned()->nullable()->index();
             $table->foreign('university_id')
                 ->references('id')
                 ->on('universities')
                 ->onDelete('cascade');
 
-            $table->integer('faculty_id')->unsigned()->index();
+            $table->integer('faculty_id')->unsigned()->nullable()->index();
             $table->foreign('faculty_id')
                 ->references('id')
                 ->on('faculties')
                 ->onDelete('cascade');
 
-            $table->integer('department_id')->unsigned()->index();
+            $table->integer('department_id')->unsigned()->nullable()->index();
             $table->foreign('department_id')
                 ->references('id')
                 ->on('departments')
                 ->onDelete('cascade');
+                  $table->integer('user_id')->unsigned()->nullable()->index();
+            $table->foreign('user_id')
+                ->references('id')
+                ->on('users')
+                ->onDelete('cascade');
 
-
+            $table->timestamps();
 
         });
 

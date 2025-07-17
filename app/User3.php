@@ -3,6 +3,7 @@
 namespace App;
 
 use app\Models\Role;
+use app\Models\ArchiveRole;
 use App\Traits\UseByUniversity;
 use Laravel\Passport\HasApiTokens;
 use Illuminate\Support\Facades\Hash;
@@ -28,8 +29,6 @@ class User extends Authenticatable
     protected static $logUnguarded = true;
     protected static $logName = 'users';
     protected static $logOnlyDirty = true;
-    protected static $ignoreChangedAttributes = ['remember_token'];
-
     
     public function getDescriptionForEvent(string $eventName): string
     {
@@ -64,11 +63,6 @@ class User extends Authenticatable
         return $this->belongsTo(\App\Models\University::class);
     }
 
-    public function universities()
-    {
-        return $this->belongsToMany(\App\Models\University::class,'university_users','user_id','university_id')->withTimestamps();
-    }
-
     public function departments()
     {
         return $this->belongsToMany(\App\Models\Department::class)->withTimestamps()->withoutGlobalScopes();
@@ -94,10 +88,9 @@ class User extends Authenticatable
         return $this->morphMany(\App\Models\NoticeboardVisit::class, 'visitable');
     }
 
-     public function archiveRoles()
-    {
-        return $this->hasMany(ArchiveRole::class);
-    }
-    
+    public function archiveRoles()
+{
+    return $this->hasMany(ArchiveRole::class);
+}
 
 }

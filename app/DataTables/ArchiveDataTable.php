@@ -3,6 +3,7 @@
 namespace App\DataTables;
 
 use App\Models\Archive;
+use App\Models\UniversityUser;
 use App\Models\ArchiveRole;
 use Yajra\DataTables\Services\DataTable;
 
@@ -176,6 +177,13 @@ class ArchiveDataTable extends DataTable
         //     $userList = ArchiveRole::where('user_id', auth()->user()->id)->pluck('archive_id')->toArray();
         //     $query->whereIn('archives.id', $userList);
         // }
+
+          $universityList = UniversityUser::where('user_id', auth()->user()->id)
+                    ->pluck ('university_id')
+                    ->toArray();
+                if($universityList!=null){
+                     $query->whereIn('archives.university_id', $universityList);
+                }
 
             if (auth()->user()->type == 2) {
                 $userList = ArchiveRole::where('user_id', auth()->user()->id)

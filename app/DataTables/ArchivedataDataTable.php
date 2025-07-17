@@ -3,6 +3,7 @@
 namespace App\DataTables;
 
 use App\Models\Archive;
+use App\Models\UniversityUser;
 use App\Models\Archivedata;
 use App\Models\Archiveimage;
 use App\Models\Role;
@@ -173,8 +174,8 @@ class ArchivedataDataTable extends DataTable
         $roles = Role::all();
     } elseif (auth()->user()->hasRole('visitor')) {
         // Visitor: Only show data from their university
-        $universityId = auth()->user()->university->id;
-        $wheres[] = ['archives.university_id', '=', $universityId];
+        // $universityId[] = auth()->user()->university[0]->id;
+        // $wheres[] = ['archives.university_id', '=', $universityId];
         $roles = Role::whereIn('name', ['visitor'])->get(); // Only show visitor role
     } else {
         // All other users: Show nothing (or adjust as needed)
@@ -182,6 +183,7 @@ class ArchivedataDataTable extends DataTable
         $roles = Role::all();
     }
 
+    
     // Build the query
     $query = Archive::query();
     
@@ -201,6 +203,8 @@ class ArchivedataDataTable extends DataTable
             }
         });
     }
+
+     
 
 // // Apply $wheres and $orWheres to the query as needed
 //         $query = Archive::query();
@@ -272,12 +276,18 @@ class ArchivedataDataTable extends DataTable
         ->orderBy('archives.book_name');
 
        
-        
+         $universityList = UniversityUser::where('user_id', auth()->user()->id)
+                    ->pluck ('university_id')
+                    ->toArray();
+                if($universityList!=null){
+                     $query->whereIn('archives.university_id', $universityList);
+                }
 
         
         
         return $query;
     }
+    
 
     /**
      * Optional method if you want to use html builder.
