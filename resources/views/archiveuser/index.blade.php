@@ -4,18 +4,23 @@
     <div class="portlet light bordered">
         <div class="portlet-title">
             @can ('create-user')
-                <a href="{{ route('archiveuser.create') }}" class="btn btn-primary"><i class="icon-plus"></i> {{ trans('general.create_account') }} </a>
+            <a href="{{ route('users.create') }}" class="btn btn-primary"><i class="icon-plus"></i> {{ trans('general.create_account') }} </a>
             @endcan
             <div class="tools"> </div>
         </div>
         <div class="portlet-body">
-            {!! $dataTable->table() !!}
+            {!! $dataTable->table([], true) !!}
         </div>
     </div>
 @endsection
 
 @push('styles')
-    <!-- <link rel="stylesheet" href="//cdn.datatables.net/1.10.7/css/jquery.dataTables.min.css"> -->
+    <style>
+        tr.row_deleted
+        {
+            color: red;
+        }
+    </style>
     <link href="{{ asset('css/datatables.css') }}" rel="stylesheet">
 @endpush
 
