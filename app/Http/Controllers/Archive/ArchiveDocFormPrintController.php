@@ -44,9 +44,9 @@ class ArchiveDocFormPrintController extends Controller
         $faculties = Faculty::where('id', $archivedataid->faculty_id)->first();
         $departments = Department::where('id', $archivedataid->department_id)->first();
 
-        $archivedataid->university_id=$universities->name;
-        $archivedataid->faculty_id=$faculties->name;
-        $archivedataid->department_id=$departments->name;
+        $archivedataid->university_id = $universities ? $universities->name : null;
+        $archivedataid->faculty_id = $faculties ? $faculties->name : null;
+        $archivedataid->department_id = $departments ? $departments->name : null;
 
         // Return the view with the data
         return view('archiveformprint.create', [

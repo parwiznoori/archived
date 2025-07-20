@@ -38,13 +38,13 @@
         }
 
         .title {
-            font-size: 30px;
+            font-size: 25px;
             margin: 5px 0;
             font-weight: bold;
         }
 
         .title-2 {
-            font-size: 23px;
+            font-size: 25px;
             margin: 3px 0;
             font-weight: bold;
         }
@@ -115,12 +115,13 @@
         <tr>
             <!-- Title Section -->
             <td colspan="3" class="title-section">
-                <h3 class="title"><u>بسم الله الرحمن الرحیم</u></h3>
-                <h3 class="title">د افغانستان اسلامی امارت</h3>
-                <h3 class="title">د لوړ و زده کړو وزارت</h3>
-                <h3 class="title-2">دمحصلانو چارو معینیت</h3>
-                <h3 class="title-2">دخصوصي محصلانو چارو ریاست</h3>
-                <h3 class="title-2">دډیټابیس آمریت</h3>
+                <h3 class="title">بسم الله الرحمن الرحیم</h3>
+                <h3 class="title">امارت اســلامـــــــی افـغانستـــان</h3>
+                <h3 class="title">وزارت تـحـصیــــلات عـــالـی</h3>
+                <h3 class="title-2">معینیت امـــــــور محصلان</h3>
+                <h3 class="title-2">ریاست امورمحصلان امارتی</h3>
+                <h3 class="title-2">آمریت امـور فارغان</h3>
+                <h3 class="title-2">مدیریت عمومی فارغان ولایات</h3>
             </td>
         </tr>
     </table>
@@ -129,10 +130,10 @@
 <!-- Info Bar -->
 <div class="info-bar">
     <span>
-        ګنه :
+        شماره :
         {{ $archivedatid }}
         <br>
-        نېټه:
+        تاریخ:
         @php
             $date1 = Date('Y-m-d');
             $jalali_date = explode('-', $date1);
@@ -166,7 +167,7 @@
     <hr>
     <span>آدرس: کارته چهار، ناحیه سوم، کابل- افغانستان</span>&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;
     <span>ویب‌ سایت: <a href="http://www.mohe.gov.af" target="_blank">www.mohe.gov.af</a></span>&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;
-    <span>تلیفون: ۰۲۰۲۵۰۳۵۸۹</span>
+    <span>تلیفون:0202504948</span>
 </div>
 
 </body>

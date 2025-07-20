@@ -54,12 +54,7 @@ class ArchivedataDataTable extends DataTable
                     }
                 }
 
-//                if (auth()->user()->can('archive_doc_type')) {
-//                    $html .= '<li><a href="' . route('archive_doc_type', $archivedata) . '" target="_blank">
-//                <i class="fa fa-pencil"></i> ' . trans("general.archive_doc_type") . '
-//              </a></li>';
-//
-//                }
+//             
 
                 if (auth()->user()->can('archivedata_detials')) {
                     $html .= '<li><a href="' . route('archivedata_detials', $archivedata) . '" target="_blank">
@@ -67,23 +62,25 @@ class ArchivedataDataTable extends DataTable
                      </a></li>';
                 }
 
-//                if (auth()->user()->can('archive_doc_type')) {
-//                    $html .= '<li><a href="' . route('archive_doc_type', $archivedata) . '" target="_blank">
-//                     <i class="fa fa-pencil"></i> ' . trans("general.archive_doc_type") . '
-//                     </a></li>';
-//                }
+               if (auth()->user()->can('archive_doc_type')) {
+                   $html .= '<li><a href="' . route('archive_doc_type', $archivedata) . '" target="_blank">
+                    <i class="fa fa-pencil"></i> ' . trans("general.archive_doc_type") . '
+                    </a></li>';
+               }
 
-//                if (auth()->user()->can('archive_doc_form')) {
-//                    $html .= '<li><a href="' . route('archive_doc_form', $archivedata) . '" target="_blank">
-//                     <i class="fa fa-pencil"></i> ' . trans("general.archive_doc_form") . '
-//                     </a></li>';
-//                }
+            //    if (auth()->user()->can('archive_doc_form')) {
+            //        $html .= '<li><a href="' . route('archive_doc_form', $archivedata) . '" target="_blank">
+            //         <i class="fa fa-pencil"></i> ' . trans("general.archive_doc_form") . '
+            //         </a></li>';
+            //    }
 
-//                if (auth()->user()->can('archive_form_print')) {
-//                    $html .= '<li><a href="' . route('archive_form_print', $archivedata) . '" target="_blank">
-//                     <i class="fa fa-pencil"></i> ' . trans("general.archive_form_print") . '
-//                     </a></li>';
-//                }
+            
+
+               if (auth()->user()->can('archive_form_print')) {
+                   $html .= '<li><a href="' . route('archive_form_print', $archivedata) . '" target="_blank">
+                    <i class="fa fa-pencil"></i> ' . trans("general.archive_form_print") . '
+                    </a></li>';
+               }
 
                     // if (auth()->user()->can('archive_monograph')) {
                     //     $html .= '<li><a href="' . route('archive_monograph', $archivedata) . '" target="_blank">

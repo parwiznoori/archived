@@ -112,7 +112,7 @@ Carbon::setLocale('da');
                     <!-- DOC: Apply "dropdown-dark" class after below "dropdown-extended" to change the dropdown styte -->
 
 
-                   @if(auth()->check())
+                   {{-- @if(auth()->check())
 
                         <li class="dropdown dropdown-extended dropdown-inbox" id="header_inbox_bar">
                             <a href="javascript:;" class="dropdown-toggle" data-toggle="dropdown" data-hover="dropdown" data-close-others="true">
@@ -210,7 +210,7 @@ Carbon::setLocale('da');
                                 </li>
                             </ul>
                         </li>
-                @endif 
+                @endif  --}}
 
                 {{-- @if(auth()->check())
                 <li class="dropdown dropdown-extended dropdown-inbox" id="header_inbox_bar">

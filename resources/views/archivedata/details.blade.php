@@ -6,52 +6,7 @@
     <div class="portlet-body">
         <div class="panel-body">
             <div class="container-fluid">
-    <div class="portlet box shadow-sm">
-        <div class="portlet-body p-4">
-            <div class="text-left mb-4">
-                <div class="dropdown">
-                    <button class="btn btn-primary dropdown-toggle" type="button" id="actionDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                        <i class="fa fa-folder-open"></i> بخش اسناد
-                    </button>
-                    <div class="dropdown-menu dropdown-menu-right" aria-labelledby="actionDropdown">
-                        <!-- Dropdown Items -->
-                        @if (auth()->user()->can('archive_doc_type'))
-                            <a class="dropdown-item" href="{{ route('archive_doc_type', $archivedata) }}" target="_blank" style="font-size: 20px;">
-                                <i class="fa fa-file text-primary mr-2"></i> {{ trans('general.archive_doc_type') }}
-                            </a>
-                        @endif
-
-                        @if (auth()->user()->can('archive_form_print'))
-                            <a class="dropdown-item" href="{{ route('archive_form_print', $archivedata) }}" target="_blank" style="font-size: 20px;">
-                                <i class="fa fa-folder text-success mr-2"></i> {{ trans('general.archive_form_print') }}
-                            </a>
-                        @endif
-
-                        {{-- @if (auth()->user()->can('archive_monograph'))
-                            <a class="dropdown-item" href="{{ route('archive_monograph', $archivedata) }}" target="_blank" style="font-size: 20px;">
-                                <i class="fa fa-pencil text-warning mr-2"></i> {{ trans('general.archive_monograph') }}
-                            </a>
-                        @endif --}}
-
-                        @if (auth()->user()->can('print-archivedoc'))
-{{--                            <a class="dropdown-item" href="{{ route('print-archivedoc', $archivedata) }}" target="_blank" style="font-size: 20px;">--}}
-{{--                                <i class="fa fa-download text-info mr-2"></i> {{ trans('general.archivedoc-pa') }}--}}
-{{--                            </a>--}}
-                            <a class="dropdown-item" href="{{ route('print-archivedocf', $archivedata) }}" target="_blank" style="font-size: 20px;">
-                                <i class="fa fa-download text-info mr-2"></i> {{ trans('general.archivedoc-f') }}
-                            </a>
-                            <a class="dropdown-item" href="{{ route('print-archivedestalam', $archivedata) }}" target="_blank" style="font-size: 20px;">
-                                <i class="fa fa-download text-info mr-2"></i> {{ trans('general.archivedestalam') }}
-                            </a>
-                            <a class="dropdown-item" href="{{ route('print-archivedestalam2', $archivedata) }}" target="_blank" style="font-size: 20px;">
-                                <i class="fa fa-download text-info mr-2"></i> {{ trans('general.archivedestalam2') }}
-                            </a>
-                        @endif
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+   
             <br>
             <hr>
             <!-- Archive Data List Section -->
