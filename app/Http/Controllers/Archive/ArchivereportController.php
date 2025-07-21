@@ -119,6 +119,13 @@ class ArchivereportController extends Controller
 
     }
 
+
+
+
+
+
+
+
     
     public function reportresult(Request $request)
     {

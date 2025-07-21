@@ -356,6 +356,10 @@ Route::group(['middleware' => 'auth'], function() {
         Route::get('archive_report', 'ArchivereportController@index')->name('archive_report');
         Route::get('archive_report2', 'ArchivereportController@report2')->name('archive_report2');
         Route::post('reportresult', 'ArchivereportController@reportresult')->name('reportresult');
+
+        Route::get('archive_report3', 'ArchivereportDocController@report3')->name('archive_report3');
+        Route::post('reportresult3', 'ArchivereportDocController@reportresult3')->name('reportresult3');
+        
         Route::get('print-archivedoc/{id}', 'ArchivedocController@index')->name('print-archivedoc');
         Route::get('print-archivedocf/{id}', 'ArchivedocController@fdoc')->name('print-archivedocf');
         Route::get('print-archivedestalam/{id}', 'ArchivedocController@archivedestalam')->name('print-archivedestalam');

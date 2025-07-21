@@ -45,6 +45,15 @@
                         </a>
                     </li>
                 @endif
+
+                @if (auth()->user()->can(['archive_report']))
+                    <li class="nav-item {{ request()->is('archive_report3') ? 'active' : '' }}">
+                        <a href="{{ route('archive_report3') }}" class="nav-link ">
+                            <i class="icon-home"></i>
+                            <span class="title">{{ trans('general.generate_statistics_doc') }}</span>
+                        </a>
+                    </li>
+                @endif
             </ul>
         </li>
         @endif

@@ -17,7 +17,7 @@ class ArchiveDocType extends Model
     use UseByGrade, LogsActivity;
 
     protected $table = 'archive_doc_types';
-    protected $fillable = ['archivedata_id','doc_type','doc_number','doc_file','doc_description'];
+    protected $fillable = ['archivedata_id','doc_type','doc_date','doc_number','doc_file','doc_description'];
 
     protected $guarded = [];
     protected static $logUnguarded = true;

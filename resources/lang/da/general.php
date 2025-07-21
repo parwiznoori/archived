@@ -334,6 +334,8 @@ return [
     'update_date'=>'تاریخ اپدیت',
     'update-name'=>'اصلاح نام محصل',
     'user_type'=>' نوع یوزر ',
+    'start_dates'=>'از تاریخ',
+    'end_dates'=>'الی تاریخ',
     
 
 
@@ -1032,6 +1034,8 @@ return [
     'please_select_one' => 'لطفا انتخاب کنید',
     'students_kankor' => 'کامیاب کانکور',
     'generate_statistics_simple' => 'آمار و احصائیه ساده',
+    'generate_statistics_doc' => 'آمار احصائیه اسناد ',
+    
     'update_university_id' => 'آپدیت پوهنتون',
     'kankorResults' => 'نتیجه کنکور',
     'update_department_id' => 'آپدیت دپارتمنت',

@@ -19,7 +19,7 @@
                                     <option value="">انتخاب</option>
                                     <option value="book_form">به اساس کتاب</option>
                                     <option value="student_form">به اساس محصل</option>
-                                    <option value="doc_form">به اساس اسناد</option>
+                                    {{-- <option value="doc_form">به اساس اسناد</option> --}}
                                 </select>
                             </div>
                         </div>

@@ -64,7 +64,20 @@
                                     </div>
                                 </div>
                             </div>
-
+                            {{-- Doc Date --}}
+                            <div class="row">
+                                <div class="col-md-8">
+                                    <div class="form-group {{ $errors->has('doc_date') ? ' has-error' : '' }}">
+                                        {!! Form::label('doc_date', trans('general.date'), ['class' => 'control-label col-sm-3']) !!}
+                                        <div class="col-sm-8">
+                                            {!! Form::text('doc_date', null, ['class' => 'form-control', 'id' => 'doc_date']) !!}
+                                            @error('doc_date')
+                                                <span class="help-block"><strong>{{ $message }}</strong></span>
+                                            @enderror
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                             <div class="row">
                                 <div class="col-md-8">
                                     <div class="form-group {{ $errors->has('doc_file') ? 'has-error' : '' }}">

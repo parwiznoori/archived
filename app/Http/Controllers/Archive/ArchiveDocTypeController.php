@@ -87,6 +87,7 @@ class ArchiveDocTypeController extends Controller
             return ArchiveDocType::create([
                 'archivedata_id' => $request->archiveDataId,
                 'doc_type' => $request->doc_type,
+                'doc_date' => $request->doc_date,
                 'doc_number' => $request->doc_number,
                 'doc_description' => $request->doc_description,
                 'doc_file' => $fileName ? $primaryDirectory . $fileName : null, // Store the relative file path in the database (null if no file uploaded)
@@ -151,6 +152,7 @@ class ArchiveDocTypeController extends Controller
         // Validate the input
         $request->validate([
             'doc_type' => 'required',
+            'doc_date' => 'required',
             'doc_number' => 'required',
             'doc_description' => 'required',
             'doc_file' => 'nullable|file|mimes:pdf,jpeg,png,jpg,gif,svg|max:1000000', // Make doc_file optional
@@ -192,6 +194,7 @@ class ArchiveDocTypeController extends Controller
 
         // Update the other fields
         $archivedoc->doc_type = $request->doc_type;
+        $archivedoc->doc_date = $request->doc_date;
         $archivedoc->doc_number = $request->doc_number;
         $archivedoc->doc_description = $request->doc_description;
 
