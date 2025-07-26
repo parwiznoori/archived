@@ -141,6 +141,7 @@
                 <tr>
 
                     <th>نوع سند </th>
+                    <th>تاریخ  </th>
                     <th>شماره سند</th>
                     <th>توضیحات</th>
                     <th>فایل پی دی اف</th>
@@ -154,6 +155,7 @@
                 @foreach ($archiveDocType as $doc)
                     <tr>
                         <td>{{ $docTypeNames[$doc->doc_type] ?? $doc->doc_type }}</td>
+                        <td>{{ $doc->doc_date }}</td>
                         <td>{{ $doc->doc_number }}</td>
                         <td>{{ $doc->doc_description }}</td>
                         <td><a href="{{ asset($doc->doc_file) }}" target="_blank">مشاهده/دانلود</a></td>

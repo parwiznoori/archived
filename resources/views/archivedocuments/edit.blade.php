@@ -49,7 +49,7 @@
                     </div>
                 </div>
 
-                     <div class="row">
+                <div class="row">
                     <div class="col-md-8">
                         <div class="form-group {{ $errors->has('doc_date') ? ' has-error' : '' }}">
                             {!! Form::label('doc_date', trans('general.date'), ['class' => 'control-label col-sm-3']) !!}
