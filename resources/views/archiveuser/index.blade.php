@@ -4,7 +4,7 @@
     <div class="portlet light bordered">
         <div class="portlet-title">
             @can ('create-user')
-            <a href="{{ route('users.create') }}" class="btn btn-primary"><i class="icon-plus"></i> {{ trans('general.create_account') }} </a>
+            <a href="{{ route('archiveuser.create') }}" class="btn btn-primary"><i class="icon-plus"></i> {{ trans('general.create_account') }} </a>
             @endcan
             <div class="tools"> </div>
         </div>

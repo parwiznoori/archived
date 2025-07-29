@@ -57,7 +57,9 @@ class UsersController extends Controller
         elseif(auth()->user()->hasRole('super-admin')) {
             // For super-admin with user_type = 1 (ministry level)
             if (auth()->user()->user_type == 1) {
-                $roles = Role::where('archive_type', '<>', 2)->get();
+                $roles = Role::where('archive_type', '<>', 2)
+                 ->whereNotIn('name', ['system-developer'])
+                 ->get();
             }
             // For regular super-admin
             else {
