@@ -209,10 +209,6 @@
 @endif
 
 <script>
-    $(document).ready(function() {
-    $('[data-toggle="tooltip"]').tooltip();
-});
-
 $(document).ready(function() {
     $('#updateNameForm').submit(function(e) {
         e.preventDefault();
@@ -235,7 +231,21 @@ $(document).ready(function() {
                 'X-HTTP-Method-Override': 'PUT'
             },
             success: function(response) {
-                showMessage(response.success, 'success');
+                if (response.success) {
+                    showMessage(response.success, 'success');
+                    // Update the form with new values if needed
+                    if (response.new_values) {
+                        // Update current values display
+                        $('input[readonly]').each(function() {
+                            const fieldName = $(this).attr('name') || $(this).attr('id');
+                            if (fieldName && response.new_values[fieldName]) {
+                                $(this).val(response.new_values[fieldName]);
+                            }
+                        });
+                    }
+                } else if (response.info) {
+                    showMessage(response.info, 'info');
+                }
                 submitBtn.prop('disabled', false)
                          .html('<i class="fa fa-save"></i> ذخیره تغییرات');
 
@@ -248,6 +258,13 @@ $(document).ready(function() {
                 try {
                     if (xhr.responseJSON && xhr.responseJSON.error) {
                         errorMessage = xhr.responseJSON.error;
+                        if (xhr.responseJSON.details) {
+                            errorMessage += ' - ' + xhr.responseJSON.details;
+                        }
+                    } else if (xhr.status === 422) {
+                        // Validation errors
+                        const errors = xhr.responseJSON.errors;
+                        errorMessage = Object.values(errors).flat().join('<br>');
                     }
                 } catch (e) {
                     console.error('Error parsing response:', e);
@@ -262,7 +279,7 @@ $(document).ready(function() {
     function showMessage(text, type) {
         const messageDiv = $('#message');
         messageDiv.html(text)
-                 .removeClass('alert-success alert-danger')
+                 .removeClass('alert-success alert-danger alert-info')
                  .addClass('alert-' + type)
                  .fadeIn()
                  .delay(5000)

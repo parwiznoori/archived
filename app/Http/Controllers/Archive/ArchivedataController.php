@@ -24,6 +24,7 @@ use App\Models\Zamayem;
 
 
 
+
 class ArchivedataController extends Controller
 {
     public function __construct()
@@ -215,6 +216,9 @@ class ArchivedataController extends Controller
     }
 
 
+
+
+    //اصلاح شهرت محصل 
      public function selectForNameUpdate(SelectForNameUpdatDataTable $dataTable)
     {
         $records = Archivedata::all();
@@ -226,37 +230,38 @@ class ArchivedataController extends Controller
         ]);
     }
 
+    public function showEditNameForm(Archivedata $archivedata)
+    {
+        // Authorize the action
+        $this->authorize('update-name', $archivedata);
+        
+        return view('archivedata.edit-name', ['archiveData' => $archivedata]);
+    }
 
+    public function updateName(Request $request, Archivedata $archivedata)
+    {
+        $request->validate([
+            'name' => 'nullable|string|max:255',
+            'father_name' => 'nullable|string|max:255',
+            'grandfather_name' => 'nullable|string|max:255',
+            'birth_date' => 'nullable|date',
+            'updateName_img' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:5120',
+            'updateName_desc' => 'nullable|string'
+        ]);
 
-   public function showEditNameForm(Archivedata $archivedata)
-{
-    // Authorize the action
-    $this->authorize('update-name', $archivedata);
-    
-    return view('archivedata.edit-name', ['archiveData' => $archivedata]);
-}
-
-public function updateName(Request $request, Archivedata $archivedata)
-{
-    $request->validate([
-        'name' => 'nullable|string|max:255',
-        'father_name' => 'nullable|string|max:255',
-        'grandfather_name' => 'nullable|string|max:255',
-        'birth_date' => 'nullable|date',
-        'updateName_img' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:5120',
-        'updateName_desc' => 'nullable|string'
-    ]);
-
-    try {
-        DB::transaction(function () use ($request, $archivedata) {
+        try {
+            DB::beginTransaction(); // Start transaction manually
+            
             // Store original values for history
             $originalValues = $archivedata->getOriginal();
-            $fields = ['name', 'father_name', 'grandfather_name', 'birth_date', 'updateName_desc'];
+            $fields = ['name', 'father_name', 'grandfather_name', 'birth_date'];
+            $hasChanges = false;
 
             foreach ($fields as $field) {
-                if ($request->has($field) && $request->$field !== null) {
+                if ($request->has($field) && $request->$field !== null && $request->$field !== $archivedata->$field) {
                     $archivedata->{"previous_$field"} = $originalValues[$field] ?? null;
                     $archivedata->$field = $request->$field;
+                    $hasChanges = true;
                 }
             }
 
@@ -273,7 +278,7 @@ public function updateName(Request $request, Archivedata $archivedata)
                 // Define upload directory
                 $uploadPath = public_path('uploads/updateName_img');
                 if (!file_exists($uploadPath)) {
-                    mkdir($uploadPath, 0755, true);
+                    mkdir($uploadPath, 0777, true);
                 }
 
                 // Generate unique file name
@@ -283,23 +288,35 @@ public function updateName(Request $request, Archivedata $archivedata)
                 // Move the file to the destination
                 $image->move($uploadPath, $imageName);
                 $archivedata->updateName_img = '/uploads/updateName_img/' . $imageName;
+                $hasChanges = true;
             }
 
-            $archivedata->save();
-        });
+            // Only save if there are changes
+            if ($hasChanges) {
+                $archivedata->save();
+                DB::commit(); // Commit transaction
+                
+                return response()->json([
+                    'success' => 'اطلاعات با موفقیت به روز رسانی شد',
+                    'new_values' => $archivedata->fresh()->toArray()
+                ]);
+            } else {
+                DB::rollBack(); // No changes, rollback
+                
+                return response()->json([
+                    'info' => 'هیچ تغییری اعمال نشد'
+                ]);
+            }
 
-        return response()->json([
-            'success' => 'اطلاعات با موفقیت به روز رسانی شد',
-            'new_values' => $archivedata->fresh()->toArray()
-        ]);
-    } catch (\Exception $e) {
-        \Log::error('Update failed: ' . $e->getMessage());
-        return response()->json([
-            'error' => 'خطا در ذخیره سازی',
-            'details' => 'An unexpected error occurred while updating the data.'
-        ], 500);
+        } catch (\Exception $e) {
+            DB::rollBack(); // Rollback on error
+            \Log::error('Update failed: ' . $e->getMessage());
+            return response()->json([
+                'error' => 'خطا در ذخیره سازی',
+                'details' => $e->getMessage() // Return actual error for debugging
+            ], 500);
+        }
     }
-}
 
 
 

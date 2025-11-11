@@ -7,15 +7,15 @@ use Imagick;
 
 class PDFToJPGController extends Controller
 {
-    public static function convert(Request $request)
+    public static function convert(Request $request,$archive)
     {
         $request->validate([
             'path.*' => 'required|image|mimes:pdf,jpeg,png,jpg,gif,svg|max:1000000', 
         ]);
-        
-        $pdf = $request->file('path');
+       
+        $pdf = $request->file('path'); 
         $pdfPath = $pdf->getPathName();
-        $outputDir = public_path() . '/archivefiles/' . $request->book_name . '/';
+        $outputDir = public_path() . '/archivefiles/' .$archive->id.'-' .$request->book_name . '/';
 
         // Create the output directory if it doesn't exist
         if (!file_exists($outputDir)) {

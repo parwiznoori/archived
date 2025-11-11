@@ -299,8 +299,8 @@ Route::group(['middleware' => 'auth'], function() {
 
             // Selection page (no ID needed)
         Route::get('/update-name', 'ArchivedataController@selectForNameUpdate')
-            ->name('archivedata.select-for-update')
-            ->middleware('can:update-name');
+            ->name('archivedata.select-for-update');
+           
 
         // Edit page (requires ID)
         Route::get('/archivedata/{archivedata}/edit-name', 'ArchivedataController@showEditNameForm')

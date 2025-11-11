@@ -107,8 +107,7 @@ class ArchiveController extends Controller
             'path.*' => 'required|image|mimes:pdf,jpeg,png,jpg,gif,svg|max:1000000', 
         ]);
 
-        // Convert PDF to JPG and get the page count
-        $pageCount = PDFToJPGController::convert($request);
+        
 
         // Initialize archive variable
         $archive = null;
@@ -144,12 +143,13 @@ class ArchiveController extends Controller
 
         });
 
-
+// Convert PDF to JPG and get the page count
+        $pageCount = PDFToJPGController::convert($request,$archive);
 
         // If the archive was created successfully
         if ($archive != null) {
             // Create a directory for archive files
-            $directory = public_path() . '/archivefiles/' . $archive->book_name;
+            $directory = public_path() . '/archivefiles/' . $archive->id.'-' .$archive->book_name;
 
             // Array to hold all archive images data
             $archiveImages = [];
@@ -160,7 +160,7 @@ class ArchiveController extends Controller
                     'book_pagenumber' => $i,
                     'archive_id' => $archive->id,
                     'status_id' => 1,
-                    'path' => '/archivefiles/' . $archive->book_name . '/' . $i . '.jpg',
+                    'path' => '/archivefiles/' . $archive->id.'-' .$archive->book_name . '/' . $i . '.jpg',
                 ];
             }
 
@@ -252,10 +252,7 @@ class ArchiveController extends Controller
         ]);
 
         $pageCount = 0;
-        if ($request->path != "" && $request->path != null) {
-            // Convert PDF to JPG and get the page count
-            $pageCount = PDFToJPGController::convert($request);
-        }
+      
         $archive = Archive::findOrFail($archive_id);
 
         \DB::transaction(function () use ($pageCount, $request, $archive) {
@@ -295,9 +292,14 @@ class ArchiveController extends Controller
 //                $archive->save();
 //            }
 
+ 
+          if ($request->path != "" && $request->path != null) {
+                        // Convert PDF to JPG and get the page count
+                        $pageCount = PDFToJPGController::convert($request,$archive);
+                    }
 
             if ($request->path != "" && $request->path != null) {
-                $directory = public_path() . '/archivefiles/' . $archive->book_name;
+                $directory = public_path() . '/archivefiles/' . $archive->id.'-' .$archive->book_name;
 
                 // Delete existing archive images
                 Archiveimage::where('archive_id', $archive->id)->delete();
@@ -309,7 +311,7 @@ class ArchiveController extends Controller
                         'book_pagenumber' => $i,
                         'archive_id' => $archive->id,
                         'status_id' => 1,
-                        'path' => '/archivefiles/' . $archive->book_name . '/' . $i . '.jpg',
+                        'path' => '/archivefiles/' . $archive->id.'-' .$archive->book_name . '/' . $i . '.jpg',
                         // 'type' => $request->type,
                     ];
                 }
