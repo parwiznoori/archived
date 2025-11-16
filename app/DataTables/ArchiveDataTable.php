@@ -173,27 +173,27 @@ class ArchiveDataTable extends DataTable
             ->leftJoin('archiveqcstatus', 'archiveqcstatus.id', '=', 'archives.qc_status_id')
             ->leftJoin('archiveyears', 'archiveyears.id', '=', 'archives.archive_year_id');
 
-        // if( auth()->user()->type==2){
-        //     $userList = ArchiveRole::where('user_id', auth()->user()->id)->pluck('archive_id')->toArray();
-        //     $query->whereIn('archives.id', $userList);
-        // }
+        if( auth()->user()->type==2){
+            $userList = ArchiveRole::where('user_id', auth()->user()->id)->pluck('archive_id')->toArray();
+            $query->whereIn('archives.id', $userList);
+        }
 
         //user parts
-          $universityList = UniversityUser::where('user_id', auth()->user()->id)
-                    ->pluck ('university_id')
-                    ->toArray();
-                if($universityList!=null){
-                     $query->whereIn('archives.university_id', $universityList);
-                }
+        //   $universityList = UniversityUser::where('user_id', auth()->user()->id)
+        //             ->pluck ('university_id')
+        //             ->toArray();
+        //         if($universityList!=null){
+        //              $query->whereIn('archives.university_id', $universityList);
+        //         }
 
-            if (auth()->user()->type == 2) {
-                $userList = ArchiveRole::where('user_id', auth()->user()->id)
-                    ->pluck('archive_id')
-                    ->toArray();
+        //     if (auth()->user()->type == 2) {
+        //         $userList = ArchiveRole::where('user_id', auth()->user()->id)
+        //             ->pluck('archive_id')
+        //             ->toArray();
                 
-                $query->whereIn('archives.id', $userList)
-                    ->where('de_user_id', auth()->id()); // Only assigned to this user
-            }
+        //         $query->whereIn('archives.id', $userList)
+        //             ->where('de_user_id', auth()->id()); // Only assigned to this user
+        //     }
 
         return $query;
     }
