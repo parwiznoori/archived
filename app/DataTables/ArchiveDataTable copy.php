@@ -3,6 +3,7 @@
 namespace App\DataTables;
 
 use App\Models\Archive;
+use App\Models\UniversityUser;
 use App\Models\ArchiveRole;
 use Yajra\DataTables\Services\DataTable;
 
@@ -165,34 +166,34 @@ class ArchiveDataTable extends DataTable
             'book_description',
             'book_name',
             'archivedatastatus.status as archivedatastatus',
-            'archiveqcstatus.qc_status as archiveqcstatus',
-
+            'archiveqcstatus.qc_status as archiveqcstatus'
         )
             ->leftJoin('universities', 'universities.id', '=', 'archives.university_id')
             ->leftJoin('archivedatastatus', 'archivedatastatus.id', '=', 'archives.status_id')
             ->leftJoin('archiveqcstatus', 'archiveqcstatus.id', '=', 'archives.qc_status_id')
-            ->leftJoin('archiveyears', 'archiveyears.id', '=', 'archives.archive_year_id')
-              ->groupBy(
-                'archives.id',
-                'archives.qc_user_id',
-                'archives.de_user_id',
-                'archives.status_id',
-                'archives.qc_status_id',
-                'universities.name',
-                'archives.book_pagenumber',
-                'book_description',
-                'book_name',
-                'archivedatastatus.status',
-                'archiveqcstatus.qc_status',
-               
+            ->leftJoin('archiveyears', 'archiveyears.id', '=', 'archives.archive_year_id');
 
-            );
-        if( auth()->user()->type==2){
-            $userList = ArchiveRole::where('user_id', auth()->user()->id)->pluck('archive_id')->toArray();
-            $query->whereIn('archives.id', $userList);
-        }
+        // if( auth()->user()->type==2){
+        //     $userList = ArchiveRole::where('user_id', auth()->user()->id)->pluck('archive_id')->toArray();
+        //     $query->whereIn('archives.id', $userList);
+        // }
 
-        
+        //user parts
+          $universityList = UniversityUser::where('user_id', auth()->user()->id)
+                    ->pluck ('university_id')
+                    ->toArray();
+                if($universityList!=null){
+                     $query->whereIn('archives.university_id', $universityList);
+                }
+
+            if (auth()->user()->type == 2) {
+                $userList = ArchiveRole::where('user_id', auth()->user()->id)
+                    ->pluck('archive_id')
+                    ->toArray();
+                
+                $query->whereIn('archives.id', $userList)
+                    ->where('de_user_id', auth()->id()); // Only assigned to this user
+            }
 
         return $query;
     }
@@ -260,14 +261,13 @@ class ArchiveDataTable extends DataTable
     {
 
         return [
-            'id'    => ['name' => 'archives.id', 'id' => trans('general.book_name'),'attributes' => ['type' => 'hidden']],
+            'id'    => ['name' => 'archives.id', 'id' => trans('general.book_name')],
             'book_name'    => ['name' => 'book_name', 'title' => trans('general.book_name')],
             'university' => ['name' => 'universities.name', 'title' => trans('general.university')],
             'archiveyears' => ['name' => 'archiveyears.year','title' => trans('general.book_year')],
             'archivedatastatus'    => ['name' => 'archivedatastatus.status', 'title' => trans('general.status')],
             'archiveqcstatus'    => ['name' => 'archiveqcstatus.qc_status', 'title' => trans('general.accept_or_refuse')],
             'book_description'    => ['name' => 'book_description', 'title' => trans('general.book_description')],
-            
             
             
         ];
