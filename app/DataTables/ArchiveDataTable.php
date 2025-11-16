@@ -187,6 +187,8 @@ class ArchiveDataTable extends DataTable
                
 
             );
+
+            //user guid
         if( auth()->user()->type==2){
             $userList = ArchiveRole::where('user_id', auth()->user()->id)->pluck('archive_id')->toArray();
             $query->whereIn('archives.id', $userList);
