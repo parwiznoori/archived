@@ -173,10 +173,10 @@ class ArchiveDataTable extends DataTable
             ->leftJoin('archiveqcstatus', 'archiveqcstatus.id', '=', 'archives.qc_status_id')
             ->leftJoin('archiveyears', 'archiveyears.id', '=', 'archives.archive_year_id');
 
-        if( auth()->user()->type==2){
-            $userList = ArchiveRole::where('user_id', auth()->user()->id)->pluck('archive_id')->toArray();
-            $query->whereIn('archives.id', $userList);
-        }
+        // if( auth()->user()->type==2){
+        //     $userList = ArchiveRole::where('user_id', auth()->user()->id)->pluck('archive_id')->toArray();
+        //     $query->whereIn('archives.id', $userList);
+        // }
 
         //user parts
         //   $universityList = UniversityUser::where('user_id', auth()->user()->id)
@@ -261,7 +261,7 @@ class ArchiveDataTable extends DataTable
     {
 
         return [
-            'id'    => ['name' => 'archives.id', 'id' => trans('general.book_name'),'attributes' => ['type' => 'hidden']],
+            'id'    => ['name' => 'archives.id', 'id' => trans('general.book_name')],
             'book_name'    => ['name' => 'book_name', 'title' => trans('general.book_name')],
             'university' => ['name' => 'universities.name', 'title' => trans('general.university')],
             'archiveyears' => ['name' => 'archiveyears.year','title' => trans('general.book_year')],
