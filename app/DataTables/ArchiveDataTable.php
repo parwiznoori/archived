@@ -178,6 +178,7 @@ class ArchiveDataTable extends DataTable
         //     $query->whereIn('archives.id', $userList);
         // }
 
+        //user parts
           $universityList = UniversityUser::where('user_id', auth()->user()->id)
                     ->pluck ('university_id')
                     ->toArray();
