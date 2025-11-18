@@ -16,10 +16,10 @@ class ArchiveRoleController extends Controller
 {
     public function __construct()
     {
-        // $this->middleware('permission:view-archive', ['only' => ['index', 'show']]);
-        // $this->middleware('permission:create-archive', ['only' => ['create','store']]);
-        // $this->middleware('permission:edit-archive', ['only' => ['edit','update', 'updateStatus','update_groups']]);
-        // $this->middleware('permission:delete-archive', ['only' => ['destroy']]);
+        $this->middleware('permission:view-archive', ['only' => ['index', 'show']]);
+        $this->middleware('permission:create-archive', ['only' => ['create','store']]);
+        $this->middleware('permission:edit-archive', ['only' => ['edit','update', 'updateStatus','update_groups']]);
+        $this->middleware('permission:delete-archive', ['only' => ['destroy']]);
     }
 
     public function index(Request $request)

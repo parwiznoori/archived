@@ -42,52 +42,45 @@ class UsersController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function create()
-    {   
-        $roles = array();
-        $departments = [];
-        $user_types = array( 1  => 'سطح وزارت - همه پوهنتون ها',
+   public function create()
+{   
+    $roles = array();
+    $departments = [];
+    $user_types = array(
+        1  => 'سطح وزارت - همه پوهنتون ها',
         2 => 'سطح وزارت - چند پوهنتون',
-        3 => 'سطح پوهنتون');
+        3 => 'سطح پوهنتون'
+    );
 
-     
-        if (auth()->user()->hasRole('system-developer')) {
-            $roles = Role::all();
-        }
-        elseif(auth()->user()->hasRole('super-admin')) {
-            // For super-admin with user_type = 1 (ministry level)
-            if (auth()->user()->user_type == 1) {
-                $roles = Role::where('archive_type', '<>', 2)
-                 ->whereNotIn('name', ['system-developer'])
-                 ->get();
-            }
-            // For regular super-admin
-            else {
-                $roles = Role::where('archive_type', '<>', 2)
-                        ->whereNotIn('name', ['system-developer'])
-                        ->get();
-            }
-        }
-        else {
-            $roles = Role::where('name', '!=', 'super-admin')
-                    ->where('name', '!=', 'system-developer')
-                    ->get();
-        }  
-
-
-        $grades = Grade::pluck('name', 'id');
-        // dd($user_types);
-
-        return view('users.create', [
-            'title' => trans('general.users'),
-            'description' => trans('general.create_account'),
-            'roles' => $roles,            
-            'universities' => ['-1' => trans('general.all_options')] + University::pluck('name', 'id')->toArray(),
-            'departments' => $departments,
-            'grades' => $grades,
-            'user_types' => $user_types
-        ]);
+    if (auth()->user()->hasRole('system-developer')) {
+        // system-developer همه رول‌ها را ببیند
+        $roles = Role::where('archive_type', '<>', 2)->get();
     }
+    elseif(auth()->user()->hasRole('super-admin')) {
+        // برای super-admin
+        $roles = Role::where('archive_type', '<>', 2)
+                     ->whereNotIn('name', ['system-developer'])
+                     ->get();
+    }
+    else {
+        // برای کاربرهای عادی
+        $roles = Role::where('archive_type', '<>', 2)
+                     ->whereNotIn('name', ['super-admin', 'system-developer'])
+                     ->get();
+    }
+
+    $grades = Grade::pluck('name', 'id');
+
+    return view('users.create', [
+        'title' => trans('general.users'),
+        'description' => trans('general.create_account'),
+        'roles' => $roles,            
+        'universities' => ['-1' => trans('general.all_options')] + University::pluck('name', 'id')->toArray(),
+        'departments' => $departments,
+        'grades' => $grades,
+        'user_types' => $user_types
+    ]);
+}
 
     /**
      * Store a newly created resource in storage.
@@ -158,42 +151,50 @@ class UsersController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function edit($user)
-    {    
-        $roles = array();
-        $user_types = array( 1  => 'سطح وزارت - همه پوهنتون ها',
+{    
+    $roles = array();
+    $user_types = array(
+        1  => 'سطح وزارت - همه پوهنتون ها',
         2 => 'سطح وزارت - چند پوهنتون',
-        3 => 'سطح پوهنتون');
+        3 => 'سطح پوهنتون'
+    );
 
-        $universityIds = $user->universities()->pluck('universities.id');
-        
-        $departments = Department::leftJoin('department_types', 'department_types.id', '=', 'departments.department_type_id')
-                            ->leftJoin('faculties', 'faculties.id', '=', 'departments.faculty_id')
-                            ->select('departments.id',\DB::raw('CONCAT(departments.name, " [ پوهنځی : ", faculties.name , "] (", department_types.name,")") as text'))
-                            ->whereIn('departments.university_id',$universityIds)
-                            ->pluck('text', 'id')
-                            ;
-        
-        if (auth()->user()->hasRole('system-developer')) {
-            $roles = Role::all();
-        }
-        else
-        {
-            $roles = Role::where('name','!=','super-admin')->where('name','!=','system-developer')
-            ->get();
-        }  
+    $universityIds = $user->universities()->pluck('universities.id');
+    
+    $departments = Department::leftJoin('department_types', 'department_types.id', '=', 'departments.department_type_id')
+                        ->leftJoin('faculties', 'faculties.id', '=', 'departments.faculty_id')
+                        ->select(
+                            'departments.id',
+                            \DB::raw('CONCAT(departments.name, " [ پوهنځی : ", faculties.name , "] (", department_types.name,")") as text')
+                        )
+                        ->whereIn('departments.university_id', $universityIds)
+                        ->pluck('text', 'id');
 
-        return view('users.edit', [
-            'title' => trans('general.users'),
-            'description' => trans('general.edit_account'),
-            'user' => $user,
-            'roles' => $roles,
-            'universities' => ['-1' => trans('general.all_options')] + University::pluck('name', 'id')->toArray(),
-            'departments' => $departments,
-            'grades' => Grade::pluck('name', 'id'),
-            'user_types' => $user_types,
-            'universityIds' => $universityIds,
-        ]);
+    // === رول‌ها مطابق create() ===
+    if (auth()->user()->hasRole('system-developer')) {
+        // system-developer → همه رول‌ها به‌جز archive_type = 2
+        $roles = Role::where('archive_type', '<>', 2)->get();
     }
+    else {
+        // کاربران دیگر → حذف super-admin و system-developer
+        $roles = Role::where('archive_type', '<>', 2)
+                      ->whereNotIn('name', ['super-admin', 'system-developer'])
+                      ->get();
+    }
+
+    return view('users.edit', [
+        'title' => trans('general.users'),
+        'description' => trans('general.edit_account'),
+        'user' => $user,
+        'roles' => $roles,
+        'universities' => ['-1' => trans('general.all_options')] + University::pluck('name', 'id')->toArray(),
+        'departments' => $departments,
+        'grades' => Grade::pluck('name', 'id'),
+        'user_types' => $user_types,
+        'universityIds' => $universityIds,
+    ]);
+}
+
 
     /**
      * Update the specified resource in storage.

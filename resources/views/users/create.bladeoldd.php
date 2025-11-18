@@ -96,44 +96,43 @@
                             </ul>
                     </div>
                     <hr>
-                   @if (auth()->user()->allUniversities())
-                   <div class="form-group {{ $errors->has('university') ? ' has-error' : '' }}">
-                        {!! Form::label('university', trans('general.university'), ['class' => 'control-label col-sm-3']) !!}                              
-                        <div class="col-sm-4">
-                            {!! Form::select('university_id', $universities, null, ['class' => 'form-control select2' ,'placeholder' => trans('general.select')]) !!}     
-                            @if ($errors->has('university'))
-                                <span class="help-block">
-                                    <strong>{{ $errors->first('university') }}</strong>
-                                </span>
-                            @endif                                                                                                   
-                        </div>
-                    </div>
-                    @else
-                    <input type="hidden" name="university_id" value="{{ auth()->user()->university_id }}">
-                    @endif                    
-                    {{-- <div class="form-group {{ $errors->has('department') ? ' has-error' : '' }}">
-                        {!! Form::label('department', trans('general.department'), ['class' => 'control-label col-sm-3']) !!}                              
-                        <div class="col-sm-4">
-                            {!! Form::select('departments[]', $departments, null, ['class' => 'form-control select2-ajax', 'remote-url' => route('api.departments'), 'remote-param' => '[name="university_id"]', "multiple" =>"multiple"]) !!}
-                            
-                                <span class="help-block">
-                                    <strong>در صورت خالی بودن دیپارتمنت, تمامی دیپارتمنت ها قابل دسترس می باشد.</strong>
-                                </span>
-                                                                                                                              
-                        </div>
-                    </div> --}}
-
-                    {{-- <div class="form-group {{ $errors->has('grade') ? ' has-error' : '' }}">
-                        {!! Form::label('grade', trans('general.grade'), ['class' => 'control-label col-sm-3']) !!}                                
-                        <div class="col-sm-4">
-                            {!! Form::select('grades[]', $grades, null, ['class' => 'form-control select2', "multiple" =>"multiple"]) !!}
-                            
-                                <span class="help-block">
-                                    <strong>در صورت خالی بودن مقطع تحصیلی, تمامی مقاطع تحصیلی قابل دسترس می باشد.</strong>
-                               </span>
-                                                                                                                               
-                        </div>
-                    </div>  --}}
+{{--                    @if (auth()->user()->allUniversities())--}}
+{{--                    <div class="form-group {{ $errors->has('university') ? ' has-error' : '' }}">--}}
+{{--                        {!! Form::label('university', trans('general.university'), ['class' => 'control-label col-sm-3']) !!}                                --}}
+{{--                        <div class="col-sm-4">--}}
+{{--                            {!! Form::select('university_id', $universities, null, ['class' => 'form-control select2' ,'placeholder' => trans('general.select')]) !!}     --}}
+{{--                            @if ($errors->has('university'))--}}
+{{--                                <span class="help-block">--}}
+{{--                                    <strong>{{ $errors->first('university') }}</strong>--}}
+{{--                                </span>--}}
+{{--                            @endif                                                                                                   --}}
+{{--                        </div>--}}
+{{--                    </div>--}}
+{{--                    @else--}}
+{{--                    <input type="hidden" name="university_id" value="{{ auth()->user()->university_id }}">--}}
+{{--                    @endif                    --}}
+{{--                    <div class="form-group {{ $errors->has('department') ? ' has-error' : '' }}">--}}
+{{--                        {!! Form::label('department', trans('general.department'), ['class' => 'control-label col-sm-3']) !!}                                --}}
+{{--                        <div class="col-sm-4">--}}
+{{--                            {!! Form::select('departments[]', $departments, null, ['class' => 'form-control select2-ajax', 'remote-url' => route('api.departments'), 'remote-param' => '[name="university_id"]', "multiple" =>"multiple"]) !!}--}}
+{{--                            --}}
+{{--                                <span class="help-block">--}}
+{{--                                    <strong>در صورت خالی بودن دیپارتمنت, تمامی دیپارتمنت ها قابل دسترس می باشد.</strong>--}}
+{{--                                </span>--}}
+{{--                                                                                                                               --}}
+{{--                        </div>--}}
+{{--                    </div>--}}
+{{--                    <div class="form-group {{ $errors->has('grade') ? ' has-error' : '' }}">--}}
+{{--                        {!! Form::label('grade', trans('general.grade'), ['class' => 'control-label col-sm-3']) !!}                                --}}
+{{--                        <div class="col-sm-4">--}}
+{{--                            {!! Form::select('grades[]', $grades, null, ['class' => 'form-control select2', "multiple" =>"multiple"]) !!}--}}
+{{--                            --}}
+{{--                                <span class="help-block">--}}
+{{--                                    <strong>در صورت خالی بودن مقطع تحصیلی, تمامی مقاطع تحصیلی قابل دسترس می باشد.</strong>--}}
+{{--                                </span>--}}
+{{--                                                                                                                               --}}
+{{--                        </div>--}}
+{{--                    </div>--}}
 
                     <div class="form-group {{ $errors->has('active') ? ' has-error' : '' }}">
                         {!! Form::label('active', trans('general.status'), ['class' => 'control-label col-sm-3']) !!}                                
