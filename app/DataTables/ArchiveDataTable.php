@@ -179,21 +179,29 @@ class ArchiveDataTable extends DataTable
         // }
 
         //user parts
-          $universityList = UniversityUser::where('user_id', auth()->user()->id)
-                    ->pluck ('university_id')
-                    ->toArray();
-                if($universityList!=null){
-                     $query->whereIn('archives.university_id', $universityList);
-                }
+       $universityList = UniversityUser::where('user_id', auth()->user()->id)
+                ->pluck('university_id')
+                ->toArray();
 
-            if (auth()->user()->type == 2) {
-                $userList = ArchiveRole::where('user_id', auth()->user()->id)
-                    ->pluck('archive_id')
-                    ->toArray();
-                
+        // فقط اگر آرایه خالی نیست شرط اضافه شود
+        if (!empty($universityList)) {
+            $query->whereIn('archives.university_id', $universityList);
+        }
+
+        if (auth()->user()->type == 2) {
+            $userList = ArchiveRole::where('user_id', auth()->user()->id)
+                        ->pluck('archive_id')
+                        ->toArray();
+
+            if (!empty($userList)) {
                 $query->whereIn('archives.id', $userList)
-                    ->where('de_user_id', auth()->id()); // Only assigned to this user
+                    ->where('de_user_id', auth()->id()); // فقط آرشیوهای اختصاص داده شده به این یوزر
+            } else {
+                // اگر userList خالی بود، دیتای خالی برگردد
+                $query->whereRaw('0 = 1');
             }
+        }
+
 
         return $query;
     }
