@@ -191,8 +191,8 @@ class ArchiveDataTable extends DataTable
                     ->pluck('archive_id')
                     ->toArray();
                 
-                // $query->whereIn('archives.id', $userList)
-                //     ->where('de_user_id', auth()->id()); // Only assigned to this user
+                $query->whereIn('archives.id', $userList)
+                    ->where('de_user_id', auth()->id()); // Only assigned to this user
             }
 
         return $query;
