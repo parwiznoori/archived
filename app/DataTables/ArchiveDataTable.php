@@ -179,21 +179,21 @@ class ArchiveDataTable extends DataTable
         // }
 
         //user parts
-        //   $universityList = UniversityUser::where('user_id', auth()->user()->id)
-        //             ->pluck ('university_id')
-        //             ->toArray();
-        //         if($universityList!=null){
-        //              $query->whereIn('archives.university_id', $universityList);
-        //         }
+          $universityList = UniversityUser::where('user_id', auth()->user()->id)
+                    ->pluck ('university_id')
+                    ->toArray();
+                if($universityList!=null){
+                     $query->whereIn('archives.university_id', $universityList);
+                }
 
-        //     if (auth()->user()->type == 2) {
-        //         $userList = ArchiveRole::where('user_id', auth()->user()->id)
-        //             ->pluck('archive_id')
-        //             ->toArray();
+            if (auth()->user()->type == 2) {
+                $userList = ArchiveRole::where('user_id', auth()->user()->id)
+                    ->pluck('archive_id')
+                    ->toArray();
                 
-        //         $query->whereIn('archives.id', $userList)
-        //             ->where('de_user_id', auth()->id()); // Only assigned to this user
-        //     }
+                $query->whereIn('archives.id', $userList)
+                    ->where('de_user_id', auth()->id()); // Only assigned to this user
+            }
 
         return $query;
     }
