@@ -179,28 +179,33 @@ class ArchiveDataTable extends DataTable
         // }
 
         //user parts
-       $universityList = UniversityUser::where('user_id', auth()->user()->id)
-                ->pluck('university_id')
+ $universityList = UniversityUser::where('user_id', auth()->user()->id)
+    ->pluck('university_id')
+    ->toArray();
+
+if (!empty($universityList)) {
+    $query->whereIn('archives.university_id', $universityList);
+}
+
+// فقط آرشیوهایی که به کاربر اختصاص داده شده
+if (auth()->user()->type == 2) {
+    $userList = ArchiveRole::where('user_id', auth()->user()->id)
+                ->pluck('archive_id')
                 ->toArray();
 
-        // فقط اگر آرایه خالی نیست شرط اضافه شود
-        if (!empty($universityList)) {
-            $query->whereIn('archives.university_id', $universityList);
-        }
+    if (!empty($userList)) {
+        // آرشیوهایی که یا در لیست اختصاص یافته هستند یا de_user_id برابر کاربر است
+        $query->where(function($q) use ($userList) {
+            $q->whereIn('archives.id', $userList)
+              ->orWhere('de_user_id', auth()->id());
+        });
+    } else {
+        // اگر کاربر هیچ آرشیویی ندارد، فقط آرشیوهایی که de_user_id برابر کاربر است
+        $query->where('de_user_id', auth()->id());
+    }
+}
 
-        if (auth()->user()->type == 2) {
-            $userList = ArchiveRole::where('user_id', auth()->user()->id)
-                        ->pluck('archive_id')
-                        ->toArray();
 
-            if (!empty($userList)) {
-                $query->whereIn('archives.id', $userList)
-                    ->where('de_user_id', auth()->id()); // فقط آرشیوهای اختصاص داده شده به این یوزر
-            } else {
-                // اگر userList خالی بود، دیتای خالی برگردد
-                $query->whereRaw('0 = 1');
-            }
-        }
 
 
         return $query;
