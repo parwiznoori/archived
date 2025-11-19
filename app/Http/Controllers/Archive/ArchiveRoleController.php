@@ -87,28 +87,33 @@ class ArchiveRoleController extends Controller
     }
 
 
-    public function archiveBookRoleLoad($university_id,$role_id)
-    {
+        // مشکل: ممکن است کتاب‌ها به درستی فیلتر نشوند
+        public function archiveBookRoleLoad($university_id, $role_id)
+        {
+            $role = Role::where('id', $role_id)->first();
+            
+            if (!$role) {
+                return collect(); // اگر نقش پیدا نشد
+            }
 
-        $role = Role::where('id', $role_id)->first();
-        if ($role->name == 'quality_Control') {
+            if ($role->name == 'quality_Control') {
+                $archives = Archive::where('status_id', 4)
+                    ->where('qc_user_id', null)
+                    ->where('university_id', $university_id)
+                    ->select('id', 'book_name as text')
+                    ->get();
+            } elseif ($role->name == 'Data_Entry') {
+                $archives = Archive::where('status_id', 1)
+                    ->where('university_id', $university_id)
+                    ->where('de_user_id', null)
+                    ->select('id', 'book_name as text')
+                    ->get();
+            } else {
+                $archives = collect();
+            }
 
-            $archives = Archive::where('status_id', 4)
-            ->where('qc_user_id', null)
-            ->where('university_id',$university_id)
-                ->select('id', 'book_name as text')
-                ->get();
-
-        } elseif ($role->name == 'Data_Entry') {
-            $archives = Archive::where('status_id', 1)
-            ->where('university_id',$university_id)
-            ->where('de_user_id', null)
-                ->select('id', 'book_name as text')
-                ->get();
+            return $archives;
         }
-
-        return $archives;
-    }
 
 
     public function store(Request $request)

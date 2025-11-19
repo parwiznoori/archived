@@ -9,46 +9,27 @@ use Yajra\DataTables\Services\DataTable;
 
 class ArchiveDataTable extends DataTable
 {
-    /**
-     * Build DataTable class.
-     *
-     * @param mixed $query Results from query() method.
-     * @return \Yajra\DataTables\DataTableAbstract
-     */
     public function dataTable($query)
     {
-
         $datatables = datatables($query)
-
-
             ->setRowClass(function ($archive) {
                 $className = '';
-                // Check if the archive is soft deleted
-                if (isset($archive->deleted_at)) {
-
-                }
-
-
-
-                // Check if qc_status_id is set and equals 1
-                if( $archive->qc_status_id ==3 && $archive->status_id ==4 ) {
+                
+                if( $archive->qc_status_id == 3 && $archive->status_id == 4 ) {
                     $className .= ' qc_status';
                 }
 
-                if( $archive->qc_status_id ==4 && $archive->status_id ==4 ) {
+                if( $archive->qc_status_id == 4 && $archive->status_id == 4 ) {
                     $className .= ' qc_status2';
                 }
 
-                if(  $archive->status_id ==3 ) {
+                if( $archive->status_id == 3 ) {
                     $className .= ' qc_status3';
                 }
 
                 return $className;
             })
-
-
             ->addColumn('action', function ($archive) {
-
                 $html = '';
                 $html = '<div class="btn-group"> 
                         <a class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown" href="javascript:;" aria-expanded="false">';     
@@ -56,70 +37,49 @@ class ArchiveDataTable extends DataTable
                             <i class="fa fa-angle-down"></i>
                             </a>
                             <ul class="dropdown-menu pull-right">';
+                        
                         if(auth()->user()->can('edit-archive') ){
                             $html .= '<li><a href="'. route('archive.edit', $archive) .'"  target="new"> <i class="fa fa-pencil"></i> '. trans("general.edit") .' </a></li>';
-                            
                         }
 
                         if(auth()->user()->can('csv-archive') ){
                             $html .= '<li><a href="'. route('archive.view', $archive) .'"  target="new"> <i class="fa fa-pencil"></i> '. trans("general.upload_csv") .' </a></li>';
-
                         }
 
                         if(auth()->user()->can('view-archiveimage') ){
-                                    $html .= '<li><a href="'. route('archive.show', $archive) .'"  target="new"> <i class="fa fa-pencil"></i> '. trans("general.photo") .' </a></li>';
-
-                                }
+                            $html .= '<li><a href="'. route('archive.show', $archive) .'"  target="new"> <i class="fa fa-pencil"></i> '. trans("general.photo") .' </a></li>';
+                        }
 
                         if(auth()->user()->can('view-archivedata') ){
                             $html .= '<li><a href="' . route("archiveBookDataEntry", ['id' => $archive->id]) . '" target="new"> <i class="fa fa-pencil"></i> '. trans("general.archivedata") .' </a></li>';
-
                         }
-//
 
+                        if(auth()->user()->can('reset-qc-user') && !empty($archive->qc_user_id)) {
+                            $html .= '<li>
+                                <form action="' . route('archive.reset-qc-user', $archive) . '" method="POST" style="display: inline;">
+                                    ' . csrf_field() . '
+                                    <button  onclick="return confirm(\'Are you sure you want to reset the QC user?\');" type="submit" class="btn btn-link" target="new">
+                                        <i class="fa fa-pencil"></i> ' . trans("general.reset-qc-user") . '
+                                    </button>
+                                </form>
+                            </li>';
+                        }
 
-                        if(auth()->user()->can('reset-qc-user') && $archive->qc_user_id!=null) {
-                    $html .= '<li>
-                        <form action="' . route('archive.reset-qc-user', $archive) . '" method="POST" style="display: inline;">
-                            ' . csrf_field() . '
-                            <button  onclick="return confirm(\'Are you sure you want to reset the QC user?\');" type="submit" class="btn btn-link" target="new">
-                                <i class="fa fa-pencil"></i> ' . trans("general.reset-qc-user") . '
-                            </button>
-                        </form>
-                      </li>';
-                }
+                        if(auth()->user()->can('reset-de-user') && (!empty($archive->de_user_id) && empty($archive->qc_user_id)) ) {
+                            $html .= '<li> 
+                                <form action="' . route('archive.reset-de-user', $archive) . '" method="POST" style="display: inline;">
+                                    ' . csrf_field() . '
+                                    <button type="submit" class="btn btn-link" target="new">
+                                        <i class="fa fa-pencil"></i> '. trans("general.reset-de-user") . '
+                                    </button>
+                                </form>
+                            </li>';
+                        }
 
-
-                if(auth()->user()->can('reset-de-user')  &&($archive->de_user_id!=null && $archive->qc_user_id==null) ) {
-                    $html .= '<li> 
-                        <form action="' . route('archive.reset-de-user', $archive) . '" method="POST" style="display: inline;">
-                            ' . csrf_field() . '
-                            <button type="submit" class="btn btn-link" target="new">
-                                <i class="fa fa-pencil"></i> '. trans("general.reset-de-user") . '
-                            </button>
-                        </form>
-                      </li>';
-                }
-
-//                            if(auth()->user()->can('reset-qc-status') ){
-//                                $html .= '<li><a href="'. route('archive.reset-qc-status', $archive) .'"  target="new"> <i class="fa fa-pencil"></i> '. trans("general.reset-qc-status") .' </a></li>';
-//
-//                            }
-
-//                if(auth()->user()->can('reset_de_assign_book') ){
-//                    $html .= '<li><a href="'. route('archive.reset-de-status', $archive) .'"  target="new"> <i class="fa fa-pencil"></i> '. trans("general.reset_de_assign_book") .' </a></li>';
-//
-//                }
-
-
-
-                if(auth()->user()->hasRole('super-admin') ){
-                            if(isset($archive->deleted_at))
-                            {
+                        if(auth()->user()->hasRole('super-admin') ){
+                            if(isset($archive->deleted_at)) {
                                 // $html .= '<li><a href="'. route('archive.recover', $archive) .'"  target="new" onClick="doConfirm()" > <i class="fa fa-pencil"></i> '. trans("general.restore").' </a></li>';
-
                             }
-                           
                         }   
                         
                         if (auth()->user()->can('delete-archive')) {
@@ -133,27 +93,15 @@ class ArchiveDataTable extends DataTable
                         $html .= '</ul>
                         </div>';
 
-                
-
                 return $html;
             })
             ->rawColumns( ['action']);
             
-            return $datatables;
+        return $datatables;
     }
 
-    /**
-     * Get query source of dataTable.
-     *
-     * @param \App\User $model
-     * @return \Illuminate\Database\Eloquent\Builder
-     */
     public function query(Archive $archive)
     {
-
-
-
-
         $query = $archive->select(
             'archives.id',
             'archives.qc_user_id',
@@ -168,48 +116,39 @@ class ArchiveDataTable extends DataTable
             'archivedatastatus.status as archivedatastatus',
             'archiveqcstatus.qc_status as archiveqcstatus'
         )
-            ->leftJoin('universities', 'universities.id', '=', 'archives.university_id')
-            ->leftJoin('archivedatastatus', 'archivedatastatus.id', '=', 'archives.status_id')
-            ->leftJoin('archiveqcstatus', 'archiveqcstatus.id', '=', 'archives.qc_status_id')
-            ->leftJoin('archiveyears', 'archiveyears.id', '=', 'archives.archive_year_id');
+        ->leftJoin('universities', 'universities.id', '=', 'archives.university_id')
+        ->leftJoin('archivedatastatus', 'archivedatastatus.id', '=', 'archives.status_id')
+        ->leftJoin('archiveqcstatus', 'archiveqcstatus.id', '=', 'archives.qc_status_id')
+        ->leftJoin('archiveyears', 'archiveyears.id', '=', 'archives.archive_year_id');
 
-        // if( auth()->user()->type==2){
-        //     $userList = ArchiveRole::where('user_id', auth()->user()->id)->pluck('archive_id')->toArray();
-        //     $query->whereIn('archives.id', $userList);
-        // }
+        // کاربران معمولی (بر اساس دانشگاه)
+        $universityList = UniversityUser::where('user_id', auth()->user()->id)
+            ->pluck('university_id')
+            ->toArray();
+        
+        if(!empty($universityList)){
+            $query->whereIn('archives.university_id', $universityList);
+        }
 
-        //user parts
- $universityList = UniversityUser::where('user_id', auth()->user()->id)
-    ->pluck('university_id')
-    ->toArray();
-
-if (!empty($universityList)) {
-    $query->whereIn('archives.university_id', $universityList);
-}
-
-// فقط آرشیوهایی که به کاربر اختصاص داده شده
-if (auth()->user()->type == 2) {
-    $userList = ArchiveRole::where('user_id', auth()->user()->id)
+        // کاربران type=2 (Data Entry)
+        if (auth()->user()->type == 2) {
+            $userList = ArchiveRole::where('user_id', auth()->user()->id)
                 ->pluck('archive_id')
                 ->toArray();
-
-    if (!empty($userList)) {
-        // آرشیوهایی که یا در لیست اختصاص یافته هستند یا de_user_id برابر کاربر است
-        $query->where(function($q) use ($userList) {
-            $q->whereIn('archives.id', $userList)
-              ->orWhere('de_user_id', auth()->id());
-        });
-    } else {
-        // اگر کاربر هیچ آرشیویی ندارد، فقط آرشیوهایی که de_user_id برابر کاربر است
-        $query->where('de_user_id', auth()->id());
-    }
-}
-
-
-
+            
+            // مشکل اصلی اینجا بود - شرط اضافی حذف شد
+            if (!empty($userList)) {
+                $query->whereIn('archives.id', $userList);
+            } else {
+                // اگر هیچ کتابی به کاربر اختصاص داده نشده، لیست خالی برگرداند
+                $query->where('archives.id', 0);
+            }
+        }
 
         return $query;
     }
+
+
 
     /**
      * Optional method if you want to use html builder.
