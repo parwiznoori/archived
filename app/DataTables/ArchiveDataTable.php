@@ -100,53 +100,57 @@ class ArchiveDataTable extends DataTable
         return $datatables;
     }
 
-    public function query(Archive $archive)
-    {
-        $query = $archive->select(
-            'archives.id',
-            'archives.qc_user_id',
-            'archives.de_user_id',
-            'archives.status_id',
-            'archives.qc_status_id',
-            'universities.name as university',
-            'archiveyears.year as archiveyears',
-            'archives.book_pagenumber',
-            'book_description',
-            'book_name',
-            'archivedatastatus.status as archivedatastatus',
-            'archiveqcstatus.qc_status as archiveqcstatus'
-        )
-        ->leftJoin('universities', 'universities.id', '=', 'archives.university_id')
-        ->leftJoin('archivedatastatus', 'archivedatastatus.id', '=', 'archives.status_id')
-        ->leftJoin('archiveqcstatus', 'archiveqcstatus.id', '=', 'archives.qc_status_id')
-        ->leftJoin('archiveyears', 'archiveyears.id', '=', 'archives.archive_year_id');
+   public function query(Archive $archive)
+{
+    // بدون global scope دانشگاه
+    $query = $archive->allUniversities()->select(
+        'archives.id',
+        'archives.qc_user_id',
+        'archives.de_user_id',
+        'archives.status_id',
+        'archives.qc_status_id',
+        'universities.name as university',
+        'archiveyears.year as archiveyears',
+        'archives.book_pagenumber',
+        'book_description',
+        'book_name',
+        'archivedatastatus.status as archivedatastatus',
+        'archiveqcstatus.qc_status as archiveqcstatus'
+    )
+    ->leftJoin('universities', 'universities.id', '=', 'archives.university_id')
+    ->leftJoin('archivedatastatus', 'archivedatastatus.id', '=', 'archives.status_id')
+    ->leftJoin('archiveqcstatus', 'archiveqcstatus.id', '=', 'archives.qc_status_id')
+    ->leftJoin('archiveyears', 'archiveyears.id', '=', 'archives.archive_year_id');
 
-        // کاربران معمولی (بر اساس دانشگاه)
-        $universityList = UniversityUser::where('user_id', auth()->user()->id)
-            ->pluck('university_id')
+    // فیلتر دستی دانشگاه‌ها
+    $universityList = \DB::table('university_users')
+        ->where('user_id', auth()->user()->id)
+        ->whereNull('deleted_at')
+        ->pluck('university_id')
+        ->toArray();
+    
+    if(!empty($universityList)){
+        $query->whereIn('archives.university_id', $universityList);
+    } else {
+        // اگر کاربر هیچ دانشگاهی ندارد، همه داده‌ها را نشان بده
+        // یا اگر می‌خواهید چیزی نشان ندهد:
+        // $query->where('archives.id', 0);
+    }
+
+    // کاربران type=2 (Data Entry)
+    if (auth()->user()->type == 2) {
+        $userList = \DB::table('archive_entry_users')
+            ->where('user_id', auth()->user()->id)
+            ->pluck('archive_id')
             ->toArray();
         
-        if(!empty($universityList)){
-            $query->whereIn('archives.university_id', $universityList);
+        if (!empty($userList)) {
+            $query->whereIn('archives.id', $userList);
         }
-
-        // کاربران type=2 (Data Entry)
-        if (auth()->user()->type == 2) {
-            $userList = ArchiveRole::where('user_id', auth()->user()->id)
-                ->pluck('archive_id')
-                ->toArray();
-            
-            // مشکل اصلی اینجا بود - شرط اضافی حذف شد
-            if (!empty($userList)) {
-                $query->whereIn('archives.id', $userList);
-            } else {
-                // اگر هیچ کتابی به کاربر اختصاص داده نشده، لیست خالی برگرداند
-                $query->where('archives.id', 0);
-            }
-        }
-
-        return $query;
     }
+
+    return $query;
+}
 
 
 
