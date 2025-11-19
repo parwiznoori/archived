@@ -25,6 +25,8 @@ use Maatwebsite\Excel\Facades\Excel;
 use Morilog\Jalali\Jalalian;
 use Illuminate\Support\Facades\Log;
 
+
+
 class ArchiveController extends Controller
 {
     public function __construct()
@@ -33,6 +35,7 @@ class ArchiveController extends Controller
         $this->middleware('permission:create-archive', ['only' => ['create', 'store']]);
         $this->middleware('permission:edit-archive', ['only' => ['edit', 'update', 'updateStatus', 'update_groups']]);
         $this->middleware('permission:delete-archive', ['only' => ['destroy']]);
+
     }
 
     /**
@@ -42,37 +45,49 @@ class ArchiveController extends Controller
      */
     public function index(ArchiveDataTable $dataTable)
     {
+
         return $dataTable->render('archive.index', [
             'title' => trans('general.archive'),
             'description' => trans('general.archive_list')
         ]);
     }
 
+
     /**
      * Show the form for creating a new resource.
      *
      * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\View\Factory|\Illuminate\View\View
      */
+
     public function create()
     {
         $university_id = auth()->user()->university_id;
 
         if ($university_id > 0) {
+
             $universities = University::where('id', $university_id)->pluck('name', 'id');
+
         } else {
+
+
             $universities = University::pluck('name', 'id');
         }
         $archiveyears = ArchiveYear::pluck('year', 'id');
 
         return view('archive.create', [
+
             'title' => trans('general.archive'),
             'description' => trans('general.create_archive'),
             'universities' => $universities,
+//            'faculties' => Faculty::pluck('name', 'id'),
+//            'faculty' => old('faculty') != '' ? Faculty::where('id', old('faculty'))->pluck('name', 'id') : [],
             'departments' => Department::pluck('name', 'id'),
             'department' => old('department') != '' ? Department::where('id', old('department'))->pluck('name', 'id') : [],
             'archiveyears' => $archiveyears,
+//            'grade' => old('grade') != '' ? Grade::where('id', old('grade'))->pluck('name', 'id') : [],
         ]);
     }
+
 
     /**
      * Store a newly created resource in storage.
@@ -80,6 +95,8 @@ class ArchiveController extends Controller
      * @param \Illuminate\Http\Request $request
      * @return \Illuminate\Http\Response
      */
+
+
     public function store(Request $request)
     {
         // Validate the input
@@ -89,6 +106,8 @@ class ArchiveController extends Controller
             'book_name' => 'required',
             'path.*' => 'required|image|mimes:pdf,jpeg,png,jpg,gif,svg|max:1000000', 
         ]);
+
+        
 
         // Initialize archive variable
         $archive = null;
@@ -109,24 +128,28 @@ class ArchiveController extends Controller
 
                 $archiveId = $archive->id;
                 foreach ($request->department_id as $dpt) {
-                    $department = Department::where('id', $dpt)->first();
+                    $department=Department::where('id',$dpt)->first();
                     $departInsert = ArchiveDepartment::create([
-                        'university_id' => $request->university_id,
-                        'faculty_id' => $department->faculty_id,
-                        'archive_id' => $archiveId,
-                        'department_id' => $dpt
-                    ]);
+                            'university_id' => $request->university_id,
+                            'faculty_id' => $department->faculty_id,
+                            'archive_id' => $archiveId, // This will be updated after with a full date
+                            'department_id' => $dpt]
+                    );
+
                 }
+
             }
+
+
         });
 
-        // Convert PDF to JPG and get the page count
-        $pageCount = PDFToJPGController::convert($request, $archive);
+// Convert PDF to JPG and get the page count
+        $pageCount = PDFToJPGController::convert($request,$archive);
 
         // If the archive was created successfully
         if ($archive != null) {
             // Create a directory for archive files
-            $directory = public_path() . '/archivefiles/' . $archive->id . '-' . $archive->book_name;
+            $directory = public_path() . '/archivefiles/' . $archive->id.'-' .$archive->book_name;
 
             // Array to hold all archive images data
             $archiveImages = [];
@@ -137,7 +160,7 @@ class ArchiveController extends Controller
                     'book_pagenumber' => $i,
                     'archive_id' => $archive->id,
                     'status_id' => 1,
-                    'path' => '/archivefiles/' . $archive->id . '-' . $archive->book_name . '/' . $i . '.jpg',
+                    'path' => '/archivefiles/' . $archive->id.'-' .$archive->book_name . '/' . $i . '.jpg',
                 ];
             }
 
@@ -149,11 +172,13 @@ class ArchiveController extends Controller
         return redirect(route('archive.index'));
     }
 
+
     public function show($id)
     {
-        $archive = $this->findArchiveWithAccessCheck($id);
+        $archive = Archive::findOrFail($id);
         return view('archive.show', compact('archive'));
     }
+
 
     /**
      * Show the form for editing the specified resource.
@@ -163,39 +188,48 @@ class ArchiveController extends Controller
      */
     public function edit($archive_id)
     {
-        $archive = $this->findArchiveWithAccessCheck($archive_id);
+        $archive = Archive::findOrFail($archive_id);
 
-        // Retrieve departments related to the given archive_id
+
+// Retrieve departments related to the given archive_id
         $departments = ArchiveDepartment::where('archive_id', $archive_id)
-            ->pluck('department_id');
+            ->pluck('department_id');  // Using pluck to get only the department_id values
 
-        // Assign the retrieved departments to the archive object
+
+// Assign the retrieved departments to the archive object
         $archive->departments = $departments;
 
         $university_id = auth()->user()->university_id;
 
         if ($university_id > 0) {
+
             $universities = University::where('id', $university_id)
                 ->whereNull('deleted_at')->pluck('name', 'id');
+
         } else {
+
+
             $universities = University::pluck('name', 'id');
         }
+
 
         // Retrieve existing archive images
         $archiveImages = Archiveimage::where('archive_id', $archive->id)->get();
         $archiveyears = ArchiveYear::pluck('year', 'id');
-        
         return view('archive.edit', [
             'title' => trans('general.archive'),
             'description' => trans('general.edit_archive'),
             'archive' => $archive,
             'universities' => $universities,
+//            'faculties' => Faculty::pluck('name', 'id'),
+//            'faculty' => old('faculty') != '' ? Faculty::where('id', old('faculty'))->pluck('name', 'id') : [],
             'departments' => Department::pluck('name', 'id'),
             'department' => old('department') != '' ? Department::where('id', old('department'))->pluck('name', 'id') : [],
             'archiveImages' => $archiveImages,
             'archiveyears' => $archiveyears,
         ]);
     }
+
 
     /**
      * Update the specified resource in storage.
@@ -204,50 +238,69 @@ class ArchiveController extends Controller
      * @param int $id
      * @return \Illuminate\Http\Response
      */
+
     public function update(Request $request, $archive_id)
     {
-        $archive = $this->findArchiveWithAccessCheck($archive_id);
-
         $request->validate([
             'university_id' => 'required',
+//            'faculty_id' => 'required',
+//            'department_id' => 'required',
+//            'book_year' => 'required',
+//            'book_pagenumber' => 'required',
             'book_description' => 'required',
             'book_name' => 'required',
-            'path.*' => 'required|image|mimes:pdf,jpeg,png,jpg,gif,svg|max:1000000',
+            'path.*' => 'required|image|mimes:pdf,jpeg,png,jpg,gif,svg|max:1000000', // Add this line for file validation
         ]);
 
         $pageCount = 0;
+      
+        $archive = Archive::findOrFail($archive_id);
 
         \DB::transaction(function () use ($pageCount, $request, $archive) {
             $archive->update([
                 'university_id' => $request->university_id,
+//                'faculty_id' => $request->faculty_id,
+//                'department_id' => $request->department_id,
                 'archive_year_id' => $request->archive_year_id,
+//                'book_year' => $request->book_year,
                 'book_pagenumber' => $request->book_pagenumber,
                 'book_description' => $request->book_description,
                 'book_name' => $request->book_name,
             ]);
-            
-            ArchiveDepartment::where('archive_id', $archive->id)->delete();
+            ArchiveDepartment::where('archive_id', $archive->   id)->delete();
 
             // Attach departments to the archive (many-to-many relationship)
             if ($request->has('department_id')) {
+                $departmentIds = $request->department_id;
+
+                $archiveId = $archive->id;
                 foreach ($request->department_id as $dpt) {
-                    $department = Department::where('id', $dpt)->first();
-                    ArchiveDepartment::create([
-                        'university_id' => $request->university_id,
-                        'faculty_id' => $department->faculty_id,
-                        'archive_id' => $archive->id,
-                        'department_id' => $dpt
-                    ]);
+                    $department=Department::where('id',$dpt)->first();
+                    $departInsert = ArchiveDepartment::create([
+                            'university_id' => $request->university_id,
+                            'faculty_id' => $department->faculty_id,
+                            'archive_id' => $archiveId, // This will be updated after with a full date
+                            'department_id' => $dpt]
+                    );
+
                 }
             }
 
-            if ($request->path != "" && $request->path != null) {
-                // Convert PDF to JPG and get the page count
-                $pageCount = PDFToJPGController::convert($request, $archive);
-            }
+//            if ($request->book_year) {
+//                // Append '-01-01' to the provided year to form a full date
+//                $book_year = $request->book_year . '';
+//                $archive->book_year = $book_year;
+//                $archive->save();
+//            }
+
+ 
+          if ($request->path != "" && $request->path != null) {
+                        // Convert PDF to JPG and get the page count
+                        $pageCount = PDFToJPGController::convert($request,$archive);
+                    }
 
             if ($request->path != "" && $request->path != null) {
-                $directory = public_path() . '/archivefiles/' . $archive->id . '-' . $archive->book_name;
+                $directory = public_path() . '/archivefiles/' . $archive->id.'-' .$archive->book_name;
 
                 // Delete existing archive images
                 Archiveimage::where('archive_id', $archive->id)->delete();
@@ -259,7 +312,8 @@ class ArchiveController extends Controller
                         'book_pagenumber' => $i,
                         'archive_id' => $archive->id,
                         'status_id' => 1,
-                        'path' => '/archivefiles/' . $archive->id . '-' . $archive->book_name . '/' . $i . '.jpg',
+                        'path' => '/archivefiles/' . $archive->id.'-' .$archive->book_name . '/' . $i . '.jpg',
+                        // 'type' => $request->type,
                     ];
                 }
 
@@ -270,15 +324,52 @@ class ArchiveController extends Controller
         return redirect(route('archive.index'));
     }
 
+
     /**
      * Remove the specified resource from storage.
      *
      * @param int $id
      * @return \Illuminate\Http\Response
      */
+
+
+    public function resetQcUser(Archive $archive)
+    {
+        // Authorization check
+        if (auth()->user()->can('reset-qc-user')) {
+          
+
+             $archive->update([
+                'qc_user_id' => null,
+                'qc_status_id' => 1 // Set to a valid status ID instead of null
+            ]);
+          
+            return redirect()->back()->with('success', 'QC User reset successfully.');
+        }
+
+        return redirect()->back()->with('error', 'Unauthorized action.');
+    }
+
+
+        public function resetDeUser(Archive $archive)
+        {
+            if (!auth()->user()->can('reset-de-user')) {
+                return redirect()->back()->with('error', 'Unauthorized action.');
+            }
+
+            // Find a default status (e.g., "unassigned" status with ID 1)
+            $archive->update([
+                'de_user_id' => null,
+                'status_id' => 1 // Set to a valid status ID instead of null
+            ]);
+
+            return redirect()->back()->with('success', 'DE User reset successfully.');
+        }
+
+
     public function destroy($archive_id)
     {
-        $archive = $this->findArchiveWithAccessCheck($archive_id);
+        $archive = Archive::findOrFail($archive_id);
 
         \DB::transaction(function () use ($archive) {
             // Delete associated archive images
@@ -292,76 +383,14 @@ class ArchiveController extends Controller
         $directory = public_path() . '/archivefiles/' . $archive->book_name;
         if (is_dir($directory)) {
             \File::deleteDirectory($directory);
+            echo "Directory '$directory' and its contents deleted successfully.";
+        } else {
+            echo "Directory '$directory' does not exist.";
         }
 
         return redirect(route('archive.index'));
+
     }
-
-    /**
-     * Helper method to find archive with access check
-     */
-    private function findArchiveWithAccessCheck($archive_id)
-    {
-        // ابتدا آرشیو را پیدا کنید
-        $archive = Archive::find($archive_id);
-        
-        if (!$archive) {
-            \Log::warning('Archive not found', [
-                'archive_id' => $archive_id,
-                'user_id' => auth()->id(),
-                'url' => request()->url()
-            ]);
-            abort(404, 'آرشیو مورد نظر یافت نشد');
-        }
-
-        // بررسی دسترسی کاربر
-        $userUniversities = auth()->user()->universities->pluck('id');
-        
-        if (!auth()->user()->hasRole('super-admin') && 
-            !$userUniversities->contains($archive->university_id)) {
-            \Log::warning('User cannot access archive', [
-                'archive_id' => $archive_id,
-                'user_id' => auth()->id(),
-                'archive_university' => $archive->university_id,
-                'user_universities' => $userUniversities->toArray()
-            ]);
-            abort(403, 'شما دسترسی به این آرشیو ندارید');
-        }
-
-        return $archive;
-    }
-
-    public function resetQcUser(Archive $archive)
-    {
-        // Authorization check
-        if (auth()->user()->can('reset-qc-user')) {
-            $archive->update([
-                'qc_user_id' => null,
-                'qc_status_id' => 1
-            ]);
-            return redirect()->back()->with('success', 'QC User reset successfully.');
-        }
-
-        return redirect()->back()->with('error', 'Unauthorized action.');
-    }
-
-    public function resetDeUser(Archive $archive)
-    {
-        if (!auth()->user()->can('reset-de-user')) {
-            return redirect()->back()->with('error', 'Unauthorized action.');
-        }
-
-        $archive->update([
-            'de_user_id' => null,
-            'status_id' => 1
-        ]);
-
-        return redirect()->back()->with('success', 'DE User reset successfully.');
-    }
-
-
-
-    // بقیه متدها بدون تغییر...
 
 
     public function viewCsv(Request $request, $archiveId)
@@ -370,9 +399,9 @@ class ArchiveController extends Controller
 
 
         // "Check user authentication in url page number
-        if($archive==null || $archive->de_user_id==null || $archive->de_user_id!=auth()->user()->id){
-            return back();
-        }
+        // if($archive==null || $archive->de_user_id==null || $archive->de_user_id!=auth()->user()->id){
+        //     return back();
+        // }
 
 
         $universities = University::pluck('name', 'id');
