@@ -350,12 +350,14 @@ class ArchiveController extends Controller
     }
 
 
+       
+
+
         public function resetDeUser(Archive $archive)
         {
             if (!auth()->user()->can('reset-de-user')) {
                 return redirect()->back()->with('error', 'Unauthorized action.');
             }
-
             // Find a default status (e.g., "unassigned" status with ID 1)
             $archive->update([
                 'de_user_id' => null,
@@ -364,6 +366,7 @@ class ArchiveController extends Controller
 
             return redirect()->back()->with('success', 'DE User reset successfully.');
         }
+
 
 
     public function destroy($archive_id)
@@ -397,10 +400,10 @@ class ArchiveController extends Controller
         $archive = Archive::findOrFail($archiveId); // Fetch the specific archive by ID
 
 
-        // "Check user authentication in url page number
-        // if($archive==null || $archive->de_user_id==null || $archive->de_user_id!=auth()->user()->id){
-        //     return back();
-        // }
+        //"Check user authentication in url page number
+        if($archive==null || $archive->de_user_id==null || $archive->de_user_id!=auth()->user()->id){
+            return back();
+        }
 
 
         $universities = University::pluck('name', 'id');

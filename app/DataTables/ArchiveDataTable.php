@@ -149,6 +149,13 @@ class ArchiveDataTable extends DataTable
         if (!empty($userList)) {
             $query->whereIn('archives.id', $userList);
         }
+
+       if (auth()->user()->user_type == 2 ||auth()->user()->user_type == 3) {
+            $query->whereNotNull('archives.de_user_id')
+                ->where('archives.de_user_id', auth()->user()->id);
+        }
+
+
     }
 
     return $query;

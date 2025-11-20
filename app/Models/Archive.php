@@ -11,34 +11,36 @@ use Spatie\Activitylog\Traits\LogsActivity;
 
 class Archive extends Model
 {
-    use SoftDeletes, UseByUniversity,UseByFaculty, UseByDepartment, LogsActivity;
+    use SoftDeletes, UseByUniversity, UseByFaculty, UseByDepartment, LogsActivity;
 
     protected $table = 'archives';
-    protected $fillable = ['university_id','archive_year_id','book_pagenumber','book_description','book_name','status_id','qc_status_id','de_user_id','qc_user_id'];
+    protected $fillable = [
+        'university_id',
+        'archive_year_id',
+        'book_pagenumber',
+        'book_description',
+        'book_name',
+        'status_id',
+        'qc_status_id',
+        'de_user_id',
+        'qc_user_id'
+    ];
 
     protected $guarded = [];
     protected static $logUnguarded = true;
     protected $dates = ['deleted_at'];
 
-
+    
 
     public function university()
     {
         return $this->belongsTo(University::class);
     }
-   
-//    public function faculty()
-//    {
-//        return $this->belongsTo(Faculty::class);
-//    }
-   
 
     public function department()
     {
         return $this->belongsTo(Department::class);
     }
-
-
 
     public function images()
     {
@@ -64,5 +66,4 @@ class Archive extends Model
     {
         return $this->belongsTo(ArchiveRole::class);
     }
-
 }
