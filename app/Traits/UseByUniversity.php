@@ -10,24 +10,33 @@ trait UseByUniversity
     protected static function bootUseByUniversity()
     {
         static::addGlobalScope('university', function ($query) {
-            if(auth('user')->check())
-            {
-                $user_type = auth()->user()->user_type;
-            }
-            else
-            {
-                 $user_type = null;
-            }
-            
-            if (!auth()->guest() and !auth()->user()->allUniversities() and ($user_type == 2 || $user_type == 3 )) {
-               $query->whereIn($query->getQuery()->from . '.university_id', auth()->user()->universities->pluck('id'));
+
+            $user = auth()->user();
+
+            if (!$user) {
+                return;
             }
 
+            $user_type = $user->user_type;
+
+            // فقط تایپ 2 و 3 فیلتر شوند
+            if ($user_type == 2 || $user_type == 3) {
+
+                // اگر کاربر دانشگاه دارد
+                if ($user->universities()->exists()) {
+                    $query->whereIn(
+                        $query->getQuery()->from . '.university_id',
+                        $user->universities->pluck('id')
+                    );
+                }
+
+                // اگر کاربر دانشگاه ندارد → هیچ فیلتری اعمال نشود (مهم!)
+            }
         });
 
         static::saving(function (Model $model) {
             if (!isset($model->university_id) and auth()->user()->user_type == 3) {
-                $model->university_id = auth()->user()->universities->first()->id;
+                $model->university_id = auth()->user()->universities->first()->id ?? null;
             }
         });
     }
@@ -36,7 +45,6 @@ trait UseByUniversity
     {
         return $query->withoutGlobalScope('university');
     }
-
 
     public function university()
     {

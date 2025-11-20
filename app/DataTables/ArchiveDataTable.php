@@ -43,8 +43,10 @@ class ArchiveDataTable extends DataTable
                         }
 
                         if(auth()->user()->can('csv-archive') ){
-                            $html .= '<li><a href="'. route('archive.view', $archive) .'"  target="new"> <i class="fa fa-pencil"></i> '. trans("general.upload_csv") .' </a></li>';
+                            $html .= '<li><a href="'. route('archive.view', $archive) .'"  target="_blank"> <i class="fa fa-pencil"></i> '. trans("general.upload_csv") .' </a></li>';
                         }
+
+ 
 
                         if(auth()->user()->can('view-archiveimage') ){
                             $html .= '<li><a href="'. route('archive.show', $archive) .'"  target="new"> <i class="fa fa-pencil"></i> '. trans("general.photo") .' </a></li>';
