@@ -29,7 +29,7 @@ use Illuminate\Support\Facades\Route;
 // Route::post('/teachers', 'TeacherController@checkteacherauthapi');
 
 Route::group(['namespace'=>'Api'], function(){
-    Route::post('teachers',["App\Http\Controllers\Api\TeacherController","checkteacherauthapi"]);
+    // Route::post('teachers',["App\Http\Controllers\Api\TeacherController","checkteacherauthapi"]);
     // Route::post('/teachers', 'TeacherController@checkteacherauthapi');
 
 });

@@ -161,21 +161,7 @@
         <script src="{{ asset('js/all.js') }}" type="text/javascript"></script>
         <script src="{{ asset('js/login.js') }}" type="text/javascript"></script>
         <script>
-        $(function() {
-            /* $('.login-form').hide();
-            $('.forget-form').show(); */
-            $('select').change(function () {
-
-                if ($(this).val() == 'teacher') {
-                    $('.login-form').attr('action', "{{ route('teacher.login') }}")
-                } else if($(this).val() == 'student'){
-                    $('.login-form').attr('action', "{{ route('student.login') }}")
-                }
-                 else {
-                    $('.login-form').attr('action', "{{ route('login') }}")
-                }
-            })
-        })
+       
         </script>
 
     </body>
