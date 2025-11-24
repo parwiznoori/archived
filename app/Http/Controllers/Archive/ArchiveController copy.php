@@ -24,6 +24,7 @@ use Illuminate\Support\Str;
 use Maatwebsite\Excel\Facades\Excel;
 use Morilog\Jalali\Jalalian;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\File;
 
 
 
@@ -267,7 +268,7 @@ class ArchiveController extends Controller
                 'book_description' => $request->book_description,
                 'book_name' => $request->book_name,
             ]);
-            ArchiveDepartment::where('archive_id', $archive->   id)->delete();
+            ArchiveDepartment::where('archive_id', $archive->id)->delete();
 
             // Attach departments to the archive (many-to-many relationship)
             if ($request->has('department_id')) {
@@ -286,12 +287,6 @@ class ArchiveController extends Controller
                 }
             }
 
-//            if ($request->book_year) {
-//                // Append '-01-01' to the provided year to form a full date
-//                $book_year = $request->book_year . '';
-//                $archive->book_year = $book_year;
-//                $archive->save();
-//            }
 
  
           if ($request->path != "" && $request->path != null) {
@@ -299,26 +294,35 @@ class ArchiveController extends Controller
                         $pageCount = PDFToJPGController::convert($request,$archive);
                     }
 
-            if ($request->path != "" && $request->path != null) {
-                $directory = public_path() . '/archivefiles/' . $archive->id.'-' .$archive->book_name;
 
-                // Delete existing archive images
+            if ($request->path != "" && $request->path != null) {
+                $directory = public_path() . '/archivefiles/' . $archive->id . '-' . $archive->book_name;
+
+                // 1. Delete old folder from archivefiles
+                if (File::exists($directory)) {
+                    File::deleteDirectory($directory);
+                }
+
+                // 2. Delete old database records
                 Archiveimage::where('archive_id', $archive->id)->delete();
 
-                // Upload new archive images
+                // 3. Create folder again
+                File::makeDirectory($directory, 0777, true, true);
+
+                // 4. Insert new images into database
                 $archiveImages = [];
                 for ($i = 1; $i <= $pageCount; $i++) {
                     $archiveImages[] = [
                         'book_pagenumber' => $i,
                         'archive_id' => $archive->id,
                         'status_id' => 1,
-                        'path' => '/archivefiles/' . $archive->id.'-' .$archive->book_name . '/' . $i . '.jpg',
-                        // 'type' => $request->type,
+                        'path' => '/archivefiles/' . $archive->id . '-' . $archive->book_name . '/' . $i . '.jpg',
                     ];
                 }
 
                 Archiveimage::insert($archiveImages);
             }
+
         });
 
         return redirect(route('archive.index'));

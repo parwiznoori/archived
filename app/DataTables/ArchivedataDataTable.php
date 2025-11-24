@@ -318,8 +318,8 @@ class ArchivedataDataTable extends DataTable
                                 var column = this;
                                 var onEvent = 'change';
                                                                                                                     
-                                if(this.index() >= 0 && this.index() <= 27) { 
-                                    if (this.index() == 0 || this.index() == 27) {
+                                if(this.index() >= 0 && this.index() <= 14) { 
+                                    if (this.index() == 0 || this.index() == 14) {
                                         $('<input class=\"datatable-footer-input ltr \" placeholder=\"'+$(column.header()).text()+'\" name=\"'+ column.index() + '\" value=\"'+ (state ? state.columns[this.index()].search.search : emptyValue) +'\" />').attr('size',10).appendTo($(column.footer()).empty())                                        
                                         .on(onEvent, function () {
                                             column.search($(this).val(), false, false, true).draw();
@@ -348,6 +348,7 @@ class ArchivedataDataTable extends DataTable
 
         return [
             'id'    => ['name' => 'id', 'title' => trans('general.id')],
+            'kankor_id'    => ['name' => 'kankor_id', 'title' => trans('general.kankor_id')],
 //            'archive' =>        ['name' => 'archives.book_name', 'title' => trans('general.book_name')],
 //            'archiveimage' =>        ['name' => 'archiveimages.', 'title' => trans('general.photo')],
             'university' => ['name' => 'universities.name', 'title' => trans('general.university')],
@@ -363,7 +364,6 @@ class ArchivedataDataTable extends DataTable
             'birth_date'    => ['name' => 'birth_date', 'title' => trans('general.birth_date')],
 //            'birth_place'    => ['name' => 'birth_place', 'title' => trans('general.birth_place')],
             'time'    => ['name' => 'time', 'title' => trans('general.time')],
-//            'kankor_id'    => ['name' => 'kankor_id', 'title' => trans('general.kankor_id')],
 //            'semester_type' =>        ['name' => 'semester_type.name', 'title' => trans('general.half_year')],
             'year_of_inclusion'    => ['name' => 'year_of_inclusion', 'title' => trans('general.year_of_inclusion')],
             'graduated_year'    => ['name' => 'graduated_year', 'title' => trans('general.graduated_year')],
