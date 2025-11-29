@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Archive;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\File;
 use Imagick;
 
 class PDFToJPGController extends Controller
@@ -16,6 +17,11 @@ class PDFToJPGController extends Controller
         $pdf = $request->file('path'); 
         $pdfPath = $pdf->getPathName();
         $outputDir = public_path() . '/archivefiles/' .$archive->id.'-' .$request->book_name . '/';
+
+           // 1. Delete old folder from archivefiles
+        if (File::exists($outputDir)) {
+            File::deleteDirectory($outputDir);
+        }
 
         // Create the output directory if it doesn't exist
         if (!file_exists($outputDir)) {
