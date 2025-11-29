@@ -268,20 +268,37 @@ class ArchiveController extends Controller
             ]);
             ArchiveDepartment::where('archive_id', $archive->   id)->delete();
 
-            // Attach departments to the archive (many-to-many relationship)
-            if ($request->has('department_id')) {
-                $departmentIds = $request->department_id;
+            // // Attach departments to the archive (many-to-many relationship)
+            // if ($request->has('department_id')) {
+            //     $departmentIds = $request->department_id;
 
-                $archiveId = $archive->id;
-                foreach ($request->department_id as $dpt) {
-                    $department=Department::where('id',$dpt)->first();
-                    $departInsert = ArchiveDepartment::create([
-                            'university_id' => $request->university_id,
-                            'faculty_id' => $department->faculty_id,
-                            'archive_id' => $archiveId, // This will be updated after with a full date
-                            'department_id' => $dpt]
-                    );
+            //     $archiveId = $archive->id;
+            //     foreach ($request->department_id as $dpt) {
+            //         $department=Department::where('id',$dpt)->first();
+            //         $departInsert = ArchiveDepartment::create([
+            //                 'university_id' => $request->university_id,
+            //                 'faculty_id' => $department->faculty_id,
+            //                 'archive_id' => $archiveId, // This will be updated after with a full date
+            //                 'department_id' => $dpt]
+            //         );
 
+            //     }
+            // }
+
+              if ($request->has('department_id')) {
+
+                $departmentIds = (array) $request->department_id;  // تبدیل به آرایه
+
+                foreach ($departmentIds as $dpt) {
+
+                    $department = Department::findOrFail($dpt);
+
+                    ArchiveDepartment::create([
+                        'university_id' => $request->university_id,
+                        'faculty_id' => $department->faculty_id,
+                        'archive_id' => $archive->id,
+                        'department_id' => $dpt,
+                    ]);
                 }
             }
 
