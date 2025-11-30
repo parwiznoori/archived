@@ -13,19 +13,14 @@ Route::get('/', function () {
 
 Route::group(['middleware' => 'auth'], function() {
     Route::get('/php_info', 'TestController@php_info');
-  
     Route::get('develope/department/type','DeveloperController@department_type');
     Route::get('develope/migrate_deprtment_deleted','DeveloperController@migrate_deprtment_deleted');
-
     Route::get('develope/department/faculty','DeveloperController@department_faculty');
     Route::get('develope/migration_create_department_faculty','DeveloperController@migration_create_department_faculty');
     Route::post('develope/migration_store_department_faculty','DeveloperController@migration_store_department_faculty')->name('develope.migrate.migration_store_department_faculty');
-
     Route::get('develope/leaves/set_department/min/{min}/max/{max}','DeveloperController@leaves_set_department');
-
     Route::get('profile/password','ProfileController@index')->name('profile.password');
     Route::put('profile/password','ProfileController@store')->name('profile.password.store');
-
     Route::resource('systemVariable', 'SystemVariableController');
 
 
@@ -37,7 +32,6 @@ Route::group(['middleware' => 'auth'], function() {
         Route::get('api/departmentArchive/{university?}', "DepartmentArchiveController")->name('api.departmentArchive');
         Route::get('api/grades', "GradesController")->name('api.grades');
         Route::get('api/faculties/{univetsity?}', "FacultiesController")->name('api.faculties');
-
         Route::get('api/departmentByFacultyArchive/{faculties?}', "DepartmentByFacultyArchiveController")->name('api.departmentByFacultyArchive');
     });
 

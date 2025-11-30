@@ -26,12 +26,10 @@ class RouteServiceProvider extends ServiceProvider
         parent::boot();
         Route::model('user', \App\User::class);        
         Route::model('issue', \App\Models\Issue::class);
-
         Route::model('university', \App\Models\University::class);
         Route::model('department', \App\Models\Department::class);
         Route::model('role', \Spatie\Permission\Models\Role::class);
         Route::model('announcement', \App\Models\Announcement::class);
-  
         Route::model('log', \Spatie\Activitylog\Models\Activity::class);
         
     }
