@@ -83,7 +83,7 @@
 <div class="row">
     <div class="col-md-12">
         <div class="form-group {{ $errors->has('grandfather_name') ? ' has-error' : '' }}">
-            {!! Form::label('grandfather_name', trans('general.grandfather_name'), ['class' => 'control-label col-sm-3']) !!}
+            {!! Form::label('grandfather_name', trans('general.grandfather_name'), ['class' => 'control-label col-sm-3 required']) !!}
             <div class="col-sm-8">
                 {!! Form::text('grandfather_name', null, ['class' => 'form-control']) !!}
                 @if ($errors->has('grandfather_name'))

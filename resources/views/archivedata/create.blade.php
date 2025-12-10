@@ -8,13 +8,18 @@
     @endif
 
 <style>
-    /* Custom CSS for Required Field Asterisk */
-    .control-label.required::after {
-    content: " *";
-    color: red;
-    font-weight: bold;
-    }
-</style>
+        /* لیبل مورد نیاز با ستاره قرمز */
+        .control-label.required::after {
+            content: " *";
+            color: red;
+            font-weight: bold;
+        }
+
+        /* خود متن لیبل هم سرخ شود */
+        .control-label.required {
+            color: red;
+        }
+        </style>
     <div class="portlet box">
         <div class="portlet-body">
 

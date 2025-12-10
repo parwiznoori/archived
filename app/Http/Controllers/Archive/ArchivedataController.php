@@ -122,7 +122,7 @@ class ArchivedataController extends Controller
             'name' => 'required',
             // 'last_name' => 'required',
             'father_name' => 'required',
-//            'grandfather_name' => 'required',
+           'grandfather_name' => 'required',
 //            'school' => 'required',
 //            'school_graduation_year' => 'required',
 //            'tazkira_number' => 'required',
@@ -150,10 +150,20 @@ class ArchivedataController extends Controller
 
 
         $department=Department::where('id',$request->department_id)->first();
+
+             // بررسی تکراری
+        $duplicate = Archivedata::where('name', $request->name)
+            ->where('father_name', $request->father_name)
+            ->where('grandfather_name', $request->grandfather_name)
+            ->where('department_id', $department->id)
+            ->exists();
+        
+        if ($duplicate) {
+            return back()->withInput()->with('error', 'این دانشجو قبلاً ثبت شده است!');
+        }
+
+
         \DB::transaction(function () use ($department, $request) {
-
-
-
             $archivedata = Archivedata::create([
                 'university_id' => $department->university_id,
                 'faculty_id' => $department->faculty_id,
@@ -211,8 +221,9 @@ class ArchivedataController extends Controller
         }
 
 
-
-        return $this->archiveBookDataEntryPageData($request->archive_image_id, $request->archivedata_id, $request->column_number);
+    session()->flash('success', 'ثبت موفقیت‌آمیز بود.');
+    
+    return $this->archiveBookDataEntryPageData($request->archive_image_id, $request->archivedata_id, $request->column_number);
     }
 
 
@@ -355,84 +366,84 @@ class ArchivedataController extends Controller
      * @return \Illuminate\Http\Response
      */
 
-    public function update(Request $request, $id)
-    {
-        $request->validate([
-            'archivedata_id' => 'required',
-            'archive_image_id' => 'required',
-            'name' => 'required',
-            // 'last_name' => 'required',
-            'father_name' => 'required',
-//            'grandfather_name' => 'required',
-//            'school' => 'required',
-//            'school_graduation_year' => 'required',
-//            'tazkira_number' => 'required',
-//            'birth_date' => 'required',
-//            'birth_place' => 'required',
-//            'time' => 'required',
-            // 'kankor_id' => 'required',
-            // 'semester_type_id' => 'required',
-            'year_of_inclusion' => 'required',
-            'graduated_year' => 'required',
-            // 'transfer_year' => 'required',
-            // 'leave_year' => 'required',
-            // 'failled_year' => 'required',
-//            'monograph_date' => 'required',
-//            'monograph_number' => 'required',
-            // 'monograph_title' => 'required',
-//            'averageOfScores' => 'required',
-//            'grade_id' => 'required',
-//            'description' => 'required',
+     public function update(Request $request, $id)
+{
+    $request->validate([
+        'archivedata_id' => 'required',
+        'archive_image_id' => 'required',
+        'department_id' => 'required',
+        'name' => 'required',
+        'father_name' => 'required',
+        'grandfather_name' => 'required',
+        'year_of_inclusion' => 'required',
+        'graduated_year' => 'required',
+    ]);
 
+    // چک رکورد
+    $archivedata = Archivedata::find($id);
+    if (!$archivedata) {
+        return back()->with('error', 'رکورد مورد نظر یافت نشد!');
+    }
 
+    // چک وضعیت QC
+    if ($archivedata->qc_status_id == 2 || $archivedata->qc_status_id == 3) {
+        return back()->with('error', 'این رکورد قابل ویرایش نیست زیرا قبلاً به کنترل کیفیت معرفی شده است.');
+    }
 
-        ]);
+    // چک department
+    $department = Department::where('id', $request->department_id)->first();
+    if (!$department) {
+        return back()->with('error', 'دیپارتمنت انتخاب شده نامعتبر است!')->withInput();
+    }
 
+    // چک duplicate
+    $duplicate = Archivedata::where('name', $request->name)
+        ->where('father_name', $request->father_name)
+        ->where('grandfather_name', $request->grandfather_name)
+        ->where('department_id', $department->id)
+        ->where('id', '!=', $id)
+        ->exists();
+    
+    if ($duplicate) {
+        return back()->withInput()->with('error', 'این دانشجو قبلاً ثبت شده است!');
+    }
 
-        $department=Department::where('id',$request->department_id)->first();
-        \DB::transaction(function () use ($department,$request, $id) {
-            $archivedata = Archivedata::find($id);
+    // آپدیت بدون transaction
+    $archivedata->update([
+        'university_id' => $department->university_id,
+        'faculty_id' => $department->faculty_id,
+        'department_id' => $department->id,
+        'column_number' => $request->column_number,
+        'archive_id' => $request->archivedata_id,
+        'archiveimage_id' => $request->archive_image_id,
+        'name' => $request->name,
+        'last_name' => $request->last_name,
+        'father_name' => $request->father_name,
+        'grandfather_name' => $request->grandfather_name,
+        'school' => $request->school,
+        'school_graduation_year' => $request->school_graduation_year,
+        'tazkira_number' => $request->tazkira_number,
+        'birth_date' => $request->birth_date,
+        'birth_place' => $request->birth_place,
+        'time' => $request->time,
+        'kankor_id' => $request->kankor_id,
+        'semester_type_id' => $request->semester_type_id,
+        'year_of_inclusion' => $request->year_of_inclusion,
+        'graduated_year' => $request->graduated_year,
+        'transfer_year' => $request->transfer_year,
+        'leave_year' => $request->leave_year,
+        'failled_year' => $request->failled_year,
+        'monograph_date' => $request->monograph_date,
+        'monograph_number' => $request->monograph_number,
+        'monograph_title' => $request->monograph_title,
+        'averageOfScores' => $request->averageOfScores,
+        'grade_id' => $request->grade_id,
+        'description' => $request->description,
+    ]);
 
-            if ($archivedata->qc_status_id == 2 || $archivedata->qc_status_id == 3) {
-                session()->flash('error', 'این رکورد قابل اپدیت نیست زیرا قبلاً  به کنترل کیفیت معرفی شده است.');
-                return back();
-            }
-
-            $archivedata->update([
-                'university_id' => $department->university_id,
-                'faculty_id' => $department->faculty_id,
-                'department_id' => $department->id,
-                'column_number' => $request->column_number,
-                'archive_id' => $request->archivedata_id,
-                'archiveimage_id' => $request->archive_image_id,
-                'name' => $request->name,
-                'last_name' => $request->last_name,
-                'father_name' => $request->father_name,
-                'grandfather_name' => $request->grandfather_name,
-                'school' => $request->school,
-                'school_graduation_year' => $request->school_graduation_year,
-                'tazkira_number' => $request->tazkira_number,
-                'birth_date' => $request->birth_date,
-                'birth_place' => $request->birth_place,
-                'time' => $request->time,
-                'kankor_id' => $request->kankor_id,
-                'semester_type_id' => $request->semester_type_id,
-                'year_of_inclusion' => $request->year_of_inclusion,
-                'graduated_year' => $request->graduated_year,
-                'transfer_year' => $request->transfer_year,
-                'leave_year' => $request->leave_year,
-                'failled_year' => $request->failled_year,
-                'monograph_date' => $request->monograph_date,
-                'monograph_number' => $request->monograph_number,
-                'monograph_title' => $request->monograph_title,
-                'averageOfScores' => $request->averageOfScores,
-                'grade_id' => $request->grade_id,
-                'description' => $request->description,
-
-            ]);
-        });
-
-        $archiveImageRecord = Archiveimage::where('id', $request->archive_image_id)->first();
+    // بروزرسانی وضعیت
+    $archiveImageRecord = Archiveimage::where('id', $request->archive_image_id)->first();
+    if ($archiveImageRecord) {
         $archiveRecord = Archive::where('id', $request->archivedata_id)->first();
         $dataCount = Archivedata::where('archiveimage_id', $request->archive_image_id)->count();
 
@@ -443,15 +454,18 @@ class ArchivedataController extends Controller
             $archiveImageRecord->status_id = 3;
             $archiveImageRecord->save();
 
-
-            $archiveRecord->status_id = 3;
-            $archiveRecord->save();
+            if ($archiveRecord) {
+                $archiveRecord->status_id = 3;
+                $archiveRecord->save();
+            }
         }
-
-        // return $this->archiveBookDataEntryPageData($request->archive_image_id, $request->archivedata_id, $request->column_number);
-        return redirect()->back();
-
     }
+
+    session()->flash('success', 'اطلاعات با موفقیت بروزرسانی شد.');
+    return $this->archiveBookDataEntryPageData($request->archive_image_id, $request->archivedata_id, $request->column_number);
+}
+
+ 
 
 
 
