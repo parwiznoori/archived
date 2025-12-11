@@ -116,9 +116,18 @@ Route::group(['middleware' => 'auth'], function() {
 
         Route::get('/archive/view/{archiveId}', 'ArchiveController@viewCsv')->name('archive.view');
         Route::post('/import', 'ArchiveController@import')->name('archivedata.import');
+
         Route::get('download-archive-template', 'ArchiveController@downloadTemplate')->name('downloadTemplate');
 
-        Route::get('/import/undo', 'ArchiveController@undoLastUpload')->name('import.undoLastUpload');
+        // Route::get('/import/undo', 'ArchiveController@undoLastUpload')->name('import.undoLastUpload');
+
+        // دو route جداگانه
+         Route::get('/import/undoLastUpload', 'ArchiveController@undoLastUpload')
+        ->name('import.undoLastUpload');
+       Route::get('/import/undoBookUpload/{archiveId}','ArchiveController@undoBookUpload')
+         ->name('import.undoBookUpload');
+
+
 
         Route::get('/archiveBookDataEntry/{id}','ArchivedataController@archiveBookDataEntry')->name('archiveBookDataEntry');
 

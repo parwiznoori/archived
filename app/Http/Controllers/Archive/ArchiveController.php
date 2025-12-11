@@ -412,15 +412,27 @@ class ArchiveController extends Controller
     }
 
 
+
     public function viewCsv(Request $request, $archiveId)
     {
         $archive = Archive::findOrFail($archiveId); // Fetch the specific archive by ID
 
 
-        //"Check user authentication in url page number
-        if($archive==null || $archive->de_user_id==null || $archive->de_user_id!=auth()->user()->id){
-            return back();
+        // "Check user authentication in url page number
+        // if($archive==null || $archive->de_user_id==null || $archive->de_user_id!=auth()->user()->id ){
+        //     return back();
+        // }
+
+        $user = auth()->user();
+        // Check if user has the right role OR owns the resource
+        if ($user->position == 'Software Developer') {
+            // Software Developer can access any archive - no further checks needed
+        } elseif ($archive == null || $archive->de_user_id == null || $archive->de_user_id != $user->id) {
+            // Regular users must pass ownership check
+            return back()->with('error', 'Access denied.');
         }
+
+      
 
 
         $universities = University::pluck('name', 'id');
@@ -625,95 +637,305 @@ class ArchiveController extends Controller
         }
     }
 
-    public function undoLastUpload()
-    {
-        try {
-            // Get the latest batch_id
-            $lastBatch = \DB::table('uploaded_csv_logs')->latest('created_at')->value('batch_id');
+    // public function undoLastUpload()
+    // {
+    //     try {
+    //         // Get the latest batch_id
+    //         $lastBatch = \DB::table('uploaded_csv_logs')->latest('created_at')->value('batch_id');
 
-            if (!$lastBatch) {
-                return redirect()->back()->withErrors(['message' => trans('اپلود معلومات پیدا نشد')]);
-            }
+    //         if (!$lastBatch) {
+    //             return redirect()->back()->withErrors(['message' => trans('اپلود معلومات پیدا نشد')]);
+    //         }
 
-            \DB::beginTransaction();
-            // Fetch student IDs associated with the batch
-            $studentIds = \DB::table('uploaded_csv_logs')
-                ->where('batch_id', $lastBatch)
-                ->select('archivedata_id')
-                ->get();
+    //         \DB::beginTransaction();
+    //         // Fetch student IDs associated with the batch
+    //         $studentIds = \DB::table('uploaded_csv_logs')
+    //             ->where('batch_id', $lastBatch)
+    //             ->select('archivedata_id')
+    //             ->get();
 
-                for($i=0;$i<count($studentIds);$i++){
-
-
-                // Get the first Archivedata record based on the student IDs
-                $data = Archivedata::where('id', $studentIds[$i]->archivedata_id)->first();
+    //             for($i=0;$i<count($studentIds);$i++){
 
 
-
-
-                if ($data) {
-                    // Update Archiveimage record
-                    $archiveimage = Archiveimage::find($data->archiveimage_id);
-
-                    if ($archiveimage) {
-                        $archiveimage->update([
-                            'total_students' => 0,
-                            'status_id' => 1,
-                        ]);
-                    } else {
-                        Log::warning('Archiveimage not found for ID: ' . $data->archiveimage_id);
-                    }
-
-                    // Update Archive record
-                    $archive = Archive::find($data->archive_id);
+    //             // Get the first Archivedata record based on the student IDs
+    //             $data = Archivedata::where('id', $studentIds[$i]->archivedata_id)->first();
 
 
 
 
-                    if ($archive) {
-                        $archive->update([
-                            'status_id' => 1,
-                        ]);
-                    } else {
-                        Log::warning('Archive not found for ID: ' . $data->archive_id);
-                    }
-                } else {
-                    Log::warning('No Archivedata found for the provided student IDs.');
-                }
+    //             if ($data) {
+    //                 // Update Archiveimage record
+    //                 $archiveimage = Archiveimage::find($data->archiveimage_id);
 
+    //                 if ($archiveimage) {
+    //                     $archiveimage->update([
+    //                         'total_students' => 0,
+    //                         'status_id' => 1,
+    //                     ]);
+    //                 } else {
+    //                     Log::warning('Archiveimage not found for ID: ' . $data->archiveimage_id);
+    //                 }
 
-                    if (in_array($archive->qc_status_id, [2, 3, 4])) {
-                        session()->flash('error', 'این رکورد قابل لغو نیست زیرا قبلاً به کنترل کیفیت معرفی شده است.');
-                        return back();
-                    }
-
-                // Delete the Archivedata records and log entries
-                $deletedCount = Archivedata::where('id', $studentIds[$i]->archivedata_id)->forceDelete();
-            }
+    //                 // Update Archive record
+    //                 $archive = Archive::find($data->archive_id);
 
 
 
-            \DB::table('uploaded_csv_logs')->where('batch_id', $lastBatch)->delete();
 
-            \DB::commit();
+    //                 if ($archive) {
+    //                     $archive->update([
+    //                         'status_id' => 1,
+    //                     ]);
+    //                 } else {
+    //                     Log::warning('Archive not found for ID: ' . $data->archive_id);
+    //                 }
+    //             } else {
+    //                 Log::warning('No Archivedata found for the provided student IDs.');
+    //             }
 
-            // Flash success message
-            $message = trans('  محصلین این کتاب حذف شد.', ['count' => $deletedCount]);
-            Session::flash('message', $message);
 
-            return redirect()->route('archive.view');
-        } catch (\Exception $e) {
-            \DB::rollback();
-            Log::error('Error undoing upload: ' . $e->getMessage());
+    //                 if (in_array($archive->qc_status_id, [2, 3, 4])) {
+    //                     session()->flash('error', 'این رکورد قابل لغو نیست زیرا قبلاً به کنترل کیفیت معرفی شده است.');
+    //                     return back();
+    //                 }
 
-            return redirect()->back()->withErrors([
-                'message' => trans('general.upload_undo_failed'),
-            ]);
+    //             // Delete the Archivedata records and log entries
+    //             $deletedCount = Archivedata::where('id', $studentIds[$i]->archivedata_id)->forceDelete();
+    //         }
+
+
+
+    //         \DB::table('uploaded_csv_logs')->where('batch_id', $lastBatch)->delete();
+
+    //         \DB::commit();
+
+    //         // Flash success message
+    //         $message = trans('  محصلین این کتاب حذف شد.', ['count' => $deletedCount]);
+    //         Session::flash('message', $message);
+
+    //         return redirect()->route('archive.view');
+    //     } catch (\Exception $e) {
+    //         \DB::rollback();
+    //         Log::error('Error undoing upload: ' . $e->getMessage());
+
+    //         return redirect()->back()->withErrors([
+    //             'message' => trans('general.upload_undo_failed'),
+    //         ]);
+    //     }
+    // }
+
+// تابع برای حذف آخرین آپلود (بدون پارامتر)
+public function undoLastUpload()
+{
+    try {
+        \Log::info('=== UNDO LAST UPLOAD START ===');
+
+        // 1. دریافت آخرین batch_id از لاگ‌ها
+        $lastBatch = \DB::table('uploaded_csv_logs')
+            ->whereNotNull('batch_id')
+            ->latest('created_at')
+            ->value('batch_id');
+
+        if (!$lastBatch) {
+            \Log::warning('No batch found for undo');
+            return redirect()->back()->with('error', 'آپلود معلومات پیدا نشد');
         }
+
+        \Log::info('Last batch found', ['batch_id' => $lastBatch]);
+
+        \DB::beginTransaction();
+
+        // 2. دریافت تمام رکوردهای این batch
+        $logs = \DB::table('uploaded_csv_logs')
+            ->where('batch_id', $lastBatch)
+            ->get();
+
+        if ($logs->isEmpty()) {
+            \DB::rollback();
+            return redirect()->back()->with('error', 'لاگ‌های آپلود پیدا نشد');
+        }
+
+        $deletedCount = 0;
+        $affectedPages = [];
+
+        // 3. حذف هر رکورد
+        foreach ($logs as $log) {
+            if ($log->archivedata_id) {
+                // پیدا کردن archivedata
+                $archivedata = \App\Models\Archivedata::find($log->archivedata_id);
+                
+                if ($archivedata) {
+                    // کاهش تعداد محصلین در صفحه
+                    $archiveimage = \App\Models\Archiveimage::find($archivedata->archiveimage_id);
+                    if ($archiveimage) {
+                        $newTotal = max(0, $archiveimage->total_students - 1);
+                        $archiveimage->update([
+                            'total_students' => $newTotal,
+                            'status_id' => $newTotal > 0 ? 4 : 1,
+                        ]);
+                        
+                        $affectedPages[$archivedata->archiveimage_id] = true;
+                    }
+                    
+                    // حذف archivedata
+                    $archivedata->forceDelete();
+                    $deletedCount++;
+                }
+            }
+            
+            // حذف لاگ
+            \DB::table('uploaded_csv_logs')->where('id', $log->id)->delete();
+        }
+
+        // 4. آپدیت وضعیت صفحات
+        foreach (array_keys($affectedPages) as $imageId) {
+            $archiveimage = \App\Models\Archiveimage::find($imageId);
+            if ($archiveimage) {
+                // اگر صفحه خالی شد، وضعیت را به 1 تغییر بده
+                if ($archiveimage->total_students == 0) {
+                    $archiveimage->update(['status_id' => 1]);
+                }
+                
+                // آپدیت وضعیت کتاب
+                $archive = \App\Models\Archive::find($archiveimage->archive_id);
+                if ($archive && $archive->status_id != 1) {
+                    // بررسی آیا کتاب هنوز محصل دارد
+                    $remainingStudents = \App\Models\Archivedata::where('archive_id', $archive->id)->count();
+                    if ($remainingStudents == 0) {
+                        $archive->update(['status_id' => 1]);
+                        
+                        // آپدیت نقش آرشیو
+                        $archiveRole = \App\Models\ArchiveRole::where('archive_id', $archive->id)->first();
+                        if ($archiveRole) {
+                            $archiveRole->update(['status_id' => 1]);
+                        }
+                    }
+                }
+            }
+        }
+
+        \DB::commit();
+
+        \Log::info('=== UNDO LAST UPLOAD COMPLETE ===', [
+            'batch_id' => $lastBatch,
+            'deleted_records' => $deletedCount,
+            'affected_pages' => count($affectedPages)
+        ]);
+
+        return redirect()->back()->with('success', "✅ آخرین آپلود با موفقیت حذف شد. ({$deletedCount} رکورد حذف شد)");
+
+    } catch (\Exception $e) {
+        \DB::rollback();
+        \Log::error('Error undoing last upload: ' . $e->getMessage(), [
+            'trace' => $e->getTraceAsString()
+        ]);
+
+        return redirect()->back()->with('error', 'خطا در حذف آخرین آپلود: ' . $e->getMessage());
     }
+}
+
+// تابع جدید برای حذف کل کتاب (با پارامتر)
+public function undoBookUpload($archiveId)
+{
+    try {
+        \Log::info('=== UNDO BOOK UPLOAD START ===', ['archive_id' => $archiveId]);
+
+        // بررسی وجود آرشیو
+        $archive = Archive::find($archiveId);
+        
+        if (!$archive) {
+            return redirect()->back()->with('error', 'کتاب مورد نظر یافت نشد');
+        }
+
+        // بررسی وضعیت QC
+        if (in_array($archive->qc_status_id, [2, 3, 4])) {
+            return redirect()->back()->with('error', 'این کتاب قابل لغو نیست زیرا قبلاً به کنترل کیفیت معرفی شده است.');
+        }
+
+        \DB::beginTransaction();
+
+        // 1. شمارش محصلین قبل از حذف
+        $studentCount = Archivedata::where('archive_id', $archiveId)->count();
+        
+        if ($studentCount === 0) {
+            \DB::rollback();
+            return redirect()->back()->with('error', 'هیچ محصلی برای این کتاب یافت نشد');
+        }
+
+        // 2. دریافت image_id های مورد استفاده
+        $pageStats = Archivedata::where('archive_id', $archiveId)
+            ->select('archiveimage_id', \DB::raw('COUNT(*) as student_count'))
+            ->groupBy('archiveimage_id')
+            ->get()
+            ->pluck('student_count', 'archiveimage_id')
+            ->toArray();
+
+        // 3. دریافت IDهای archivedata قبل از حذف
+        $archivedataIds = Archivedata::where('archive_id', $archiveId)
+            ->pluck('id')
+            ->toArray();
+
+        // 4. حذف لاگ‌های مربوطه اگر IDها وجود دارند
+        if (!empty($archivedataIds)) {
+            \DB::table('uploaded_csv_logs')
+                ->whereIn('archivedata_id', $archivedataIds)
+                ->delete();
+        }
+
+        // 5. حذف رکوردهای Archivedata
+        $deleted = Archivedata::where('archive_id', $archiveId)->forceDelete();
+        
+        if (!$deleted) {
+            \DB::rollback();
+            return redirect()->back()->with('error', 'خطا در حذف رکوردها');
+        }
+
+        // 6. آپدیت Archiveimage ها
+        foreach ($pageStats as $imageId => $removedCount) {
+            $archiveimage = Archiveimage::find($imageId);
+            if ($archiveimage) {
+                $newTotal = max(0, $archiveimage->total_students - $removedCount);
+                $archiveimage->update([
+                    'total_students' => $newTotal,
+                    'status_id' => $newTotal > 0 ? 4 : 1,
+                ]);
+            }
+        }
+
+        // 7. آپدیت وضعیت کتاب
+        $archive->update(['status_id' => 1]);
+        
+        // 8. آپدیت نقش آرشیو اگر وجود دارد
+        $archiveRole = ArchiveRole::where('archive_id', $archiveId)->first();
+        if ($archiveRole) {
+            $archiveRole->update(['status_id' => 1]);
+        }
+
+        \DB::commit();
+
+        \Log::info('=== UNDO BOOK UPLOAD COMPLETE ===', [
+            'archive_id' => $archiveId,
+            'deleted_students' => $studentCount,
+            'affected_pages' => count($pageStats),
+            'book_name' => $archive->book_name
+        ]);
+
+        // مهم: فقط از یک روش استفاده کنید
+        return redirect()->route('archive.view', $archiveId)
+            ->with('success', "✅ تمام {$studentCount} محصل کتاب '{$archive->book_name}' با موفقیت حذف شدند.");
+
+    } catch (\Exception $e) {
+        \DB::rollback();
+        \Log::error('Error undoing book upload: ' . $e->getMessage(), [
+            'trace' => $e->getTraceAsString(),
+            'archive_id' => $archiveId
+        ]);
+
+        return redirect()->back()->with('error', 'خطا در حذف کتاب: ' . $e->getMessage());
+    }
+}
 
 
 
 
 }
-
