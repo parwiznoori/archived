@@ -502,12 +502,13 @@
                         ❌ انصراف
                     </a>
 
-                    <!-- حذف آخرین آپلود -->
-                    <a href="{{ route('import.undoLastUpload') }}" 
+                    {{-- <!-- حذف آخرین آپلود -->
+                    <a href="{{ route('import.undoLastUpload', $archive->id)) }}"
+                         data-book-name="{{ $archive->book_name }}" 
                        class="btn btn-warning btn-lg mx-2 mb-2"
                        onclick="return confirm('آیا از حذف آخرین آپلود مطمئن هستید؟')">
                         ↩️ لغو آخرین آپلود
-                    </a>
+                    </a> --}}
 
                     <!-- حذف کل کتاب -->
                     <button type="button" 

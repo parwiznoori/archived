@@ -93,7 +93,7 @@ Route::group(['middleware' => 'auth'], function() {
    
    
     
-    //archive rout
+    //archive route
 
     Route::get('departments/{facultyId}', [DepartmentsController::class, 'getDepartments']);
 
@@ -119,12 +119,10 @@ Route::group(['middleware' => 'auth'], function() {
 
         Route::get('download-archive-template', 'ArchiveController@downloadTemplate')->name('downloadTemplate');
 
-        // Route::get('/import/undo', 'ArchiveController@undoLastUpload')->name('import.undoLastUpload');
-
-        // دو route جداگانه
-         Route::get('/import/undoLastUpload', 'ArchiveController@undoLastUpload')
+       
+         Route::get('/import/undoLastUpload/{archiveId}', 'ArchiveController@undoLastUpload')
         ->name('import.undoLastUpload');
-       Route::get('/import/undoBookUpload/{archiveId}','ArchiveController@undoBookUpload')
+         Route::get('/import/undoBookUpload/{archiveId}','ArchiveController@undoBookUpload')
          ->name('import.undoBookUpload');
 
 

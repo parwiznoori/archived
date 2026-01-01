@@ -633,10 +633,7 @@ class ArchivedataController extends Controller
     {
         $archiveRecord = Archive::find($id);
 
-//        if ($archiveRecord->qc_status_id == 2 || $archiveRecord->qc_status_id == 3) {
-//            session()->flash('error', 'این رکورد قابل اپدیت نیست زیرا قبلاً  به کنترل کیفیت معرفی شده است.');
-//            return back();
-//        }
+
 
         // "Check user authentication in url page number
         if($archiveRecord==null || $archiveRecord->de_user_id==null || $archiveRecord->de_user_id!=auth()->user()->id){
