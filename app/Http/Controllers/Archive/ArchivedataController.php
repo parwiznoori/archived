@@ -662,10 +662,17 @@ class ArchivedataController extends Controller
                 'status_id' => '3',
             ]);
         }else{
+            
+        $archiveImage = Archiveimage::where('archive_id', $id)
+            ->where('status_id','1')
+            ->orderBy('id', 'asc')->first();
+        if( $archiveImage==null){
+
             $archiveRecord->update([
                 'status_id' => '4',
             ]);
         }
+    }
 
         $archiveImage = Archiveimage::where('archive_id', $id)
             ->where('book_pagenumber', ($archiveImageCurrent->book_pagenumber + $step))
@@ -680,9 +687,18 @@ class ArchivedataController extends Controller
             if ($archiveImageIsComplete == null || $CEHCKData==null) {
 
                 $archiveUpdate = Archive::find($id);
-                $archiveUpdate->update([
+
+                   
+        $archiveImage = Archiveimage::where('archive_id', $id)
+            ->where('status_id','1')
+            ->orderBy('id', 'asc')->first();
+        if( $archiveImage==null){
+
+           $archiveUpdate->update([
                     'status_id' => '4',
                 ]);
+        }
+             
                 return redirect()->back()->with('error', ' صفحه آخر کتاب است');
             } else {
                 $archiveImage = $archiveImageIsComplete;
