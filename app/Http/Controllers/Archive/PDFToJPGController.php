@@ -16,17 +16,26 @@ class PDFToJPGController extends Controller
         ]);
 
         $pdf = $request->file('path'); 
-        $pdfPath = $pdf->getPathName();
+
+        // 🔹 ذخیره PDF در مسیر دائمی temp
+        $pdfName = time() . '-' . $pdf->getClientOriginalName();
+        $pdfSavePath = storage_path('app/temp_pdfs/' . $pdfName);
+
+        if (!is_dir(dirname($pdfSavePath))) {
+            mkdir(dirname($pdfSavePath), 0775, true);
+        }
+
+        $pdf->move(dirname($pdfSavePath), $pdfName);
 
         // ✅ بررسی فایل
-        if (!file_exists($pdfPath) || filesize($pdfPath) == 0) {
+        if (!file_exists($pdfSavePath) || filesize($pdfSavePath) == 0) {
             throw new \Exception('PDF file not found or empty');
         }
 
-        // ✅ ساخت مسیر خروجی (بدون تکرار)
+        // 🔹 مسیر خروجی JPG
         $outputDir = public_path('/archivefiles/' . $archive->id . '-' . $request->book_name);
 
-        // ✅ اگر فولدر وجود داشت فقط داخلش پاک شود (نه حذف کامل)
+        // ✅ اگر فولدر وجود داشت فقط داخلش پاک شود
         if (is_dir($outputDir)) {
             File::cleanDirectory($outputDir);
         } else {
@@ -34,25 +43,22 @@ class PDFToJPGController extends Controller
         }
 
         $imagick = new Imagick();
-
-        // ✅ تنظیم DPI مناسب
         $imagick->setResolution(150, 150);
 
         try {
-            // ✅ تست خواندن PDF (صفحه اول)
-            $imagick->readImage($pdfPath . '[0]');
+            // ✅ تست خواندن صفحه اول PDF
+            $imagick->readImage($pdfSavePath . '[0]');
         } catch (\Exception $e) {
             throw new \Exception('Cannot read PDF: ' . $e->getMessage());
         }
 
-        // ✅ اگر صفحه‌ای لود نشد
         if ($imagick->getNumberImages() == 0) {
             throw new \Exception('PDF has no readable pages');
         }
 
         // ✅ پاک و خواندن کل PDF
         $imagick->clear();
-        $imagick->readImage($pdfPath);
+        $imagick->readImage($pdfSavePath);
 
         $pageCount = 0;
 
@@ -63,17 +69,17 @@ class PDFToJPGController extends Controller
             $page->setColorspace(Imagick::COLORSPACE_RGB);
 
             $outputPath = $outputDir . '/' . ($index + 1) . '.jpg';
-
             $page->writeImage($outputPath);
 
-            // ✅ آزادسازی حافظه
             $page->clear();
-
             $pageCount++;
         }
 
         $imagick->clear();
         $imagick->destroy();
+
+        // 🔹 حذف فایل PDF temp بعد از پردازش
+        unlink($pdfSavePath);
 
         return $pageCount;
     }
