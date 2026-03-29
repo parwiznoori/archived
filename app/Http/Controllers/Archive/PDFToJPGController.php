@@ -23,19 +23,19 @@ class PDFToJPGController extends Controller
             throw new \Exception('PDF file not found or empty');
         }
 
+        // ✅ ساخت مسیر خروجی (بدون تکرار)
         $outputDir = public_path('/archivefiles/' . $archive->id . '-' . $request->book_name);
 
-        // ✅ حذف فولدر قبلی
-        if (File::exists($outputDir)) {
-            File::deleteDirectory($outputDir);
+        // ✅ اگر فولدر وجود داشت فقط داخلش پاک شود (نه حذف کامل)
+        if (is_dir($outputDir)) {
+            File::cleanDirectory($outputDir);
+        } else {
+            mkdir($outputDir, 0775, true);
         }
-
-        // ✅ ساخت امن فولدر (بدون خطا)
-        File::ensureDirectoryExists($outputDir);
 
         $imagick = new Imagick();
 
-        // ✅ تنظیم کیفیت مناسب (کمتر از 300 برای جلوگیری از کرش)
+        // ✅ تنظیم DPI مناسب
         $imagick->setResolution(150, 150);
 
         try {
@@ -45,12 +45,12 @@ class PDFToJPGController extends Controller
             throw new \Exception('Cannot read PDF: ' . $e->getMessage());
         }
 
-        // اگر صفحه‌ای لود نشد
+        // ✅ اگر صفحه‌ای لود نشد
         if ($imagick->getNumberImages() == 0) {
             throw new \Exception('PDF has no readable pages');
         }
 
-        // ✅ حالا کل PDF را بخوان
+        // ✅ پاک و خواندن کل PDF
         $imagick->clear();
         $imagick->readImage($pdfPath);
 
@@ -66,7 +66,7 @@ class PDFToJPGController extends Controller
 
             $page->writeImage($outputPath);
 
-            // ✅ آزادسازی حافظه (خیلی مهم)
+            // ✅ آزادسازی حافظه
             $page->clear();
 
             $pageCount++;
