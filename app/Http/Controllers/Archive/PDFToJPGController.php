@@ -18,7 +18,7 @@ class PDFToJPGController extends Controller
         $pdfPath = $pdf->getPathName();
         $outputDir = public_path() . '/archivefiles/' .$archive->id.'-' .$request->book_name . '/';
 
-           // 1. Delete old folder from archivefiles
+            // 1. Delete old folder from archivefiles
         if (File::exists($outputDir)) {
             File::deleteDirectory($outputDir);
         }
