@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Http\Controllers\Archive;
+
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
@@ -8,53 +9,48 @@ use Imagick;
 
 class PDFToJPGController extends Controller
 {
-    public static function convert(Request $request,$archive)
+    public static function convert(Request $request, $archive)
     {
         $request->validate([
-            'path.*' => 'required|image|mimes:pdf,jpeg,png,jpg,gif,svg|max:1000000', 
+            'path' => 'required|file|mimes:pdf|max:1024000',
         ]);
-       
+
         $pdf = $request->file('path'); 
         $pdfPath = $pdf->getPathName();
-        $outputDir = public_path() . '/archivefiles/' .$archive->id.'-' .$request->book_name . '/';
 
-           // 1. Delete old folder from archivefiles
+        $outputDir = public_path('/archivefiles/' . $archive->id . '-' . $request->book_name);
+
+        // delete old
         if (File::exists($outputDir)) {
             File::deleteDirectory($outputDir);
         }
 
-        // Create the output directory if it doesn't exist
-        if (!file_exists($outputDir)) {
-            mkdir($outputDir, 0777, true);
-        }
+        // create
+        File::makeDirectory($outputDir, 0775, true);
 
         $imagick = new Imagick();
+        $imagick->setResolution(150, 150);
 
-        // Set the resolution for the images (DPI)
-        $imagick->setResolution(300, 300); // 300 DPI for high quality
+        // 🔥 مهم
         $imagick->readImage($pdfPath);
 
         $pageCount = 0;
+
         foreach ($imagick as $index => $page) {
-            // Set image format to JPG
             $page->setImageFormat('jpg');
-
-            // Set quality for the image (0 - 100)
-            $page->setImageCompressionQuality(100); // 100 for no compression
-
-            // Optional: You can also ensure to keep the colorspace
+            $page->setImageCompressionQuality(90);
             $page->setColorspace(Imagick::COLORSPACE_RGB);
 
             $outputPath = $outputDir . '/' . ($index + 1) . '.jpg';
             $page->writeImage($outputPath);
-            $pageCount = $index + 1;
+
+            $page->clear();
+            $pageCount++;
         }
 
-        // Clear Imagick object to free resources
         $imagick->clear();
         $imagick->destroy();
 
         return $pageCount;
     }
-
 }
