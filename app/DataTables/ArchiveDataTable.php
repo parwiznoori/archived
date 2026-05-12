@@ -199,12 +199,54 @@ class ArchiveDataTable extends DataTable
         return $query;
     }
 
-    public function html()
+   public function html()
     {
         return $this->builder()
-            ->columns($this->getColumns())
-            ->minifiedAjax()
-            ->addAction(['title' => trans('general.action'), 'width' => '100px']);
+                    ->columns($this->getColumns())
+                    ->minifiedAjax()
+                    ->addAction(['title' => trans('general.action'), 'width' => '80px'])
+                    ->parameters(array_merge($this->getBuilderParameters([]), [
+                        'dom'          => '<"top"Bl>rt<"bottom"ip>',
+                        'initComplete' => "function (settings, data) {   
+                            emptyValue = '';                                     
+                            table = this      
+                            state = table.api().state.loaded()                        
+                            
+                            $('.dt-button.buttons-reset').click(function () {
+                                $('.nav-tabs li').removeClass('active')
+                                $('a[data-status-id=\"all\"]').parent().addClass('active');
+                                $('tfoot input').val('');
+                                $('tfoot select').val('');
+                            })
+
+                            if(!state || state.columns[0].search.search == '')        
+                                $('a[data-status-id=\"all\"]').parent().addClass('active')
+                            else
+                                $('a[data-status-id=\"'+state.columns[0].search.search+'\"]').parent().addClass('active')
+
+                            table.api().columns().every(function () {
+                                var column = this;
+                                var onEvent = 'change';
+                                                                                                                    
+                                if(this.index() >= 0 && this.index() <= 11) { 
+                                    if (this.index() == 0 || this.index() == 2 ) {
+                                        $('<input class=\"datatable-footer-input ltr \" placeholder=\"'+$(column.header()).text()+'\" name=\"'+ column.index() + '\" value=\"'+ (state ? state.columns[this.index()].search.search : emptyValue) +'\" />').attr('size',10).appendTo($(column.footer()).empty())                                        
+                                        .on(onEvent, function () {
+                                            column.search($(this).val(), false, false, true).draw();
+                                        });
+                                    } else {
+                                        $('<input class=\"datatable-footer-input \"  placeholder=\"'+$(column.header()).text()+'\" name=\"'+ column.index() + '\" value=\"'+ (state ? state.columns[this.index()].search.search : emptyValue) +'\" />') .attr('size',10).appendTo($(column.footer()).empty())                                        
+                                        .on(onEvent, function () {
+                                            column.search($(this).val(), false, false, true).draw();
+                                        });
+                                    }
+                                }
+                            });
+
+                            $('#dataTableBuilder').wrap('<div class=\"table-responsive\"></div>');
+                        }"
+
+                    ]));
     }
 
     protected function getColumns()

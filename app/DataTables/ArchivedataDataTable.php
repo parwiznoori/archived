@@ -296,9 +296,9 @@ class ArchivedataDataTable extends DataTable
         return $this->builder()
                     ->columns($this->getColumns())
                     ->minifiedAjax()
-                    ->addAction(['title' => trans('general.action'), 'width' => '100px'])
+                    ->addAction(['title' => trans('general.action'), 'width' => '80px'])
                     ->parameters(array_merge($this->getBuilderParameters([]), [
-                        'dom'          => 'Brtip',
+                        'dom'          => '<"top"Bl>rt<"bottom"ip>',
                         'initComplete' => "function (settings, data) {   
                             emptyValue = '';                                     
                             table = this      
@@ -306,7 +306,9 @@ class ArchivedataDataTable extends DataTable
                             
                             $('.dt-button.buttons-reset').click(function () {
                                 $('.nav-tabs li').removeClass('active')
-                                $('a[data-status-id=\"all\"]').parent().addClass('active')
+                                $('a[data-status-id=\"all\"]').parent().addClass('active');
+                                 $('tfoot input').val('');
+                                $('tfoot select').val('');
                             })
 
                             if(!state || state.columns[0].search.search == '')        
@@ -318,8 +320,8 @@ class ArchivedataDataTable extends DataTable
                                 var column = this;
                                 var onEvent = 'change';
                                                                                                                     
-                                if(this.index() >= 0 && this.index() <= 14) { 
-                                    if (this.index() == 0 || this.index() == 14) {
+                                if(this.index() >= 0 && this.index() <= 15) { 
+                                    if (this.index() == 0 || this.index() == 14 ) {
                                         $('<input class=\"datatable-footer-input ltr \" placeholder=\"'+$(column.header()).text()+'\" name=\"'+ column.index() + '\" value=\"'+ (state ? state.columns[this.index()].search.search : emptyValue) +'\" />').attr('size',10).appendTo($(column.footer()).empty())                                        
                                         .on(onEvent, function () {
                                             column.search($(this).val(), false, false, true).draw();
