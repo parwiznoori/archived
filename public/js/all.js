@@ -122,213 +122,169 @@ var App = function() {
 
 
 // Select2 برای انتخاب چندتایی کتاب‌ها
-// $(document).ready(function() {
+$(document).ready(function() {
     
-//     // بررسی وجود المنت قبل از اجرا
-//     if ($(".select2-two-paramter-ajax-multiple").length > 0) {
+    // بررسی وجود المنت قبل از اجرا
+    if ($(".select2-two-paramter-ajax-multiple").length > 0) {
         
-//         $(".select2-two-paramter-ajax-multiple").select2({
-//             language: "fa",
-//             multiple: true,
-//             allowClear: true,
-//             placeholder: "انتخاب کتاب‌ها",
-//             minimumInputLength: 0,
-//             width: '100%', // تنظیم عرض
-//             dropdownAutoWidth: true,
+        $(".select2-two-paramter-ajax-multiple").select2({
+            language: "fa",
+            multiple: true,
+            allowClear: true,
+            placeholder: "انتخاب کتاب‌ها",
+            minimumInputLength: 0,
+            width: '100%', // تنظیم عرض
+            dropdownAutoWidth: true,
             
-//             ajax: {
-//                 url: function () {
-//                     let $element = $(".select2-two-paramter-ajax-multiple");
-//                     let base = $element.attr('remote-url');
+            ajax: {
+                url: function () {
+                    let $element = $(".select2-two-paramter-ajax-multiple");
+                    let base = $element.attr('remote-url');
                     
-//                     // دریافت مقادیر با استفاده از ID مستقیم برای اطمینان بیشتر
-//                     let uParam = $('#university_id').val();
-//                     let rParam = $('#role_id').val();
+                    // دریافت مقادیر با استفاده از ID مستقیم برای اطمینان بیشتر
+                    let uParam = $('#university_id').val();
+                    let rParam = $('#role_id').val();
                     
-//                     console.log('University ID:', uParam);
-//                     console.log('Role ID:', rParam);
+                    console.log('University ID:', uParam);
+                    console.log('Role ID:', rParam);
                     
-//                     // اگر یکی از پارامترها خالی بود، درخواست نده
-//                     if (!uParam || !rParam) {
-//                         return null;
-//                     }
+                    // اگر یکی از پارامترها خالی بود، درخواست نده
+                    if (!uParam || !rParam) {
+                        return null;
+                    }
                     
-//                     // ساخت URL و حذف اسلش‌های اضافی
-//                     let url = base + '/' + uParam + '/' + rParam;
-//                     url = url.replace(/\/+$/, ''); // حذف اسلش آخر
+                    // ساخت URL و حذف اسلش‌های اضافی
+                    let url = base + '/' + uParam + '/' + rParam;
+                    url = url.replace(/\/+$/, ''); // حذف اسلش آخر
                     
-//                     console.log('Request URL:', url);
-//                     return url;
-//                 },
+                    console.log('Request URL:', url);
+                    return url;
+                },
                 
-//                 dataType: 'json',
-//                 delay: 500, // افزایش delay برای سرور
+                dataType: 'json',
+                delay: 500, // افزایش delay برای سرور
                 
-//                 data: function (params) {
-//                     return {
-//                         q: params.term || '', // متن جستجو
-//                         page: params.page || 1
-//                     };
-//                 },
+                data: function (params) {
+                    return {
+                        q: params.term || '', // متن جستجو
+                        page: params.page || 1
+                    };
+                },
                 
-//                 processResults: function (data, params) {
-//                     params.page = params.page || 1;
+                processResults: function (data, params) {
+                    params.page = params.page || 1;
                     
-//                     // بررسی ساختار داده برگشتی
-//                     let results = [];
-//                     let pagination = { more: false };
+                    // بررسی ساختار داده برگشتی
+                    let results = [];
+                    let pagination = { more: false };
                     
-//                     if (data && data.results) {
-//                         // فرمت با صفحه‌بندی
-//                         results = data.results;
-//                         pagination.more = data.pagination && data.pagination.more ? true : false;
-//                     } else if (Array.isArray(data)) {
-//                         // آرایه ساده
-//                         results = data;
-//                     } else if (data && Array.isArray(data.data)) {
-//                         // فرمت لاگ
-//                         results = data.data;
-//                     }
+                    if (data && data.results) {
+                        // فرمت با صفحه‌بندی
+                        results = data.results;
+                        pagination.more = data.pagination && data.pagination.more ? true : false;
+                    } else if (Array.isArray(data)) {
+                        // آرایه ساده
+                        results = data;
+                    } else if (data && Array.isArray(data.data)) {
+                        // فرمت لاگ
+                        results = data.data;
+                    }
                     
-//                     return {
-//                         results: results,
-//                         pagination: pagination
-//                     };
-//                 },
+                    return {
+                        results: results,
+                        pagination: pagination
+                    };
+                },
                 
-//                 cache: true,
+                cache: true,
                 
-//                 error: function(xhr, status, error) {
-//                     console.error('Select2 AJAX Error:');
-//                     console.error('Status:', status);
-//                     console.error('Error:', error);
-//                     console.error('Response:', xhr.responseText);
+                error: function(xhr, status, error) {
+                    console.error('Select2 AJAX Error:');
+                    console.error('Status:', status);
+                    console.error('Error:', error);
+                    console.error('Response:', xhr.responseText);
                     
-//                     // نمایش پیام خطا به کاربر
-//                     toastr.error('خطا در دریافت اطلاعات کتاب‌ها');
-//                 }
-//             },
-            
-//             templateResult: function (data) {
-//                 if (data.loading) {
-//                     return $('<span class="loading">در حال جستجو...</span>');
-//                 }
-                
-//                 if (!data.text && data.book_name) {
-//                     data.text = data.book_name;
-//                 }
-                
-//                 return $('<span>').text(data.text || 'نامشخص');
-//             },
-            
-//             templateSelection: function (data) {
-//                 if (!data.text && data.book_name) {
-//                     data.text = data.book_name;
-//                 }
-                
-//                 return data.text || data.id || 'انتخاب کنید';
-//             },
-            
-//             language: {
-//                 errorLoading: function() {
-//                     return "خطا در بارگذاری نتایج";
-//                 },
-//                 inputTooLong: function(args) {
-//                     return "لطفاً " + (args.input.length - args.maximum) + " کاراکتر حذف کنید";
-//                 },
-//                 inputTooShort: function(args) {
-//                     return "لطفاً " + (args.minimum - args.input.length) + " کاراکتر دیگر وارد کنید";
-//                 },
-//                 loadingMore: function() {
-//                     return "در حال بارگذاری نتایج بیشتر...";
-//                 },
-//                 maximumSelected: function(args) {
-//                     return "شما تنها می‌توانید " + args.maximum + " آیتم انتخاب کنید";
-//                 },
-//                 noResults: function() {
-//                     return "نتیجه‌ای یافت نشد";
-//                 },
-//                 searching: function() {
-//                     return "در حال جستجو...";
-//                 }
-//             }
-//         });
-//     }
-
-//     // وقتی role_id یا university_id تغییر کرد، انتخاب‌ها پاک شوند
-//     $('#role_id, #university_id').on('change', function() {
-//         console.log('Role or University changed, resetting book selection');
-        
-//         // پاک کردن انتخاب‌ها
-//         $('#archive_ids').val(null).trigger('change');
-        
-//         // غیرفعال کردن select تا زمانی که هر دو مقدار انتخاب شوند
-//         let roleVal = $('#role_id').val();
-//         let uniVal = $('#university_id').val();
-        
-//         if (!roleVal || !uniVal) {
-//             $('#archive_ids').prop('disabled', true);
-//         } else {
-//             $('#archive_ids').prop('disabled', false);
-//         }
-//     });
-
-//     // فعال/غیرفعال کردن اولیه
-//     let initialRole = $('#role_id').val();
-//     let initialUni = $('#university_id').val();
-    
-//     if (!initialRole || !initialUni) {
-//         $('#archive_ids').prop('disabled', true);
-//     }
-// });
-
-
-
-// Select2 برای انتخاب چندتایی کتاب‌ها
-$(".select2-two-paramter-ajax-multiple").select2({
-    language: "fa",
-    multiple: true,
-    ajax: {
-        url: function () {
-            let base = $(".select2-two-paramter-ajax-multiple").attr('remote-url');
-            let uParam = $($(".select2-two-paramter-ajax-multiple").attr('remote-param1')).val();
-            let rParam = $($(".select2-two-paramter-ajax-multiple").attr('remote-param2')).val();
-
-            if (!uParam) uParam = '';
-            if (!rParam) rParam = '';
-
-            return `${base}/${uParam}/${rParam}`;
-        },
-        dataType: 'json',
-        delay: 250,
-        data: function (params) {
-            return {
-                q: params.term,
-                page: params.page || 1
-            };
-        },
-        processResults: function (data, params) {
-            params.page = params.page || 1;
-            return {
-                results: data.results,
-                pagination: {
-                    more: data.pagination.more
+                    // نمایش پیام خطا به کاربر
+                    toastr.error('خطا در دریافت اطلاعات کتاب‌ها');
                 }
-            };
-        },
-        cache: true
-    },
-    allowClear: true,
-    placeholder: "انتخاب کتاب‌ها",
-    minimumInputLength: 0,
-    templateResult: function (data) {
-        if (data.loading) return data.text;
-        return $('<span>').text(data.text);
-    },
-    templateSelection: function (data) {
-        return data.text || data.id;
+            },
+            
+            templateResult: function (data) {
+                if (data.loading) {
+                    return $('<span class="loading">در حال جستجو...</span>');
+                }
+                
+                if (!data.text && data.book_name) {
+                    data.text = data.book_name;
+                }
+                
+                return $('<span>').text(data.text || 'نامشخص');
+            },
+            
+            templateSelection: function (data) {
+                if (!data.text && data.book_name) {
+                    data.text = data.book_name;
+                }
+                
+                return data.text || data.id || 'انتخاب کنید';
+            },
+            
+            language: {
+                errorLoading: function() {
+                    return "خطا در بارگذاری نتایج";
+                },
+                inputTooLong: function(args) {
+                    return "لطفاً " + (args.input.length - args.maximum) + " کاراکتر حذف کنید";
+                },
+                inputTooShort: function(args) {
+                    return "لطفاً " + (args.minimum - args.input.length) + " کاراکتر دیگر وارد کنید";
+                },
+                loadingMore: function() {
+                    return "در حال بارگذاری نتایج بیشتر...";
+                },
+                maximumSelected: function(args) {
+                    return "شما تنها می‌توانید " + args.maximum + " آیتم انتخاب کنید";
+                },
+                noResults: function() {
+                    return "نتیجه‌ای یافت نشد";
+                },
+                searching: function() {
+                    return "در حال جستجو...";
+                }
+            }
+        });
+    }
+
+    // وقتی role_id یا university_id تغییر کرد، انتخاب‌ها پاک شوند
+    $('#role_id, #university_id').on('change', function() {
+        console.log('Role or University changed, resetting book selection');
+        
+        // پاک کردن انتخاب‌ها
+        $('#archive_ids').val(null).trigger('change');
+        
+        // غیرفعال کردن select تا زمانی که هر دو مقدار انتخاب شوند
+        let roleVal = $('#role_id').val();
+        let uniVal = $('#university_id').val();
+        
+        if (!roleVal || !uniVal) {
+            $('#archive_ids').prop('disabled', true);
+        } else {
+            $('#archive_ids').prop('disabled', false);
+        }
+    });
+
+    // فعال/غیرفعال کردن اولیه
+    let initialRole = $('#role_id').val();
+    let initialUni = $('#university_id').val();
+    
+    if (!initialRole || !initialUni) {
+        $('#archive_ids').prop('disabled', true);
     }
 });
+
+
+
+
 
 // وقتی role_id یا university_id تغییر کرد، انتخاب‌ها پاک شوند
 $('[name="role_id"], [name="university_id"]').on('change', function() {

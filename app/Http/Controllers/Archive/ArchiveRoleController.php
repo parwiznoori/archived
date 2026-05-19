@@ -16,10 +16,10 @@ class ArchiveRoleController extends Controller
 {
     public function __construct()
     {
-        $this->middleware('permission:view-archive', ['only' => ['index', 'show']]);
-        $this->middleware('permission:create-archive', ['only' => ['create','store']]);
-        $this->middleware('permission:edit-archive', ['only' => ['edit','update', 'updateStatus','update_groups']]);
-        $this->middleware('permission:delete-archive', ['only' => ['destroy']]);
+        // $this->middleware('permission:view-archive', ['only' => ['index', 'show']]);
+        // $this->middleware('permission:create-archive', ['only' => ['create','store']]);
+        // $this->middleware('permission:edit-archive', ['only' => ['edit','update', 'updateStatus','update_groups']]);
+        // $this->middleware('permission:delete-archive', ['only' => ['destroy']]);
     }
 
     public function index(Request $request)
@@ -86,7 +86,9 @@ class ArchiveRoleController extends Controller
     //     return User::whereIn('id', $userIdList)->select('id', 'name as text')->get();
     // }
 
-    public function archiveUserRoleLoad(Request $request, $roleId = null){
+
+
+        public function archiveUserRoleLoad(Request $request, $roleId = null){
             $searchTerm = $request->input('q');
             
             if (!$roleId) {
@@ -106,36 +108,31 @@ class ArchiveRoleController extends Controller
             return $query->select('id', 'name as text')->get();
         }
 
+    // public function archiveBookRoleLoad($university_id,$role_id)
+    // {
 
-        // مشکل: ممکن است کتاب‌ها به درستی فیلتر نشوند
-        // public function archiveBookRoleLoad($university_id, $role_id)
-        // {
-        //     $role = Role::where('id', $role_id)->first();
-            
-        //     if (!$role) {
-        //         return collect(); // اگر نقش پیدا نشد
-        //     }
+    //     $role = Role::where('id', $role_id)->first();
+    //     if ($role->name == 'quality_Control') {
 
-        //     if ($role->name == 'quality_Control') {
-        //         $archives = Archive::where('status_id', 4)
-        //             ->where('qc_user_id', null)
-        //             ->where('university_id', $university_id)
-        //             ->select('id', 'book_name as text')
-        //             ->get();
-        //     } elseif ($role->name == 'Data_Entry') {
-        //         $archives = Archive::where('status_id', 1)
-        //             ->where('university_id', $university_id)
-        //             ->where('de_user_id', null)
-        //             ->select('id', 'book_name as text')
-        //             ->get();
-        //     } else {
-        //         $archives = collect();
-        //     }
+    //         $archives = Archive::where('status_id', 4)
+    //         ->where('qc_user_id', null)
+    //         ->where('university_id',$university_id)
+    //             ->select('id', 'book_name as text')
+    //             ->get();
 
-        //     return $archives;
-        // }
+    //     } elseif ($role->name == 'Data_Entry') {
+    //         $archives = Archive::where('status_id', 1)
+    //         ->where('university_id',$university_id)
+    //         ->where('de_user_id', null)
+    //             ->select('id', 'book_name as text')
+    //             ->get();
+    //     }
 
-            
+    //     return $archives;
+    // }
+
+
+    
 public function archiveBookRoleLoad(Request $request, $university_id = null, $role_id = null)
 {
     $q = $request->get('q'); // متن جستجو (اگر فرستاده شد)
@@ -228,43 +225,9 @@ public function archiveBookRoleLoadMultiple(Request $request, $university_id = n
     ]);
 }
 
-//     public function store(Request $request)
-//     {
-//         // Validate the request
-//         $request->validate([
-//             'role_id' => 'required|exists:roles,id',
-//             'user_id' => 'required|exists:users,id',
-//             'archive_ids' => 'required|array|min:1',
-//             'archive_ids.*' => 'exists:archives,id',
-//         ]);
-
-// //        dd($request);
-//         //insert tin to archive role
-//         $archiveRole = ArchiveRole::create([
-//             'archive_id' => $request->archive_id,
-//             'role_id' => $request->role_id,
-//             'user_id' => $request->user_id
-//         ]);
-
-//         // update to archive table
-//         $archive = Archive::find($request->archive_id);
-//         $role = Role::where('id', $request->role_id)->first();
-//         if ($role->name == 'Data_Entry') {
-//             $archive->update([
-//                 'de_user_id' => $request->user_id
-//             ]);
-//             $archive->save();
-
-//         } elseif ($role->name == 'quality_Control') {
-//             $archive->update([
-//                 'qc_user_id' => $request->user_id
-//             ]);
-//             $archive->save();
-//         }
-        
-//         return redirect()->route('archiverole.index')->with('success', 'وظایف موفقانه سپرده شد!');
-//     }
-
+/**
+ * به‌روزرسانی متد store برای پشتیبانی از چند کتاب
+ */
 public function store(Request $request)
 {
     // Validate the request
@@ -389,7 +352,7 @@ public function store(Request $request)
         return view('archiverole.edit', compact('archiveRole', 'archiveUsers', 'archives', 'archiveRoles','universities'));
     }
 
-      public function update(Request $request, $id)
+   public function update(Request $request, $id)
 {
     // Validate the request
     $request->validate([
