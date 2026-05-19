@@ -90,6 +90,36 @@ var App = function() {
     });
 
     
+    // $(".select2-two-paramter-ajax").select2({
+    //     language: "fa",
+    //     ajax: {
+    //         url: function (params) {
+    //             return $(".select2-two-paramter-ajax").attr('remote-url') + 
+    //             ($(".select2-two-paramter-ajax").attr('remote-param1') ? '/' + $($(".select2-two-paramter-ajax").attr('remote-param1')).val() : '')
+    //             + 
+    //             ($(".select2-two-paramter-ajax").attr('remote-param2') ? '/' + $($(".select2-two-paramter-ajax").attr('remote-param2')).val() : '')
+    //         },
+    //         dataType: 'json',
+    //         delay: 250,
+    //         data: function(params) {
+    //             return {
+    //                 q: params.term
+    //             };
+    //         },
+    //         processResults: function(data) {
+    //             return {
+    //                 results: data
+    //             };
+    //         },
+    //         cache: true
+    //     },
+    //     allowClear: true,
+    // });
+
+
+
+
+
     $(".select2-two-paramter-ajax").select2({
     language: "fa",
     ajax: {
@@ -284,58 +314,6 @@ $(document).ready(function() {
 
 
 
-// // Select2 برای انتخاب چندتایی کتاب‌ها
-// $(".select2-two-paramter-ajax-multiple").select2({
-//     language: "fa",
-//     multiple: true,
-//     ajax: {
-//         url: function () {
-//             let base = $(".select2-two-paramter-ajax-multiple").attr('remote-url');
-//             let uParam = $($(".select2-two-paramter-ajax-multiple").attr('remote-param1')).val();
-//             let rParam = $($(".select2-two-paramter-ajax-multiple").attr('remote-param2')).val();
-
-//             if (!uParam) uParam = '';
-//             if (!rParam) rParam = '';
-
-//             return `${base}/${uParam}/${rParam}`;
-//         },
-//         dataType: 'json',
-//         delay: 250,
-//         data: function (params) {
-//             return {
-//                 q: params.term,
-//                 page: params.page || 1
-//             };
-//         },
-//         processResults: function (data, params) {
-//             params.page = params.page || 1;
-//             return {
-//                 results: data.results,
-//                 pagination: {
-//                     more: data.pagination.more
-//                 }
-//             };
-//         },
-//         cache: true
-//     },
-//     allowClear: true,
-//     placeholder: "انتخاب کتاب‌ها",
-//     minimumInputLength: 0,
-//     templateResult: function (data) {
-//         if (data.loading) return data.text;
-//         return $('<span>').text(data.text);
-//     },
-//     templateSelection: function (data) {
-//         return data.text || data.id;
-//     }
-// });
-
-// // وقتی role_id یا university_id تغییر کرد، انتخاب‌ها پاک شوند
-// $('[name="role_id"], [name="university_id"]').on('change', function() {
-//     $('.select2-two-paramter-ajax-multiple').val(null).trigger('change');
-// });
-
-
     $(".select2-ajax").select2({
         language: "fa",
         ajax: {
@@ -412,41 +390,35 @@ $(document).ready(function() {
 
   
 
- //archiveUser
+//archiveUser
+    $(".select2-ajax-archive-user").select2({
+        language: "fa",
+        ajax: {
+            url: function (params) {
+                return $(".select2-ajax-archive-user").attr('remote-url') + ($(".select2-ajax-archive-user").attr('remote-param') ?
+                    '/' + $($(".select2-ajax-archive-user").attr('remote-param')).val() : '');
+            },
+            dataType: 'json',
+            delay: 250,
+            data: function(params) {
+                return {
+                    q: params.term
+                };
+            },
+            processResults: function(data) {
+                return {
+                    results: data
+                };
+            },
+            cache: true
+        },
+        allowClear: true,
+    });
 
-$(".select2-ajax-archive-user").select2({
-    language: "fa",
-    ajax: {
-        url: function () {
-            var remoteUrl = $(".select2-ajax-archive-user").attr('remote-url');
-            var roleId = $($(".select2-ajax-archive-user").attr('remote-param')).val();
-            
-            if (roleId) {
-                return remoteUrl + '/' + roleId;
-            }
-            return remoteUrl;
-        },
-        dataType: 'json',
-        delay: 250,
-        data: function(params) {
-            return {
-                q: params.term // برای جستجو بر اساس نام
-            };
-        },
-        processResults: function(data) {
-            return {
-                results: data
-            };
-        },
-        cache: true
-    },
-    allowClear: true,
-});
-
-// وقتی role_id تغییر کرد، user_id را ریست کنید
-$($(".select2-ajax-archive-user").attr('remote-param')).on('change', function() {
-    $(".select2-ajax-archive-user").val(null).trigger('change');
-});
+    // وقتی role_id تغییر کرد، user_id را ریست کنید
+        $($(".select2-ajax-archive-user").attr('remote-param')).on('change', function() {
+            $(".select2-ajax-archive-user").val(null).trigger('change');
+        });
 
 //facultyfile
     $(".select2-ajax-faculty").select2({
