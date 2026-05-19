@@ -118,11 +118,11 @@
 
             <div class="col-sm-8">
 
-                <select name="archive_ids[]" 
+                <select name="archive_ids[]"
                         id="archive_ids"
                         class="form-control select2-two-paramter-ajax-multiple"
                         multiple="multiple"
-                        remote-url="{{ url('/archiveBookRoleLoadMultiple') }}"
+                        remote-url="{{ route('api.archiveBookRoleLoadMultiple', ['university_id' => 0, 'role_id' => 0]) }}"
                         placeholder="انتخاب کتاب‌ها">
                 </select>
 
