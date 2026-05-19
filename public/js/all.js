@@ -121,176 +121,124 @@ var App = function() {
 });
 
 
-// Select2 برای انتخاب چندتایی کتاب‌ها
-$(document).ready(function() {
-    
-    // بررسی وجود المنت قبل از اجرا
+$(document).ready(function () {
+
     if ($(".select2-two-paramter-ajax-multiple").length > 0) {
-        
-        $(".select2-two-paramter-ajax-multiple").select2({
-            language: "fa",
-            multiple: true,
-            allowClear: true,
-            placeholder: "انتخاب کتاب‌ها",
-            minimumInputLength: 0,
-            width: '100%', // تنظیم عرض
-            dropdownAutoWidth: true,
-            
-            ajax: {
-                url: function () {
-                    let $element = $(".select2-two-paramter-ajax-multiple");
-                    let base = $element.attr('remote-url');
-                    
-                    // دریافت مقادیر با استفاده از ID مستقیم برای اطمینان بیشتر
-                    let uParam = $('#university_id').val();
-                    let rParam = $('#role_id').val();
-                    
-                    console.log('University ID:', uParam);
-                    console.log('Role ID:', rParam);
-                    
-                    // اگر یکی از پارامترها خالی بود، درخواست نده
-                    if (!uParam || !rParam) {
-                        return null;
+
+        $(".select2-two-paramter-ajax-multiple").each(function () {
+            let $select = $(this);
+
+            // ✅ Read selectors from the element's own attributes
+            let param1Selector = $select.attr('remote-param1'); // "[name='university_id']"
+            let param2Selector = $select.attr('remote-param2'); // "[name='role_id']"
+
+            $select.select2({
+                multiple: true,
+                allowClear: true,
+                placeholder: "انتخاب کتاب‌ها",
+                minimumInputLength: 0,
+                width: '100%',
+                dropdownAutoWidth: true,
+
+                ajax: {
+                    url: function () {
+                        let base = $select.attr('remote-url');
+                        // ✅ Use the selectors from remote-param1 / remote-param2
+                        let uParam = $(param1Selector).val();
+                        let rParam = $(param2Selector).val();
+
+                        if (!base || !uParam || !rParam) {
+                            console.warn('Select2: missing base URL or params', { base, uParam, rParam });
+                            return false;
+                        }
+
+                        let url = base.replace(/\/+$/, '') + '/' + uParam + '/' + rParam;
+                        console.log('Select2 URL:', url);
+                        return url;
+                    },
+
+                    dataType: 'json',
+                    delay: 300,
+                    cache: false,
+
+                    data: function (params) {
+                        return {
+                            q: params.term || '',
+                            page: params.page || 1
+                        };
+                    },
+
+                    processResults: function (data, params) {
+                        params.page = params.page || 1;
+
+                        let results = [];
+                        let more = false;
+
+                        if (data && Array.isArray(data.results)) {
+                            results = data.results;
+                            more = !!(data.pagination && data.pagination.more);
+                        } else if (Array.isArray(data)) {
+                            results = data;
+                        } else if (data && Array.isArray(data.data)) {
+                            results = data.data;
+                        }
+
+                        // ✅ Normalize to always have id + text
+                        results = results.map(function (item) {
+                            return {
+                                id: item.id,
+                                text: item.text || item.book_name || item.name || String(item.id)
+                            };
+                        });
+
+                        return { results: results, pagination: { more: more } };
+                    },
+
+                    error: function (xhr, status, error) {
+                        console.error('Select2 AJAX Error:', status, error);
+                        console.error('Response:', xhr.responseText);
+                        if (typeof toastr !== 'undefined') {
+                            toastr.error('خطا در دریافت اطلاعات کتاب‌ها');
+                        }
                     }
-                    
-                    // ساخت URL و حذف اسلش‌های اضافی
-                    let url = base + '/' + uParam + '/' + rParam;
-                    url = url.replace(/\/+$/, ''); // حذف اسلش آخر
-                    
-                    console.log('Request URL:', url);
-                    return url;
                 },
-                
-                dataType: 'json',
-                delay: 500, // افزایش delay برای سرور
-                
-                data: function (params) {
-                    return {
-                        q: params.term || '', // متن جستجو
-                        page: params.page || 1
-                    };
+
+                templateResult: function (data) {
+                    if (data.loading) return $('<span>').text('در حال جستجو...');
+                    return $('<span>').text(data.text || 'نامشخص');
                 },
-                
-                processResults: function (data, params) {
-                    params.page = params.page || 1;
-                    
-                    // بررسی ساختار داده برگشتی
-                    let results = [];
-                    let pagination = { more: false };
-                    
-                    if (data && data.results) {
-                        // فرمت با صفحه‌بندی
-                        results = data.results;
-                        pagination.more = data.pagination && data.pagination.more ? true : false;
-                    } else if (Array.isArray(data)) {
-                        // آرایه ساده
-                        results = data;
-                    } else if (data && Array.isArray(data.data)) {
-                        // فرمت لاگ
-                        results = data.data;
-                    }
-                    
-                    return {
-                        results: results,
-                        pagination: pagination
-                    };
+
+                templateSelection: function (data) {
+                    return data.text || data.id || 'انتخاب کنید';
                 },
-                
-                cache: true,
-                
-                error: function(xhr, status, error) {
-                    console.error('Select2 AJAX Error:');
-                    console.error('Status:', status);
-                    console.error('Error:', error);
-                    console.error('Response:', xhr.responseText);
-                    
-                    // نمایش پیام خطا به کاربر
-                    toastr.error('خطا در دریافت اطلاعات کتاب‌ها');
+
+                language: {
+                    errorLoading: function () { return "خطا در بارگذاری نتایج"; },
+                    inputTooLong: function (args) { return "لطفاً " + (args.input.length - args.maximum) + " کاراکتر حذف کنید"; },
+                    inputTooShort: function (args) { return "لطفاً " + (args.minimum - args.input.length) + " کاراکتر دیگر وارد کنید"; },
+                    loadingMore: function () { return "در حال بارگذاری نتایج بیشتر..."; },
+                    maximumSelected: function (args) { return "شما تنها می‌توانید " + args.maximum + " آیتم انتخاب کنید"; },
+                    noResults: function () { return "نتیجه‌ای یافت نشد"; },
+                    searching: function () { return "در حال جستجو..."; }
                 }
-            },
-            
-            templateResult: function (data) {
-                if (data.loading) {
-                    return $('<span class="loading">در حال جستجو...</span>');
-                }
-                
-                if (!data.text && data.book_name) {
-                    data.text = data.book_name;
-                }
-                
-                return $('<span>').text(data.text || 'نامشخص');
-            },
-            
-            templateSelection: function (data) {
-                if (!data.text && data.book_name) {
-                    data.text = data.book_name;
-                }
-                
-                return data.text || data.id || 'انتخاب کنید';
-            },
-            
-            language: {
-                errorLoading: function() {
-                    return "خطا در بارگذاری نتایج";
-                },
-                inputTooLong: function(args) {
-                    return "لطفاً " + (args.input.length - args.maximum) + " کاراکتر حذف کنید";
-                },
-                inputTooShort: function(args) {
-                    return "لطفاً " + (args.minimum - args.input.length) + " کاراکتر دیگر وارد کنید";
-                },
-                loadingMore: function() {
-                    return "در حال بارگذاری نتایج بیشتر...";
-                },
-                maximumSelected: function(args) {
-                    return "شما تنها می‌توانید " + args.maximum + " آیتم انتخاب کنید";
-                },
-                noResults: function() {
-                    return "نتیجه‌ای یافت نشد";
-                },
-                searching: function() {
-                    return "در حال جستجو...";
-                }
-            }
+            });
+
+            // ✅ When either param field changes, reset THIS select and re-enable/disable
+            $(param1Selector + ', ' + param2Selector).on('change', function () {
+                $select.val(null).trigger('change');
+
+                let v1 = $(param1Selector).val();
+                let v2 = $(param2Selector).val();
+                $select.prop('disabled', !v1 || !v2);
+            });
+
+            // ✅ Set initial disabled state
+            let v1 = $(param1Selector).val();
+            let v2 = $(param2Selector).val();
+            $select.prop('disabled', !v1 || !v2);
         });
     }
-
-    // وقتی role_id یا university_id تغییر کرد، انتخاب‌ها پاک شوند
-    $('#role_id, #university_id').on('change', function() {
-        console.log('Role or University changed, resetting book selection');
-        
-        // پاک کردن انتخاب‌ها
-        $('#archive_ids').val(null).trigger('change');
-        
-        // غیرفعال کردن select تا زمانی که هر دو مقدار انتخاب شوند
-        let roleVal = $('#role_id').val();
-        let uniVal = $('#university_id').val();
-        
-        if (!roleVal || !uniVal) {
-            $('#archive_ids').prop('disabled', true);
-        } else {
-            $('#archive_ids').prop('disabled', false);
-        }
-    });
-
-    // فعال/غیرفعال کردن اولیه
-    let initialRole = $('#role_id').val();
-    let initialUni = $('#university_id').val();
-    
-    if (!initialRole || !initialUni) {
-        $('#archive_ids').prop('disabled', true);
-    }
 });
-
-
-
-
-
-// وقتی role_id یا university_id تغییر کرد، انتخاب‌ها پاک شوند
-$('[name="role_id"], [name="university_id"]').on('change', function() {
-    $('.select2-two-paramter-ajax-multiple').val(null).trigger('change');
-});
-
 
     $(".select2-ajax").select2({
         language: "fa",
