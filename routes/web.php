@@ -158,7 +158,7 @@ Route::group(['middleware' => 'auth'], function() {
         Route::get('archiveBookRoleLoad/{university_id?}/{role_id?}', "ArchiveRoleController@archiveBookRoleLoad")->name('api.archiveBookRoleLoad');
         Route::get('archiveUserRoleLoad/{role_id?}', "ArchiveRoleController@archiveUserRoleLoad")->name('api.archiveUserRoleLoad');
 
-        Route::get('/archiveBookRoleLoadMultiple/{university_id?}/{role_id?}','ArchiveRoleController@archiveBookRoleLoadMultiple')->name('api.archiveBookRoleLoadMultiple');
+        Route::get('archiveBookRoleLoadMultiple/{university_id?}/{role_id?}','ArchiveRoleController@archiveBookRoleLoadMultiple')->name('api.archiveBookRoleLoadMultiple');
 
         Route::post('/reset-qc-user/{archive}', 'ArchiveController@resetQcUser')-> name('archive.reset-qc-user');
         Route::post('/reset-de-user/{archive}', 'ArchiveController@resetDeUser')-> name('archive.reset-de-user');

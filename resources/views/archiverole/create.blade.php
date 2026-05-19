@@ -23,22 +23,7 @@
                 </div>
 
 
-                <div class="row">
-                    <div class="col-md-6">
-                        <div class="form-group {{ $errors->has('user_id') ? ' has-error' : '' }}">
-                            {!! Form::label('user_id', trans('general.users'), ['class' => 'control-label col-sm-3']) !!}
-                            <div class="col-sm-8">
-                                {!! Form::select('user_id', $archiveUsers, null, ['class' => 'form-control select2-ajax-archive-user',
-                                'remote-url' => route('api.archiveUserRoleLoad'), 'remote-param' => '[name="role_id"]','placeholder' => 'انتخاب یوزر']) !!}
-                                @if ($errors->has('user_id'))
-                                    <span class="help-block">
-                                            <strong>{{ $errors->first('user_id') }}</strong></span>
-                                @endif
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
+         
                
 
                 <div class="row">
@@ -58,7 +43,7 @@
                     </div>
                 </div>
 
-                <div class="row">
+                {{-- <div class="row">
                     <div class="col-md-6">
                         <div class="form-group {{ $errors->has('archive_id') ? ' has-error' : '' }}">
                             {!! Form::label('archive_id', trans('general.book_name'), ['class' => 'control-label col-sm-3']) !!}
@@ -78,11 +63,54 @@
                             </div>
                         </div>
                     </div>
+                </div> --}}
+
+
+                        <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group {{ $errors->has('archive_ids') ? ' has-error' : '' }}">
+                            {!! Form::label('archive_ids', trans('general.book_name'), ['class' => 'control-label col-sm-3']) !!}
+                            <div class="col-sm-8">
+                                <select name="archive_ids[]" id="archive_ids" 
+                                        class="form-control select2-two-paramter-ajax-multiple" 
+                                        multiple="multiple"
+                                        remote-url="{{ route('api.archiveBookRoleLoadMultiple') }}"
+                                        remote-param1="[name='university_id']"
+                                        remote-param2="[name='role_id']"
+                                        placeholder="انتخاب کتاب‌ها">
+                                </select>
+                                @if ($errors->has('archive_ids'))
+                                    <span class="help-block">
+                                        <strong>{{ $errors->first('archive_ids') }}</strong>
+                                    </span>
+                                @endif
+                                @if ($errors->has('archive_ids.*'))
+                                    <span class="help-block">
+                                        <strong>{{ $errors->first('archive_ids.*') }}</strong>
+                                    </span>
+                                @endif
+                                <small class="text-muted">می‌توانید چندین کتاب را انتخاب کنید</small>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
 
-
-
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group {{ $errors->has('user_id') ? ' has-error' : '' }}">
+                            {!! Form::label('user_id', trans('general.users'), ['class' => 'control-label col-sm-3']) !!}
+                            <div class="col-sm-8">
+                                {!! Form::select('user_id', $archiveUsers, null, ['class' => 'form-control select2-ajax-archive-user',
+                                'remote-url' => route('api.archiveUserRoleLoad'), 'remote-param' => '[name="role_id"]','placeholder' => 'انتخاب یوزر']) !!}
+                                @if ($errors->has('user_id'))
+                                    <span class="help-block">
+                                            <strong>{{ $errors->first('user_id') }}</strong></span>
+                                @endif
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
 
             </div>
