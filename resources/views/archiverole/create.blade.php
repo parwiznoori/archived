@@ -80,7 +80,7 @@
                     </div>
                 </div> --}}
 
-
+{{-- 
                  <div class="row">
                     <div class="col-md-6">
                         <div class="form-group {{ $errors->has('archive_ids') ? ' has-error' : '' }}">
@@ -108,9 +108,42 @@
                             </div>
                         </div>
                     </div>
-                </div>
+                </div> --}}
 
+<div class="row">
+    <div class="col-md-6">
+        <div class="form-group {{ $errors->has('archive_ids') ? ' has-error' : '' }}">
 
+            {!! Form::label('archive_ids', trans('general.book_name'), ['class' => 'control-label col-sm-3']) !!}
+
+            <div class="col-sm-8">
+
+                <select name="archive_ids[]" 
+                        id="archive_ids"
+                        class="form-control select2-two-paramter-ajax-multiple"
+                        multiple="multiple"
+                        remote-url="{{ url('/archiveBookRoleLoadMultiple') }}"
+                        placeholder="انتخاب کتاب‌ها">
+                </select>
+
+                @if ($errors->has('archive_ids'))
+                    <span class="help-block">
+                        <strong>{{ $errors->first('archive_ids') }}</strong>
+                    </span>
+                @endif
+
+                @if ($errors->has('archive_ids.*'))
+                    <span class="help-block">
+                        <strong>{{ $errors->first('archive_ids.*') }}</strong>
+                    </span>
+                @endif
+
+                <small class="text-muted">می‌توانید چندین کتاب را انتخاب کنید</small>
+
+            </div>
+        </div>
+    </div>
+</div>
 
 
                   <div class="row">
