@@ -194,6 +194,7 @@ class ArchivedataController extends Controller
                 'averageOfScores' => $request->averageOfScores,
                 'grade_id' => $request->grade_id,
                 'description' => $request->description,
+                're_updated' => false,
 
             ]);
 
@@ -385,6 +386,8 @@ class ArchivedataController extends Controller
         return back()->with('error', 'رکورد مورد نظر یافت نشد!');
     }
 
+    // Check if this record was rejected before
+    $wasRejected = ($archivedata->qc_status_id == 3 || $archivedata->qc_status_id == 4);
     // چک وضعیت QC
     if ($archivedata->qc_status_id == 2 || $archivedata->qc_status_id == 3) {
         return back()->with('error', 'این رکورد قابل ویرایش نیست زیرا قبلاً به کنترل کیفیت معرفی شده است.');
@@ -439,7 +442,16 @@ class ArchivedataController extends Controller
         'averageOfScores' => $request->averageOfScores,
         'grade_id' => $request->grade_id,
         'description' => $request->description,
+       
     ]);
+
+     // FIXED: If this record was rejected and now updated
+    if ($wasRejected) {
+        $archivedata->re_updated = true;  // Mark as updated after rejection
+        $archivedata->save();
+    }
+
+
 
     // بروزرسانی وضعیت
     $archiveImageRecord = Archiveimage::where('id', $request->archive_image_id)->first();
@@ -887,7 +899,6 @@ class ArchivedataController extends Controller
 
 //            DB::delete('DELETE FROM archivedatas WHERE id = ?', [$id]);
 //           return redirect()->route('archivedata.index')->with('success', 'Archived data deleted successfully');
-
 
     }
 

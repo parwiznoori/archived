@@ -27,6 +27,9 @@
     .qc_status2{
         background-color: indianred !important;
     }
+     .pending_rejection_update{
+            background-color: rgb(245, 149, 4) !important;
+        }
 
     tr.final_approved
     {

@@ -24,8 +24,6 @@
        .qc_status2{
             background-color: indianred !important;
         }
-
-
         tr.row_deleted
         {
             color: red;

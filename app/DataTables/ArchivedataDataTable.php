@@ -29,16 +29,29 @@ class ArchivedataDataTable extends DataTable
                     $className .= 'row_deleted ';
                 }
 
-                if ($archivedata->qc_status_id == 3) {
-                    $className .= 'qc_status ';
-                }
 
-                if ($archivedata->qc_status_id == 4) {
-                    $className .= 'qc_status2 ';
-                }
+                       if (isset($archivedata->deleted_at)) {
+                            $className .= 'row_deleted ';
+                        }
 
-                return $className;
-            })
+                        // 🟠 نارنجی: رد شده و دوباره اصلاح شده
+                        if ($archivedata->qc_status_id == 4 && $archivedata->re_updated == 1) {
+                            $className .= 'pending_rejection_update ';
+                        }
+
+                        // 🟢 تایید QC
+                        elseif ($archivedata->qc_status_id == 3) {
+                            $className .= 'qc_status ';
+                        }
+
+                        // 🔴 رد شده
+                        elseif ($archivedata->qc_status_id == 4) {
+                            $className .= 'qc_status2 ';
+                        }
+
+                        return $className;
+                    })
+
             ->addColumn('action', function ($archivedata) {
                 $html = '<div class="btn-group">
                         <a class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown" href="javascript:;" aria-expanded="false">';
@@ -227,6 +240,7 @@ class ArchivedataDataTable extends DataTable
             'archivedatas.id',
             'archives.status_id',
             'archives.qc_status_id',
+            'archivedatas.re_updated',
             'archives.book_name as archive',
             'archiveimages.id as archiveimage',
             'archivedatas.name',

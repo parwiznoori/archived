@@ -80,12 +80,20 @@ class ArchiveqcDataTable extends DataTable
     public function query()
 {
 
-    if(auth()->user()->hasRole('super-admin')){
-        $query = Archive::query()->where('status_id', 4);
-    }else{
-        $query = Archive::query()->where('status_id', 4)
-            ->where('qc_user_id',auth()->user()->id);
-    }
+$query = Archive::query();
+
+if (
+    auth()->user()->hasRole('super-admin') ||
+    auth()->user()->hasRole('system-developer')
+) {
+
+    $query->where('status_id', 4);
+
+} else {
+
+    $query->where('status_id', 4)
+          ->where('qc_user_id', auth()->id());
+}
 
     return $query->select(
         'archives.id',
