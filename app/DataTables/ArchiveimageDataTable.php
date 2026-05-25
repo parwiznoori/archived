@@ -84,7 +84,7 @@ class ArchiveimageDataTable extends DataTable
             'archiveimages.id', 
             'archives.book_name as archive',
             'path',
-            // 'archiveimages.book_pagenumber',
+            'archiveimages.book_pagenumber',
             'total_students',
             'archivedatastatus.status as archivedatastatus',
             'archiveqcstatus.qc_status as archiveqcstatus',
@@ -162,7 +162,7 @@ class ArchiveimageDataTable extends DataTable
         return [
             'archive' =>        ['name' => 'archives.book_name', 'title' => trans('general.book_name')],
             // 'path' =>            ['name' => 'path','title' => trans('general.photo')],
-            // 'book_pagenumber' => ['name' => 'book_pagenumber', 'title' => trans('general.book_pagenumber')],
+            'book_pagenumber' => ['name' => 'book_pagenumber', 'title' => trans('general.book_pagenumber')],
             // 'type'            => [ 'name' => 'type' ,'title' => trans('general.type')],
             'path' =>            ['name' => 'path','title' => trans('general.photo')],
             'total_students'    => ['name' => 'total_students', 'title' => trans('general.total_students')],

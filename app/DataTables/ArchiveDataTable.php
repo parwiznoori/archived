@@ -45,6 +45,12 @@ class ArchiveDataTable extends DataTable
                 return '-';
             })
 
+            ->editColumn('images_count', function ($archive) {
+                    return $archive->images_count;
+                })
+                        
+
+
             ->addColumn('action', function ($archive) {
 
                 $html = '<div class="btn-group">
@@ -126,6 +132,8 @@ class ArchiveDataTable extends DataTable
     {
         $query = $archive->allUniversities()->select(
             'archives.id',
+            \DB::raw('(SELECT COUNT(*) FROM archiveimages WHERE archiveimages.archive_id = archives.id) as images_count'),
+
             'archives.qc_user_id',
             'archives.de_user_id',
             'archives.status_id',
@@ -273,6 +281,9 @@ class ArchiveDataTable extends DataTable
             'current_de_user' => ['name' => 'cur_de_user.name', 'title' => 'درج‌کننده'],
 
             'current_qc_user' => ['name' => 'cur_qc_user.name', 'title' => 'کنترول‌کننده'],
+
+             'images_count' => ['name' => 'images_count', 'title' => trans('general.book_pagenumber'), 'searchable' => false, 'orderable' => false],
+
 
             'book_description' => ['name' => 'book_description', 'title' => trans('general.book_description')],
         ];
