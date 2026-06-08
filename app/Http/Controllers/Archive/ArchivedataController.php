@@ -632,8 +632,14 @@ class ArchivedataController extends Controller
         $totalPages = Archiveimage::where('archive_id', $id)->count();
 
 
-        $archiveimagerejectqc = Archiveimage::where('qc_status_id', 4)->where('archive_id', $id)->get();
-
+        // $archiveimagerejectqc = Archiveimage::where('qc_status_id', 4)->where('archive_id', $id)->get();
+       $archiveimagerejectqc = Archiveimage::with(['archivedatas' => function($query) {
+        $query->whereNotNull('reject_comments'); // فقط ستون‌هایی که reject_comments دارند
+    }])
+    ->where('qc_status_id', 4)
+    ->where('archive_id', $id)
+    ->has('archivedatas') // حداقل یک archivedata داشته باشد
+    ->get();
 
 
         return view('archivedata.create', compact('archivedataRecords', 'column_number', 'archiveData1', 'total_student', 'archiveImage', 'archiveRecord',

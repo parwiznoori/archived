@@ -62,20 +62,77 @@
                 </tbody>
             </table>
 
+
             @if($archiveimagerejectqc->isEmpty())
-                <div style="font-family: 'New Times Roman'; font-size: 16px; color: #333;">
-                    صفحات مسترد شده: <span style="color: red;">دیتا وجود ندارد</span>
+                <div style="font-family: 'Tahoma', 'Segoe UI', 'New Times Roman', sans-serif; font-size: 16px; color: #555; text-align: center; padding: 30px; background: #f9f9f9; border-radius: 8px; border: 1px dashed #ddd;">
+                    <span style="font-size: 24px;">📭</span><br>
+                    صفحات مسترد شده: <span style="color: #e74c3c; font-weight: bold;">هیچ صفحه مسترد نشده است  </span>
                 </div>
             @else
-                <div style="font-family: 'New Times Roman'; font-size: 16px; color: #333;">
-                    <strong>صفحات مسترد شده:</strong>
-                    <span>
-            @foreach($archiveimagerejectqc as $item)
-                            <span style="color: red;">{{ $item->book_pagenumber }}</span>@if(!$loop->last), @endif
+                <div style="font-family: 'Tahoma', 'Segoe UI', 'New Times Roman', sans-serif;">
+                    <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 12px 20px; border-radius: 10px 10px 0 0; color: white;">
+                        <strong style="font-size: 18px;">📋 صفحات مسترد شده</strong>
+                        <span style="float: left; background: rgba(255,255,255,0.2); padding: 2px 10px; border-radius: 20px; font-size: 13px;">
+                            تعداد: {{ $archiveimagerejectqc->sum(function($item) { return $item->archivedatas->count(); }) }} مورد
+                        </span>
+                    </div>
+                    
+                    <div style="margin-top: 0; background: #f8f9fa; border-radius: 0 0 10px 10px; padding: 15px;">
+                        @foreach($archiveimagerejectqc as $index => $item)
+                            <div style="margin-bottom: 20px; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.08); transition: all 0.3s ease; border: 1px solid #eef2f7;">
+                                <div style="background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); padding: 12px 20px; border-right: 4px solid #e74c3c; display: flex; justify-content: space-between; align-items: center;">
+                                    <div>
+                                        <span style="font-size: 20px; margin-left: 10px;">📄</span>
+                                        <strong style="font-size: 17px; color: #2c3e50;">صفحه شماره: {{ $item->book_pagenumber }}</strong>
+                                    </div>
+                                    <div style="background: #e74c3c; color: white; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: bold;">
+                                        {{ $item->archivedatas->count() }} ستون مشکل‌دار
+                                    </div>
+                                </div>
+                                
+                                @if($item->archivedatas && $item->archivedatas->count() > 0)
+                                    <div style="padding: 0;">
+                                        <table style="width: 100%; border-collapse: collapse;">
+                                            <thead>
+                                                <tr style="background: #f8f9fc; border-bottom: 2px solid #e9ecef;">
+                                                    <th style="padding: 12px 15px; text-align: right; font-weight: 600; color: #495057; font-size: 14px; width: 25%;">
+                                                        <span>🔢</span> ستون شماره
+                                                    </th>
+                                                    <th style="padding: 12px 15px; text-align: right; font-weight: 600; color: #495057; font-size: 14px;">
+                                                        <span>💬</span> دلیل رد
+                                                    </th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @foreach($item->archivedatas as $archivedata)
+                                                    <tr style="border-bottom: 1px solid #f0f0f0; transition: background 0.2s;">
+                                                        <td style="padding: 12px 15px; text-align: right; font-weight: 500; color: #2c3e50;">
+                                                            <span style="display: inline-block; background: #667eea; color: white; width: 28px; height: 28px; line-height: 28px; text-align: center; border-radius: 6px; font-size: 13px; font-weight: bold;">
+                                                                {{ $archivedata->column_number ?? '-' }}
+                                                            </span>
+                                                        </td>
+                                                        <td style="padding: 12px 15px; color: #e74c3c; font-size: 14px; border-right: 3px solid #ffe6e6;">
+                                                            <span style="background: #fee; padding: 5px 12px; border-radius: 20px; display: inline-block;">
+                                                                ⚠️ {{ $archivedata->reject_comments ?? '-' }}
+                                                            </span>
+                                                        </td>
+                                                    </tr>
+                                                @endforeach
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                @else
+                                    <div style="padding: 30px; text-align: center; color: #999; background: #fafafa;">
+                                        <span style="font-size: 30px;">📭</span><br>
+                                        اطلاعات جزئیات موجود نیست
+                                    </div>
+                                @endif
+                            </div>
                         @endforeach
-        </span>
+                    </div>
                 </div>
             @endif
+
 
 
 

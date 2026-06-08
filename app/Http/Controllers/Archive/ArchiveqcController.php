@@ -133,82 +133,191 @@ class ArchiveqcController extends Controller
         return redirect()->back();
     }
 
+    // public function archiveQCheckDataSetStatus(Request $request)
+    // {
+    //     // Update QC status for the archive data
+    //     $archiveData = Archivedata::find($request->recordId);
+    //     $archiveData->update([
+    //         'qc_status_id' => $request->approvalStatus
+    //     ]);
+
+        
+    //     // FIXED: Set re_updated based on QC decision
+    //     if ($request->approvalStatus == 3) {
+    //         // ✅ APPROVED: Clear the re_updated flag (record is now approved)
+    //         $archiveData->re_updated = false;
+    //         $archiveData->save();
+    //     } 
+
+    //     // Update QC status for archive images
+    //     $archiveDataCount = Archivedata::where('archiveimage_id', $archiveData->archiveimage_id)
+    //         ->where('qc_status_id', 4)
+    //         ->count();
+    //     $archiveDataCountApprove = Archivedata::where('archiveimage_id', $archiveData->archiveimage_id)
+    //         ->where('qc_status_id', 3)
+    //         ->count();
+    //     $archiveImages = ArchiveImage::where('id', $archiveData->archiveimage_id)->first();
+
+    //     if ($archiveDataCount > 0) {
+    //         $archiveImages->update([
+    //             'qc_status_id' => 4
+    //         ]);
+    //     } else {
+    //         if ($archiveDataCountApprove == $archiveImages->total_students) {
+    //             $archiveImages->update([
+    //                 'qc_status_id' => 3
+    //             ]);
+    //         } else {
+    //             $archiveImages->update([
+    //                 'qc_status_id' => 1
+    //             ]);
+    //         }
+    //     }
+
+    //     // Update QC status for archives
+    //     $archiveImageRejectCount = Archiveimage::where('archive_id', $archiveData->archive_id)
+    //         ->where('qc_status_id', 4)
+    //         ->count();
+    //     $archiveImageCountApprove = Archiveimage::where('archive_id', $archiveData->archive_id)
+    //         ->where('qc_status_id', 3)
+    //         ->count();
+    //     $archiveImageCount = Archiveimage::where('archive_id', $archiveData->archive_id)
+    //         ->count();
+    //     $archive = Archive::where('id', $archiveData->archive_id)->first();
+
+    //     if ($archiveImageRejectCount > 0) {
+    //         $archive->update([
+    //             'qc_status_id' => 4
+    //         ]);
+    //     } else {
+    //         if ($archiveImageCountApprove == $archiveImageCount) {
+    //             $archive->update([
+    //                 'qc_status_id' => 3
+    //             ]);
+    //         } else {
+    //             if($archiveImageCountApprove > 0 || $archiveImageRejectCount > 0){
+    //                 $archive->update([
+    //                     'qc_status_id' => 2
+    //                 ]);
+    //             } else {
+    //                 $archive->update([
+    //                     'qc_status_id' => 1
+    //                 ]);
+    //             }
+    //         }
+    //     }
+
+    //     // Redirect back after processing
+    //     return redirect()->back();
+    // }
+
     public function archiveQCheckDataSetStatus(Request $request)
-    {
-        // Update QC status for the archive data
-        $archiveData = Archivedata::find($request->recordId);
-        $archiveData->update([
-            'qc_status_id' => $request->approvalStatus
+{
+    $archiveData = Archivedata::findOrFail($request->recordId);
+
+    $updateData = [
+        'qc_status_id' => $request->approvalStatus,
+    ];
+
+    // اگر رد شد
+    if ($request->approvalStatus == 4) {
+
+        $request->validate([
+            'reject_comments' => 'required|string|max:1000',
         ]);
 
-        // FIXED: Set re_updated based on QC decision
-        if ($request->approvalStatus == 3) {
-            // ✅ APPROVED: Clear the re_updated flag (record is now approved)
-            $archiveData->re_updated = false;
-            $archiveData->save();
-        } 
+        $updateData['reject_comments'] = $request->reject_comments;
+        $updateData['re_updated'] = false;
+    }
 
-        // Update QC status for archive images
-        $archiveDataCount = Archivedata::where('archiveimage_id', $archiveData->archiveimage_id)
-            ->where('qc_status_id', 4)
-            ->count();
-        $archiveDataCountApprove = Archivedata::where('archiveimage_id', $archiveData->archiveimage_id)
-            ->where('qc_status_id', 3)
-            ->count();
-        $archiveImages = ArchiveImage::where('id', $archiveData->archiveimage_id)->first();
+    // اگر تایید شد
+    if ($request->approvalStatus == 3) {
+        $updateData['reject_comments'] = null;
+        $updateData['re_updated'] = false;
+    }
 
-        if ($archiveDataCount > 0) {
+    $archiveData->update($updateData);
+
+    // Update QC status for archive images
+    $archiveDataCount = Archivedata::where('archiveimage_id', $archiveData->archiveimage_id)
+        ->where('qc_status_id', 4)
+        ->count();
+
+    $archiveDataCountApprove = Archivedata::where('archiveimage_id', $archiveData->archiveimage_id)
+        ->where('qc_status_id', 3)
+        ->count();
+
+    $archiveImages = ArchiveImage::where('id', $archiveData->archiveimage_id)->first();
+
+    if ($archiveDataCount > 0) {
+
+        $archiveImages->update([
+            'qc_status_id' => 4
+        ]);
+
+    } else {
+
+        if ($archiveDataCountApprove == $archiveImages->total_students) {
+
             $archiveImages->update([
-                'qc_status_id' => 4
+                'qc_status_id' => 3
             ]);
+
         } else {
-            if ($archiveDataCountApprove == $archiveImages->total_students) {
-                $archiveImages->update([
-                    'qc_status_id' => 3
+
+            $archiveImages->update([
+                'qc_status_id' => 1
+            ]);
+        }
+    }
+
+    // Update QC status for archive
+    $archiveImageRejectCount = Archiveimage::where('archive_id', $archiveData->archive_id)
+        ->where('qc_status_id', 4)
+        ->count();
+
+    $archiveImageCountApprove = Archiveimage::where('archive_id', $archiveData->archive_id)
+        ->where('qc_status_id', 3)
+        ->count();
+
+    $archiveImageCount = Archiveimage::where('archive_id', $archiveData->archive_id)
+        ->count();
+
+    $archive = Archive::where('id', $archiveData->archive_id)->first();
+
+    if ($archiveImageRejectCount > 0) {
+
+        $archive->update([
+            'qc_status_id' => 4
+        ]);
+
+    } else {
+
+        if ($archiveImageCountApprove == $archiveImageCount) {
+
+            $archive->update([
+                'qc_status_id' => 3
+            ]);
+
+        } else {
+
+            if ($archiveImageCountApprove > 0 || $archiveImageRejectCount > 0) {
+
+                $archive->update([
+                    'qc_status_id' => 2
                 ]);
+
             } else {
-                $archiveImages->update([
+
+                $archive->update([
                     'qc_status_id' => 1
                 ]);
             }
         }
-
-        // Update QC status for archives
-        $archiveImageRejectCount = Archiveimage::where('archive_id', $archiveData->archive_id)
-            ->where('qc_status_id', 4)
-            ->count();
-        $archiveImageCountApprove = Archiveimage::where('archive_id', $archiveData->archive_id)
-            ->where('qc_status_id', 3)
-            ->count();
-        $archiveImageCount = Archiveimage::where('archive_id', $archiveData->archive_id)
-            ->count();
-        $archive = Archive::where('id', $archiveData->archive_id)->first();
-
-        if ($archiveImageRejectCount > 0) {
-            $archive->update([
-                'qc_status_id' => 4
-            ]);
-        } else {
-            if ($archiveImageCountApprove == $archiveImageCount) {
-                $archive->update([
-                    'qc_status_id' => 3
-                ]);
-            } else {
-                if($archiveImageCountApprove > 0 || $archiveImageRejectCount > 0){
-                    $archive->update([
-                        'qc_status_id' => 2
-                    ]);
-                } else {
-                    $archive->update([
-                        'qc_status_id' => 1
-                    ]);
-                }
-            }
-        }
-
-        // Redirect back after processing
-        return redirect()->back();
     }
+
+    return redirect()->back();
+}
 
     private function qcStatusList()
     {

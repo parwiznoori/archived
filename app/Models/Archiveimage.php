@@ -36,4 +36,9 @@ class Archiveimage extends Model
         return $this->belongsTo(Archiveqcstatus::class);
     }
 
+    public function archivedatas()  // توجه: نام را به صورت جمع (archivedatas) تغییر دادم
+    {
+        return $this->hasMany(Archivedata::class, 'archiveimage_id');
+    }
+
 }

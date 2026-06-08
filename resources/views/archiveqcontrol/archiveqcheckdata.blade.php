@@ -83,8 +83,10 @@
                                 <th>{{ trans('general.averageOfScores') }}</th>
                                 <th>{{ trans('general.grade') }}</th>
                                 <th>{{ trans('general.description') }}</th>
+                                <th>{{ trans('general.comment') }}</th>
                                 <th>{{ trans('general.status') }}</th>
                                 <th>{{ trans('general.accept_or_refuse') }}</th>
+                                
                             </tr>
                             </thead>
                             <tbody>
@@ -116,6 +118,8 @@
                                     <td>{{$record->grade ? $record->grade->name : ''}}</td>
 
                                     <td>{{ $record->description }}</td>
+                                    </td>
+                                    
 
                                     <!-- Status Badge Display -->
                                     <td style="padding: 10px; white-space: nowrap;">
@@ -126,16 +130,20 @@
                                         @else
                                             <span class="badge badge-secondary m-1 p-1">{{ $record->qc_status }}</span>
                                         @endif
-                                    </td>
-
+                                    
                                     <!-- Approval Status Dropdown -->
                                     <td style="padding: 10px; white-space: nowrap">
                                         {!! Form::open(['route' => 'archiveqcheckdataSetStatus', 'method' => 'post', 'enctype' => 'multipart/form-data', 'class' => 'form-horizontal']) !!}
                                         {!! Form::text('recordId', $record->id, ['style' => 'display:none']) !!}
                                         {!! Form::select('approvalStatus', $archiveStatusList, $record->qc_status_id, []) !!}
+                                        <br>
+                                        {!! Form::textarea('reject_comments',$record->reject_comments,['class' => 'form-control','rows' => 2,'placeholder' => 'دلیل رد شدن']) !!}
+                                        <br>
                                         <button type="submit" class="btn btn-success">{{ trans('general.save') }}</button>
                                         {!! Form::close() !!}
                                     </td>
+
+                                    
                                 </tr>
                             @endforeach
                             </tbody>
