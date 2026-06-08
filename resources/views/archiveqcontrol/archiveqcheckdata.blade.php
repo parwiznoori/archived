@@ -83,7 +83,6 @@
                                 <th>{{ trans('general.averageOfScores') }}</th>
                                 <th>{{ trans('general.grade') }}</th>
                                 <th>{{ trans('general.description') }}</th>
-                                <th>{{ trans('general.comment') }}</th>
                                 <th>{{ trans('general.status') }}</th>
                                 <th>{{ trans('general.accept_or_refuse') }}</th>
                                 
