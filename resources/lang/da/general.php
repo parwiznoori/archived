@@ -1008,6 +1008,7 @@ return [
     'role' => 'وظیفه',
     'number_of_faculties' => 'تعداد پوهنحی ها',
     'statistics' => 'آمار و احصائیه',
+    'archivebook_report' => 'آمار و احصائیه کتاب',
     'student_statistics' => 'امار محصلان',
     'generate_statistics' => 'ایجاد آمار',
     'this_department_has_data_and_can_not_be_deleted' => 'این دپارتمنت قابل حذف نیست. چون در جدولهای دیگر از ان استفاده شده است.',

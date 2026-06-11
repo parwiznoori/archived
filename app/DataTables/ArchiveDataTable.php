@@ -29,6 +29,16 @@ class ArchiveDataTable extends DataTable
                 return $className;
             })
 
+            // فقط این بخش اضافه شده برای فیلتر کردن faculty و department
+           ->filterColumn('faculty', function($query, $keyword) {
+                // اینجا کاری نکنید چون در query هندل شده
+                return $query;
+            })
+            ->filterColumn('department', function($query, $keyword) {
+                // اینجا کاری نکنید چون در query هندل شده
+                return $query;
+            })
+
             ->addColumn('created_at_jalali', function ($archive) {
 
                 if (isset($archive->created_at)) {
@@ -148,7 +158,9 @@ class ArchiveDataTable extends DataTable
             'cur_de_user.name as current_de_user',
             'cur_qc_user.name as current_qc_user',
 
-            'archiveyears.year as archiveyears',
+            // 'archiveyears.year as archiveyears',
+            \DB::raw('GROUP_CONCAT(DISTINCT archiveyears.year ORDER BY archiveyears.year ASC) as archiveyears'),
+
 
             'archives.book_pagenumber',
             'archives.book_description',
@@ -169,11 +181,35 @@ class ArchiveDataTable extends DataTable
 
             ->leftJoin('archivedatastatus', 'archivedatastatus.id', '=', 'archives.status_id')
             ->leftJoin('archiveqcstatus', 'archiveqcstatus.id', '=', 'archives.qc_status_id')
-            ->leftJoin('archiveyears', 'archiveyears.id', '=', 'archives.archive_year_id')
-
+            ->leftJoin('archive_archive_year', 'archives.id', '=', 'archive_archive_year.archive_id')
+            ->leftJoin('archiveyears', 'archiveyears.id', '=', 'archive_archive_year.archive_year_id')
             ->groupBy('archives.id')
             ->orderBy('archives.id', 'desc');
 
+
+            // اضافه کردن جستجوی دستی برای faculty و department
+    // این بخش را اضافه کنید
+    if (request()->has('search') && request()->get('search')['value']) {
+        $searchTerm = request()->get('search')['value'];
+        $query->havingRaw('(faculty LIKE ? OR department LIKE ?)', ["%{$searchTerm}%", "%{$searchTerm}%"]);
+    }
+
+    // جستجوی ستون خاص برای faculty
+    if (request()->has('columns') && isset(request()->get('columns')[3]['search']['value'])) {
+        $facultySearch = request()->get('columns')[3]['search']['value'];
+        if (!empty($facultySearch)) {
+            $query->having('faculty', 'LIKE', "%{$facultySearch}%");
+        }
+    }
+
+    // جستجوی ستون خاص برای department
+    if (request()->has('columns') && isset(request()->get('columns')[4]['search']['value'])) {
+        $departmentSearch = request()->get('columns')[4]['search']['value'];
+        if (!empty($departmentSearch)) {
+            $query->having('department', 'LIKE', "%{$departmentSearch}%");
+        }
+    }
+    
         // filter universities of user
         $universityList = \DB::table('university_users')
             ->where('user_id', auth()->user()->id)
@@ -207,7 +243,7 @@ class ArchiveDataTable extends DataTable
         return $query;
     }
 
-   public function html()
+    public function html()
     {
         return $this->builder()
                     ->columns($this->getColumns())
@@ -223,7 +259,7 @@ class ArchiveDataTable extends DataTable
                             $('.dt-button.buttons-reset').click(function () {
                                 $('.nav-tabs li').removeClass('active')
                                 $('a[data-status-id=\"all\"]').parent().addClass('active');
-                                $('tfoot input').val('');
+                                 $('tfoot input').val('');
                                 $('tfoot select').val('');
                             })
 
@@ -236,8 +272,8 @@ class ArchiveDataTable extends DataTable
                                 var column = this;
                                 var onEvent = 'change';
                                                                                                                     
-                                if(this.index() >= 0 && this.index() <= 11) { 
-                                    if (this.index() == 0 || this.index() == 2 ) {
+                                if(this.index() >= 0 && this.index() <= 12) { 
+                                    if (this.index() == 0 || this.index() == 11 ) {
                                         $('<input class=\"datatable-footer-input ltr \" placeholder=\"'+$(column.header()).text()+'\" name=\"'+ column.index() + '\" value=\"'+ (state ? state.columns[this.index()].search.search : emptyValue) +'\" />').attr('size',10).appendTo($(column.footer()).empty())                                        
                                         .on(onEvent, function () {
                                             column.search($(this).val(), false, false, true).draw();
@@ -257,37 +293,36 @@ class ArchiveDataTable extends DataTable
                     ]));
     }
 
-    protected function getColumns()
-    {
-        return [
-            'id' => ['name' => 'archives.id', 'title' => trans('general.id')],
+   protected function getColumns()
+{
+    return [
+        'id' => ['name' => 'archives.id', 'title' => trans('general.id')],
 
-            'book_name' => ['name' => 'book_name', 'title' => trans('general.book_name')],
+        'book_name' => ['name' => 'book_name', 'title' => trans('general.book_name')],
 
-            'university' => ['name' => 'universities.name', 'title' => trans('general.university')],
+        'university' => ['name' => 'universities.name', 'title' => trans('general.university')],
 
-            'faculty' => ['name' => 'faculty', 'title' => trans('general.faculty')],
+        // فقط این دو خط را تغییر دهید
+        'faculty' => ['name' => 'faculty', 'title' => trans('general.faculty'), 'searchable' => true],
+        'department' => ['name' => 'department', 'title' => trans('general.department'), 'searchable' => true],
 
-            'department' => ['name' => 'department', 'title' => trans('general.department')],
+        'archiveyears' => ['name' => 'archiveyears.year', 'title' => trans('general.book_year')],
 
-            'archiveyears' => ['name' => 'archiveyears.year', 'title' => trans('general.book_year')],
+        'archivedatastatus' => ['name' => 'archivedatastatus.status', 'title' => trans('general.status')],
 
-            'archivedatastatus' => ['name' => 'archivedatastatus.status', 'title' => trans('general.status')],
+        'archiveqcstatus' => ['name' => 'archiveqcstatus.qc_status', 'title' => trans('general.accept_or_refuse')],
 
-            'archiveqcstatus' => ['name' => 'archiveqcstatus.qc_status', 'title' => trans('general.accept_or_refuse')],
+        'created_at_jalali' => ['name' => 'archives.created_at', 'title' => trans('general.created_at')],
 
-            'created_at_jalali' => ['name' => 'archives.created_at', 'title' => trans('general.created_at')],
+        'current_de_user' => ['name' => 'cur_de_user.name', 'title' => 'درج‌کننده'],
 
-            'current_de_user' => ['name' => 'cur_de_user.name', 'title' => 'درج‌کننده'],
+        'current_qc_user' => ['name' => 'cur_qc_user.name', 'title' => 'کنترول‌کننده'],
 
-            'current_qc_user' => ['name' => 'cur_qc_user.name', 'title' => 'کنترول‌کننده'],
+        'images_count' => ['name' => 'images_count', 'title' => trans('general.book_pagenumber'), 'searchable' => false, 'orderable' => false],
 
-             'images_count' => ['name' => 'images_count', 'title' => trans('general.book_pagenumber'), 'searchable' => false, 'orderable' => false],
-
-
-            'book_description' => ['name' => 'book_description', 'title' => trans('general.book_description')],
-        ];
-    }
+        'book_description' => ['name' => 'book_description', 'title' => trans('general.book_description')],
+    ];
+}
 
     protected function filename()
     {

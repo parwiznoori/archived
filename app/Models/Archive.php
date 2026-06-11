@@ -66,4 +66,29 @@ class Archive extends Model
     {
         return $this->belongsTo(ArchiveRole::class);
     }
+
+     public function archiveYears()
+    {
+        return $this->belongsToMany(ArchiveYear::class, 'archive_archive_year');
+    }
+
+    public function shiftTimes()
+    {
+        return $this->belongsToMany(ShiftTime::class, 'archive_shift_time');
+    }
+
+     public function semester_type()
+    {
+        return $this->belongsTo(SemesterType::class);
+    }
+
+    public function semesterTypes()
+    {
+        return $this->belongsToMany(SemesterType::class, 'archive_semester_type');
+    }
+
+    public function archiveDepartments()
+{
+    return $this->hasMany(ArchiveDepartment::class, 'archive_id', 'id');
+}
 }

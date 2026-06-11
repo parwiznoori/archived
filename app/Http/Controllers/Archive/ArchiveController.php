@@ -103,6 +103,7 @@ class ArchiveController extends Controller
         $request->validate([
             'university_id' => 'required',
             'book_description' => 'required',
+            'archive_year_id'  => 'required|array',
             'book_name' => 'required',
             'path.*' => 'required|image|mimes:pdf,jpeg,png,jpg,gif,svg|max:1000000', 
         ]);
@@ -116,11 +117,18 @@ class ArchiveController extends Controller
         \DB::transaction(function () use ($request, &$archive) {
             $archive = Archive::create([
                 'university_id' => $request->university_id,
-                'archive_year_id' => $request->archive_year_id,
                 'book_pagenumber' => $request->book_pagenumber,
                 'book_description' => $request->book_description,
                 'book_name' => $request->book_name,
             ]);
+
+
+             if ($request->filled('archive_year_id')) {
+                $years = array_filter($request->archive_year_id);
+                if (!empty($years)) {
+                    $archive->archiveYears()->attach($years);
+                }
+            }
 
             // Attach departments to the archive (many-to-many relationship)
             if ($request->has('department_id')) {
@@ -244,7 +252,7 @@ class ArchiveController extends Controller
             'university_id' => 'required',
 //            'faculty_id' => 'required',
 //            'department_id' => 'required',
-//            'book_year' => 'required',
+            'archive_year_id'  => 'required|array',
 //            'book_pagenumber' => 'required',
             'book_description' => 'required',
             'book_name' => 'required',
@@ -260,12 +268,21 @@ class ArchiveController extends Controller
                 'university_id' => $request->university_id,
 //                'faculty_id' => $request->faculty_id,
 //                'department_id' => $request->department_id,
-                'archive_year_id' => $request->archive_year_id,
 //                'book_year' => $request->book_year,
                 'book_pagenumber' => $request->book_pagenumber,
                 'book_description' => $request->book_description,
                 'book_name' => $request->book_name,
             ]);
+
+
+             if ($request->filled('archive_year_id')) {
+                $years = array_filter($request->archive_year_id);
+                if (!empty($years)) {
+                    $archive->archiveYears()->sync($years);
+                }
+               }
+
+
             ArchiveDepartment::where('archive_id', $archive->   id)->delete();
 
             // // Attach departments to the archive (many-to-many relationship)

@@ -170,6 +170,13 @@ Route::group(['middleware' => 'auth'], function() {
         Route::get('archive_report3', 'ArchivereportDocController@report3')->name('archive_report3');
         Route::post('reportresult3', 'ArchivereportDocController@reportresult3')->name('reportresult3');
         
+          Route::get('archivebook_report', 'ArchivebookReportController@index')->name('archivebook_report');
+        // Add these routes to your web.php
+        Route::get('/archivebook_report/export-excel','ArchivebookReportController@exportExcel')->name('archivebook_report.excel');
+        Route::get('/archivebook_report/export-pdf','ArchivebookReportController@exportPdf')->name('archivebook_report.pdf');
+
+
+
         Route::get('print-archivedoc/{id}', 'ArchivedocController@index')->name('print-archivedoc');
         Route::get('print-archivedocf/{id}', 'ArchivedocController@fdoc')->name('print-archivedocf');
         Route::get('print-archivedestalam/{id}', 'ArchivedocController@archivedestalam')->name('print-archivedestalam');

@@ -58,4 +58,9 @@ class University extends Model
     {
         return  trans('general.university')   . " ' " . $this->name . " ' " . trans('general.'. $eventName);
     }
+
+     public function province()
+    {
+        return $this->belongsTo(Province::class, 'province_id');
+    }
 }

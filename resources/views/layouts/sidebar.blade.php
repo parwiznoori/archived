@@ -54,6 +54,15 @@
                         </a>
                     </li>
                 @endif
+
+                 @if (auth()->user()->can(['archivebook_report']))
+                    <li class="nav-item {{ request()->is('archivebook_report') ? 'active' : '' }}">
+                        <a href="{{ route('archivebook_report') }}" class="nav-link ">
+                            <i class="icon-home"></i>
+                            <span class="title">{{ trans('general.archivebook_report') }}</span>
+                        </a>
+                    </li>
+                @endif
             </ul>
         </li>
         @endif

@@ -70,7 +70,7 @@
                 </div>
 
 
-                <div class="row">
+                {{-- <div class="row">
                     <div class="col-md-8">
                         <div class="form-group {{ $errors->has('archive_year_id') ? ' has-error' : '' }}">
                             {!! Form::label('archive_year_id', trans('general.book_year'), ['class' => 'control-label
@@ -78,6 +78,27 @@
                             <div class="col-sm-8">
                                 {!! Form::select('archive_year_id', $archiveyears, null, ['class' => 'form-control select2',
                                 'placeholder' => trans('general.select')]) !!}
+                                @if ($errors->has('archive_year_id'))
+                                    <span class="help-block">
+                        <strong>{{ $errors->first('archive_year_id') }}</strong></span>
+                                @endif
+                            </div>
+                        </div>
+                    </div>
+                </div> --}}
+
+
+
+                  <div class="row">
+                    <div class="col-md-8">
+                        <div class="form-group {{ $errors->has('archive_year_id') ? ' has-error' : '' }}">
+                            {!! Form::label('archive_year_id', trans('general.book_year'), ['class' => 'control-label
+                            col-sm-3']) !!}
+                            <div class="col-sm-8">
+                                {!! Form::select('archive_year_id[]', $archiveyears, null, [
+                                'class' => 'form-control select2',
+                                // 'multiple'=>'multiple',
+                               ]) !!}
                                 @if ($errors->has('archive_year_id'))
                                     <span class="help-block">
                         <strong>{{ $errors->first('archive_year_id') }}</strong></span>
