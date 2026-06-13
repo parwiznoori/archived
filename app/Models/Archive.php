@@ -67,6 +67,11 @@ class Archive extends Model
         return $this->belongsTo(ArchiveRole::class);
     }
 
+    public function archiveRoles()
+{
+    return $this->hasMany(\App\Models\ArchiveRole::class, 'archive_id');
+}
+
      public function archiveYears()
     {
         return $this->belongsToMany(ArchiveYear::class, 'archive_archive_year');

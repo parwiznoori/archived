@@ -94,10 +94,34 @@ class User extends Authenticatable
         return $this->morphMany(\App\Models\NoticeboardVisit::class, 'visitable');
     }
 
-     public function archiveRoles()
-    {
-        return $this->hasMany(ArchiveRole::class);
-    }
-    
+public function archiveRoles()
+{
+    return $this->hasMany(\App\Models\ArchiveRole::class, 'user_id');
+}
+   
+// رابطه با کتاب‌هایی که کاربر به عنوان درج کننده ثبت کرده است
+public function archives()
+{
+    return $this->hasMany(\App\Models\Archive::class, 'de_user_id');
+}
+
+// رابطه با کتاب‌هایی که کاربر به عنوان کنترول کننده بررسی کرده است
+public function archivesAsQc()
+{
+    return $this->hasMany(\App\Models\Archive::class, 'qc_user_id');
+}
+
+// رابطه با archivedatas از طریق books
+public function archivedatas()
+{
+    return $this->hasManyThrough(
+        \App\Models\Archivedata::class,
+        \App\Models\Archive::class,
+        'de_user_id', // Foreign key on archives table
+        'archive_id', // Foreign key on archivedatas table
+        'id', // Local key on users table
+        'id' // Local key on archives table
+    );
+}
 
 }

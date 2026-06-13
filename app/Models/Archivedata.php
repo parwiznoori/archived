@@ -48,6 +48,12 @@ class Archivedata extends Model
 //    }
 
 
+    // در app/Models/Archivedata.php
+    public function archive()
+    {
+        return $this->belongsTo(Archive::class, 'archive_id');
+    }
+
     public function archiveimage()
     {
         return $this->belongsTo(Archiveimage::class, 'archiveimage_id');
