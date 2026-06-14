@@ -175,10 +175,13 @@ Route::group(['middleware' => 'auth'], function() {
         Route::get('/archivebook_report/export-excel','ArchivebookReportController@exportExcel')->name('archivebook_report.excel');
         Route::get('/archivebook_report/export-pdf','ArchivebookReportController@exportPdf')->name('archivebook_report.pdf');
 
-        Route::get('archiveuser_report', 'ArchiveuserReportController@index')->name('archiveuser_report');
-        Route::get('/archiveuser_report/export-excel','ArchiveuserReportController@exportExcel')->name('archiveuser_report.excel');
-        Route::get('/archiveuser_report/export-pdf','ArchiveuserReportController@exportPdf')->name('archiveuser_report.pdf');
-        Route::get('archiveuser_report/get-users-by-role', 'ArchiveuserReportController@getUsersByRole')->name('archiveuser_report.getUsersByRole');
+        // Route::get('archiveuser_report', 'ArchiveuserReportController@index')->name('archiveuser_report');
+        // Route::get('/archiveuser_report/export-excel','ArchiveuserReportController@exportExcel')->name('archiveuser_report.excel');
+        // Route::get('/archiveuser_report/export-pdf','ArchiveuserReportController@exportPdf')->name('archiveuser_report.pdf');
+        // Route::get('archiveuser_report/get-users-by-role', 'ArchiveuserReportController@getUsersByRole')->name('archiveuser_report.getUsersByRole');
+      
+        Route::get('/archive-user-activity-report', 'ArchiveUserActivityReportController@index')->name('archiveuser_activity_report');
+
 
 
         Route::get('print-archivedoc/{id}', 'ArchivedocController@index')->name('print-archivedoc');

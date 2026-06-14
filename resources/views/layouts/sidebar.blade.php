@@ -63,9 +63,17 @@
                         </a>
                     </li>
                 @endif
-                @if (auth()->user()->can(['archiveuser_report']))
+                {{-- @if (auth()->user()->can(['archiveuser_report']))
                     <li class="nav-item {{ request()->is('archiveuser_report') ? 'active' : '' }}">
                         <a href="{{ route('archiveuser_report') }}" class="nav-link ">
+                            <i class="icon-home"></i>
+                            <span class="title">{{ trans('general.archiveuser_report') }}</span>
+                        </a>
+                    </li>
+                @endif --}}
+                  @if (auth()->user()->can(['archiveuser_activity_report']))
+                    <li class="nav-item {{ request()->is('archiveuser_activity_report') ? 'active' : '' }}">
+                        <a href="{{ route('archiveuser_activity_report') }}" class="nav-link ">
                             <i class="icon-home"></i>
                             <span class="title">{{ trans('general.archiveuser_report') }}</span>
                         </a>

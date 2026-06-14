@@ -93,7 +93,15 @@ class Archive extends Model
     }
 
     public function archiveDepartments()
-{
-    return $this->hasMany(ArchiveDepartment::class, 'archive_id', 'id');
-}
+    {
+        return $this->hasMany(ArchiveDepartment::class, 'archive_id', 'id');
+    }
+
+
+    
+    public function archivedatas()
+    {
+        return $this->hasMany(Archivedata::class, 'archive_id');
+    }
+
 }
