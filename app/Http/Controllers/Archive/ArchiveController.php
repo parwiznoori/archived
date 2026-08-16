@@ -636,15 +636,33 @@ class ArchiveController extends Controller
                         ]);
 
                         // Log the upload
-                        \DB::table('uploaded_csv_logs')->insert([
-                            'archivedata_id' => $archivedata->id,
-                            'batch_id' => $batchId,
-                            'created_at' => now(),
-                        ]);
+                        if (\Schema::hasTable('uploaded_csv_logs')) {
+                            \DB::table('uploaded_csv_logs')->insert([
+                                'archivedata_id' => $archivedata->id,
+                                'batch_id' => $batchId,
+                                'created_at' => now(),
+                            ]);
+                        } else {
+                            // جدول لاگ هنوز ساخته نشده (میگریشن اجرا نشده)؛ ریکورد محصل بدون
+                            // ثبت لاگ قبول می‌شود تا آپلود از بین نرود. برای فعال شدن undo
+                            // باید php artisan migrate روی سرور اجرا شود.
+                            \Log::warning('uploaded_csv_logs table missing; skipping upload log', [
+                                'archive_id' => $archiveId,
+                            ]);
+                        }
 
                         $successfullyInserted++;
                     } catch (\Exception $e) {
-                        $errors[] = "Row " . ($index + 1) . ": " . " این فایل مشکل دارد";
+                        // ثبت خطای واقعی برای رفع اشکال (در لاگ سرور دیده می‌شود)
+                        \Log::error('CSV Row Import Error: ' . $e->getMessage(), [
+                            'row' => $index + 1,
+                            'archive_id' => $archiveId,
+                            'data' => count($row) >= 6
+                                ? ['faculty_id' => $row[4], 'department_id' => $row[5], 'grade_id' => $row[6]]
+                                : null,
+                            'trace' => $e->getTraceAsString(),
+                        ]);
+                        $errors[] = "Row " . ($index + 1) . ": " . "این فایل مشکل دارد";
                         continue;
                     }
                 }
