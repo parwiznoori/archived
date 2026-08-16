@@ -108,72 +108,73 @@ class ArchiveController extends Controller
             'path.*' => 'required|image|mimes:pdf,jpeg,png,jpg,gif,svg|max:1000000', 
         ]);
 
-        
-
         // Initialize archive variable
         $archive = null;
 
-        // Use a transaction to handle the archive creation
-        \DB::transaction(function () use ($request, &$archive) {
-            $archive = Archive::create([
-                'university_id' => $request->university_id,
-                'book_pagenumber' => $request->book_pagenumber,
-                'book_description' => $request->book_description,
-                'book_name' => $request->book_name,
-            ]);
+        try {
+            // Use a transaction to handle the whole archive creation.
+            // The PDF conversion and image generation are inside the transaction
+            // so that a failure after the archive row is created triggers a rollback,
+            // preventing partial/duplicate records on a browser refresh.
+            \DB::transaction(function () use ($request, &$archive) {
+                $archive = Archive::create([
+                    'university_id' => $request->university_id,
+                    'book_pagenumber' => $request->book_pagenumber,
+                    'book_description' => $request->book_description,
+                    'book_name' => $request->book_name,
+                ]);
 
-
-             if ($request->filled('archive_year_id')) {
-                $years = array_filter($request->archive_year_id);
-                if (!empty($years)) {
-                    $archive->archiveYears()->attach($years);
-                }
-            }
-
-            // Attach departments to the archive (many-to-many relationship)
-            if ($request->has('department_id')) {
-                $departmentIds = $request->department_id;
-
-                $archiveId = $archive->id;
-                foreach ($request->department_id as $dpt) {
-                    $department=Department::where('id',$dpt)->first();
-                    $departInsert = ArchiveDepartment::create([
-                            'university_id' => $request->university_id,
-                            'faculty_id' => $department->faculty_id,
-                            'archive_id' => $archiveId, // This will be updated after with a full date
-                            'department_id' => $dpt]
-                    );
-
+                if ($request->filled('archive_year_id')) {
+                    $years = array_filter($request->archive_year_id);
+                    if (!empty($years)) {
+                        $archive->archiveYears()->attach($years);
+                    }
                 }
 
-            }
+                // Attach departments to the archive (many-to-many relationship)
+                if ($request->has('department_id')) {
+                    $archiveId = $archive->id;
+                    foreach ($request->department_id as $dpt) {
+                        $department = Department::where('id', $dpt)->first();
+                        if ($department) {
+                            ArchiveDepartment::create([
+                                'university_id' => $request->university_id,
+                                'faculty_id' => $department->faculty_id,
+                                'archive_id' => $archiveId, // This will be updated after with a full date
+                                'department_id' => $dpt,
+                            ]);
+                        }
+                    }
+                }
 
+                // Convert PDF to JPG and get the page count
+                $pageCount = PDFToJPGController::convert($request, $archive);
 
-        });
+                // Array to hold all archive images data
+                $archiveImages = [];
 
-// Convert PDF to JPG and get the page count
-        $pageCount = PDFToJPGController::convert($request,$archive);
+                // Loop through each page count and generate the image paths
+                for ($i = 1; $i <= $pageCount; $i++) {
+                    $archiveImages[] = [
+                        'book_pagenumber' => $i,
+                        'archive_id' => $archive->id,
+                        'status_id' => 1,
+                        'path' => '/archivefiles/' . $archive->id.'-' .$archive->book_name . '/' . $i . '.jpg',
+                    ];
+                }
 
-        // If the archive was created successfully
-        if ($archive != null) {
-            // Create a directory for archive files
-            $directory = public_path() . '/archivefiles/' . $archive->id.'-' .$archive->book_name;
+                // Bulk insert archive images into the database
+                Archiveimage::insert($archiveImages);
+            });
+        } catch (\Exception $e) {
+            \Log::error('Archive store error: ' . $e->getMessage(), ['trace' => $e->getTraceAsString()]);
 
-            // Array to hold all archive images data
-            $archiveImages = [];
-
-            // Loop through each page count and generate the image paths
-            for ($i = 1; $i <= $pageCount; $i++) {
-                $archiveImages[] = [
-                    'book_pagenumber' => $i,
-                    'archive_id' => $archive->id,
-                    'status_id' => 1,
-                    'path' => '/archivefiles/' . $archive->id.'-' .$archive->book_name . '/' . $i . '.jpg',
-                ];
-            }
-
-            // Bulk insert archive images into the database
-            Archiveimage::insert($archiveImages);
+            // Post/Redirect/Get: redirect back to the form instead of returning
+            // the POST response directly, so a browser refresh cannot re-submit
+            // the form and create duplicate archives.
+            return redirect()->route('archive.create')
+                ->withInput()
+                ->withErrors(['path' => 'خطا در آپلود یا تبدیل فایل. لطفاً دوباره تلاش کنید.']);
         }
 
         // Redirect to the archive index page
@@ -538,16 +539,20 @@ class ArchiveController extends Controller
                         continue;
                     }
 
+                    // Resolve the authoritative archive id. Prefer the one posted by the
+                    // upload page (always the book being viewed), fall back to the CSV column.
+                    $archiveId = $request->input('archive_id') ?: $row[0];
+
                     // Find the matching archive image
-                    $archiveimage = Archiveimage::where('archive_id', $row[0])
+                    $archiveimage = Archiveimage::where('archive_id', $archiveId)
                         ->where('book_pagenumber', $row[1])
                         ->first();
 
-                    // Find the matching archive image
-                    $archive = Archive::where('id', $row[0])
+                    // Find the matching archive
+                    $archive = Archive::where('id', $archiveId)
                         ->first();
 
-                    $archiveRole = ArchiveRole::where('archive_id', $row[0])->first();
+                    $archiveRole = ArchiveRole::where('archive_id', $archiveId)->first();
 
 
 
@@ -575,21 +580,29 @@ class ArchiveController extends Controller
 
                             // Update statuses
                             $archiveimage->status_id = 4;
-                            $archive->status_id = 4;
-                            $archiveRole->status_id = 4;
-//                            $archiveRole->qc_status_id = 3;
+                            if ($archive) {
+                                $archive->status_id = 4;
+                            }
+                            if ($archiveRole) {
+                                $archiveRole->status_id = 4;
+//                                $archiveRole->qc_status_id = 3;
+                            }
 
                         }
-                        $archiveRole->save();
+                        if ($archiveRole) {
+                            $archiveRole->save();
+                        }
                         $archiveimage->save();
-                        $archive->save();
+                        if ($archive) {
+                            $archive->save();
+                        }
 
 
 
 
                         // Create the Archivedata record
                         $archivedata = Archivedata::create([
-                            'archive_id' => $row[0],
+                            'archive_id' => $archiveId,
                             'archiveimage_id' => $archiveimage->id,
                             'column_number' => $row[2],
                             'university_id' => $row[3],

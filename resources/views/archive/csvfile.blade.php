@@ -490,6 +490,7 @@
                 <br>
                 <!-- فیلدهای مخفی -->
                 {!! Form::hidden('university_id', $archive->university_id) !!}
+                {!! Form::hidden('archive_id', $archive->id) !!}
                 {!! Form::hidden('department_id', $archive->department_id) !!}
 
                 <!-- دکمه‌های عملیات -->
