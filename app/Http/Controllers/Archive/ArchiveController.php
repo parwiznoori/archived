@@ -177,6 +177,40 @@ class ArchiveController extends Controller
                 ->withErrors(['path' => 'خطا در آپلود یا تبدیل فایل. لطفاً دوباره تلاش کنید.']);
         }
 
+        // تخصیص خودکار کتاب تازه‌ثبت‌شده به کاربرِ درج‌کننده (نقش Data Entry)
+        // تا در صفحه archiverole همان یوزر به عنوان درج‌کننده نمایش داده شود
+        if (!is_null($archive) && auth()->check()) {
+            try {
+                $dataEntryRole = \App\Models\Role::withoutGlobalScopes()
+                    ->where('name', 'Data_Entry')
+                    ->where('archive_type', 2)
+                    ->first();
+
+                if ($dataEntryRole && auth()->user()->hasRole('Data_Entry')) {
+                    $archive->update(['de_user_id' => auth()->id()]);
+
+                    ArchiveRole::firstOrCreate(
+                        [
+                            'archive_id' => $archive->id,
+                            'role_id'    => $dataEntryRole->id,
+                            'user_id'    => auth()->id(),
+                        ],
+                        [
+                            'status_id'    => 1,
+                            'qc_status_id' => 1,
+                            'created_at'   => now(),
+                            'updated_at'   => now(),
+                        ]
+                    );
+                }
+            } catch (\Exception $e) {
+                \Log::warning('Auto-assign book to DE user failed: ' . $e->getMessage(), [
+                    'archive_id' => $archive->id,
+                    'user_id'    => auth()->id(),
+                ]);
+            }
+        }
+
         // Redirect to the archive index page
         return redirect(route('archive.index'));
     }
@@ -674,7 +708,7 @@ class ArchiveController extends Controller
                 }
                 Session::flash('message', $message);
 
-                return redirect()->route('archive.view');
+                return redirect()->route('archive.view', ['archiveId' => $archiveId ?? $request->input('archive_id')]);
             } else {
                 return redirect()->back()->withErrors(['csv_file' => trans('general.invalid_file')]);
             }
