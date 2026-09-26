@@ -230,6 +230,10 @@ body { font-family: 'Noto Naskh Arabic', sans-serif; direction: rtl; background:
                             <th>ایمیل</th>
                             <th>تعداد کتاب</th>
                             <th>تعداد محصل</th>
+                            <th>تکمیل</th>
+                            <th>پروسس</th>
+                            <th>ناتکمیل</th>
+                            <th>معمولی</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -240,6 +244,10 @@ body { font-family: 'Noto Naskh Arabic', sans-serif; direction: rtl; background:
                             <td>{{ $user['user_email'] }}</td>
                             <td>{{ number_format($user['total_books']) }}</td>
                             <td>{{ number_format($user['total_students']) }}</td>
+                            <td style="color:#10b981; font-weight:700;">{{ number_format($user['books_complete'] ?? 0) }}</td>
+                            <td style="color:#3b82f6; font-weight:700;">{{ number_format($user['books_process'] ?? 0) }}</td>
+                            <td style="color:#f59e0b; font-weight:700;">{{ number_format($user['books_incomplete'] ?? 0) }}</td>
+                            <td style="color:#6b7280; font-weight:700;">{{ number_format($user['books_normal'] ?? 0) }}</td>
                         </tr>
                         @endforeach
                     </tbody>
@@ -266,6 +274,9 @@ body { font-family: 'Noto Naskh Arabic', sans-serif; direction: rtl; background:
                             <th>ایمیل</th>
                             <th>تعداد کتاب</th>
                             <th>تعداد محصل</th>
+                            <th>رد شده</th>
+                            <th>تایید شده</th>
+                            <th>کار نشده</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -276,6 +287,9 @@ body { font-family: 'Noto Naskh Arabic', sans-serif; direction: rtl; background:
                             <td>{{ $user['user_email'] }}</td>
                             <td>{{ number_format($user['total_books_controlled']) }}</td>
                             <td>{{ number_format($user['total_students_controlled']) }}</td>
+                            <td style="color:#ef4444; font-weight:700;">{{ number_format($user['books_rejected'] ?? 0) }}</td>
+                            <td style="color:#10b981; font-weight:700;">{{ number_format($user['books_approved'] ?? 0) }}</td>
+                            <td style="color:#6b7280; font-weight:700;">{{ number_format($user['books_not_checked'] ?? 0) }}</td>
                         </tr>
                         @endforeach
                     </tbody>
@@ -387,8 +401,8 @@ document.getElementById('exportExcelBtn').addEventListener('click', function () 
     deRows.push([]);
     
     // هدر جدول
-    deRows.push(['ردیف', 'نام کاربر', 'ایمیل', 'تعداد کتاب درج شده', 'تعداد محصل درج شده']);
-    
+    deRows.push(['ردیف', 'نام کاربر', 'ایمیل', 'تعداد کتاب درج شده', 'تعداد محصل درج شده', 'تکمیل', 'پروسس', 'ناتکمیل', 'معمولی']);
+
     // داده‌ها
     REPORT_DATA.de.users.forEach(function(user, index) {
         deRows.push([
@@ -396,16 +410,20 @@ document.getElementById('exportExcelBtn').addEventListener('click', function () 
             user.user_name,
             user.user_email,
             user.total_books,
-            user.total_students
+            user.total_students,
+            user.books_complete || 0,
+            user.books_process || 0,
+            user.books_incomplete || 0,
+            user.books_normal || 0
         ]);
     });
-    
+
     // جمع کل
     deRows.push([]);
     deRows.push(['جمع کل', '', '', REPORT_DATA.de.total_books, REPORT_DATA.de.total_students]);
-    
+
     const wsDE = XLSX.utils.aoa_to_sheet(deRows);
-    wsDE['!cols'] = [{wch:8}, {wch:25}, {wch:30}, {wch:18}, {wch:18}];
+    wsDE['!cols'] = [{wch:8}, {wch:25}, {wch:30}, {wch:18}, {wch:18}, {wch:12}, {wch:12}, {wch:12}, {wch:12}];
     XLSX.utils.book_append_sheet(wb, wsDE, 'درج کنندگان');
     
     // ==================== شیت ۲: کنترول‌کنندگان ====================
@@ -418,8 +436,8 @@ document.getElementById('exportExcelBtn').addEventListener('click', function () 
     qcRows.push([]);
     
     // هدر جدول
-    qcRows.push(['ردیف', 'نام کاربر', 'ایمیل', 'تعداد کتاب کنترل شده', 'تعداد محصل کنترل شده']);
-    
+    qcRows.push(['ردیف', 'نام کاربر', 'ایمیل', 'تعداد کتاب کنترل شده', 'تعداد محصل کنترل شده', 'رد شده', 'تایید شده', 'کار نشده']);
+
     // داده‌ها
     REPORT_DATA.qc.users.forEach(function(user, index) {
         qcRows.push([
@@ -427,7 +445,10 @@ document.getElementById('exportExcelBtn').addEventListener('click', function () 
             user.user_name,
             user.user_email,
             user.total_books_controlled,
-            user.total_students_controlled
+            user.total_students_controlled,
+            user.books_rejected || 0,
+            user.books_approved || 0,
+            user.books_not_checked || 0
         ]);
     });
     
@@ -436,7 +457,7 @@ document.getElementById('exportExcelBtn').addEventListener('click', function () 
     qcRows.push(['جمع کل', '', '', REPORT_DATA.qc.total_books, REPORT_DATA.qc.total_students]);
     
     const wsQC = XLSX.utils.aoa_to_sheet(qcRows);
-    wsQC['!cols'] = [{wch:8}, {wch:25}, {wch:30}, {wch:18}, {wch:18}];
+    wsQC['!cols'] = [{wch:8}, {wch:25}, {wch:30}, {wch:18}, {wch:18}, {wch:12}, {wch:12}, {wch:12}];
     XLSX.utils.book_append_sheet(wb, wsQC, 'کنترول کنندگان');
     
     // ذخیره فایل

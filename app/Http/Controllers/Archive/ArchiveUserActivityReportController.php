@@ -89,19 +89,35 @@ class ArchiveUserActivityReportController extends Controller
             if (!isset($report[$uid])) {
                 $u = $usersMap->get($uid);
                 $report[$uid] = [
-                    'user_id'        => $uid,
-                    'user_name'      => $u?->name ?? 'نامشخص',
-                    'user_email'     => $u?->email ?? '',
-                    'total_books'    => 0,
-                    'total_students' => 0,
-                    'archives'       => [],
+                    'user_id'          => $uid,
+                    'user_name'        => $u?->name ?? 'نامشخص',
+                    'user_email'       => $u?->email ?? '',
+                    'total_books'      => 0,
+                    'total_students'   => 0,
+                    'books_complete'   => 0,
+                    'books_process'    => 0,
+                    'books_incomplete' => 0,
+                    'books_normal'     => 0,
+                    'archives'         => [],
                 ];
             }
-            
+
             $cnt = $archive->archivedatas->count();
             $report[$uid]['total_books']++;
             $report[$uid]['total_students'] += $cnt;
-            
+
+            // شمارش وضعیت کتاب
+            $st = (int) $archive->status_id;
+            if ($st === 4) {
+                $report[$uid]['books_complete']++;
+            } elseif ($st === 2) {
+                $report[$uid]['books_process']++;
+            } elseif ($st === 3) {
+                $report[$uid]['books_incomplete']++;
+            } else {
+                $report[$uid]['books_normal']++;
+            }
+
             // تبدیل تاریخ به شمسی
             $shamsiDate = $this->toShamsi($archive->created_at, true);
             
@@ -163,19 +179,32 @@ class ArchiveUserActivityReportController extends Controller
             if (!isset($report[$uid])) {
                 $u = $usersMap->get($uid);
                 $report[$uid] = [
-                    'user_id'                   => $uid,
-                    'user_name'                 => $u?->name ?? 'نامشخص',
-                    'user_email'                => $u?->email ?? '',
-                    'total_books_controlled'    => 0,
+                    'user_id'                 => $uid,
+                    'user_name'               => $u?->name ?? 'نامشخص',
+                    'user_email'              => $u?->email ?? '',
+                    'total_books_controlled'  => 0,
                     'total_students_controlled' => 0,
-                    'archives'                  => [],
+                    'books_rejected'          => 0,
+                    'books_approved'          => 0,
+                    'books_not_checked'       => 0,
+                    'archives'                => [],
                 ];
             }
-            
+
             $cnt = $archive->archivedatas->count();
             $report[$uid]['total_books_controlled']++;
             $report[$uid]['total_students_controlled'] += $cnt;
-            
+
+            // شمارش وضعیت QC کتاب
+            $qc = (int) $archive->qc_status_id;
+            if ($qc === 4) {
+                $report[$uid]['books_rejected']++;
+            } elseif ($qc === 3) {
+                $report[$uid]['books_approved']++;
+            } else {
+                $report[$uid]['books_not_checked']++;
+            }
+
             // تبدیل تاریخ به شمسی
             $shamsiDate = $this->toShamsi($archive->updated_at, true);
             

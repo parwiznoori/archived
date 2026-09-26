@@ -11,22 +11,29 @@ class ArchiveDataTable extends DataTable
     {
         $datatables = datatables($query)
             ->setRowClass(function ($archive) {
-
                 $className = '';
 
-                if ($archive->qc_status_id == 3 && $archive->status_id == 4) {
-                    $className .= ' qc_status';
+                if (isset($archive->deleted_at)) {
+                    $className .= 'row_deleted ';
                 }
 
                 if ($archive->qc_status_id == 4 && $archive->status_id == 4) {
-                    $className .= ' qc_status2';
+                    $className .= 'qc_status2 ';
+                } elseif ($archive->status_id == 3) {
+                    $className .= 'qc_status3 ';
+                } elseif ($archive->qc_status_id == 3 && $archive->status_id == 4) {
+                    $className .= 'qc_status ';
+                } elseif ($archive->qc_user_id != null) {
+                    $className .= 'row_qc_assigned ';
+                } elseif ($archive->de_user_id != null) {
+                    $className .= 'row_de_assigned ';
+                } elseif ($archive->status_id == 1 && $archive->qc_status_id == 1) {
+                    // حالت معمولی: سفید
+                } elseif ($archive->de_user_id == null) {
+                    $className .= 'qc_status4 ';
                 }
 
-                if ($archive->status_id == 3) {
-                    $className .= ' qc_status3';
-                }
-
-                return $className;
+                return trim($className);
             })
 
             // فقط این بخش اضافه شده برای فیلتر کردن faculty و department

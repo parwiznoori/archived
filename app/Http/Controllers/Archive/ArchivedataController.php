@@ -386,12 +386,13 @@ class ArchivedataController extends Controller
         return back()->with('error', 'رکورد مورد نظر یافت نشد!');
     }
 
-    // Check if this record was rejected before
-    $wasRejected = ($archivedata->qc_status_id == 3 || $archivedata->qc_status_id == 4);
     // چک وضعیت QC
     if ($archivedata->qc_status_id == 2 || $archivedata->qc_status_id == 3) {
         return back()->with('error', 'این رکورد قابل ویرایش نیست زیرا قبلاً به کنترل کیفیت معرفی شده است.');
     }
+
+    // اگر رد شده بود، بعد از اصلاح برگشت به حالت عادی برای کنترول مجدد
+    $wasRejected = ($archivedata->qc_status_id == 4);
 
     // چک department
     $department = Department::where('id', $request->department_id)->first();
@@ -448,11 +449,42 @@ class ArchivedataController extends Controller
      // FIXED: If this record was rejected and now updated
     if ($wasRejected) {
         $archivedata->re_updated = true;  // Mark as updated after rejection
+        $archivedata->qc_status_id = 1;   // Reset QC status so QC can re-check
         $archivedata->save();
+
+        // ارسال نوتیفیکیشن هنگام اصلاح صفحه مسترد شده
+        $archive = Archive::find($archivedata->archive_id ?? $request->archivedata_id);
+        $archiveImage = Archiveimage::find($request->archive_image_id);
+
+        if ($archive && $archiveImage) {
+            $bookName = $archive->book_name ?? '-';
+            $pageTitle = 'صفحه ' . ($archiveImage->book_pagenumber ?? '-');
+            $fixedBy = auth()->user()->name;
+
+            // نوتیفیکیشن برای یوزر کنترول معلومات
+            if ($archive->qc_user_id) {
+                $qcUser = \App\User::find($archive->qc_user_id);
+                if ($qcUser) {
+                    $qcUser->notify(new \App\Notifications\ArchivePageFixedNotification(
+                        $archive->id, $bookName, $pageTitle, $fixedBy, $archiveImage->id
+                    ));
+                }
+            }
+
+            // نوتیفیکیشن برای سوپر ادمین و سیستم دیوپلر
+            $adminUsers = \App\User::whereHas('roles', function ($q) {
+                $q->whereIn('name', ['super-admin', 'system-developer']);
+            })->get();
+
+            foreach ($adminUsers as $admin) {
+                if ($admin->id !== auth()->id()) {
+                    $admin->notify(new \App\Notifications\ArchivePageFixedNotification(
+                        $archive->id, $bookName, $pageTitle, $fixedBy, $archiveImage->id
+                    ));
+                }
+            }
+        }
     }
-
-
-
     // بروزرسانی وضعیت
     $archiveImageRecord = Archiveimage::where('id', $request->archive_image_id)->first();
     if ($archiveImageRecord) {
@@ -606,7 +638,7 @@ class ArchivedataController extends Controller
 
         // "Check user authentication in url page number
         if($archiveRecord==null || $archiveRecord->de_user_id==null || $archiveRecord->de_user_id!=auth()->user()->id){
-            return back();
+            return redirect()->route('archive')->with('error', 'قابل دسترس نیست');
         }
 
 
@@ -655,7 +687,7 @@ class ArchivedataController extends Controller
 
         // "Check user authentication in url page number
         if($archiveRecord==null || $archiveRecord->de_user_id==null || $archiveRecord->de_user_id!=auth()->user()->id){
-            return back();
+            return redirect()->route('archive')->with('error', 'قابل دسترس نیست');
         }
 
 
@@ -764,7 +796,7 @@ class ArchivedataController extends Controller
         // Check the qc_status_id
         if ($archiveRecord->qc_status_id == 2 || $archiveRecord->qc_status_id == 3) {
             session()->flash('error', 'این رکورد قابل اپدیت نیست زیرا قبلاً به کنترل کیفیت معرفی شده است.');
-            return back();
+            return redirect()->route('archiveBookDataEntry', $id);
         }
 
 

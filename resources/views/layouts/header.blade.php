@@ -1,4 +1,4 @@
-<?php 
+<?php
 use Carbon\Carbon;
 Carbon::setLocale('da');
 ?>
@@ -22,7 +22,7 @@ Carbon::setLocale('da');
                     $logo_url_redirect = 'student/profile';
                 }
             @endphp
-            
+
 
             <a href="{{ url($logo_url_redirect) }}">
                 <img src="{{  asset('img/hemis-logo.png') }}" alt="logo" class="logo-default" style="margin: 10px 20px" height="50" /> </a>
@@ -65,6 +65,7 @@ Carbon::setLocale('da');
                     </li>
                 </ul>
             </div>
+
             <div class="shamsi-date">
                 @php
                 $date1 = Date('Y-m-d');
@@ -78,11 +79,11 @@ Carbon::setLocale('da');
             </div>
             <div class="role">
                 {{ trans('general.role') }} :
-                {{  
-                    auth('user')->check() ? (Auth::user()->roles ? (Auth::user()->roles->pluck('title')[0] ?? '') :  '' ) 
+                {{
+                    auth('user')->check() ? (Auth::user()->roles ? (Auth::user()->roles->pluck('title')[0] ?? '') :  '' )
                                         : ( auth('teacher')->check() ? trans('general.teacher_role') : trans('general.student') )
                  }}
-               
+
             </div>
         </div>
         <!-- END PAGE ACTIONS -->
@@ -104,190 +105,149 @@ Carbon::setLocale('da');
             <!-- BEGIN TOP NAVIGATION MENU -->
             <div class="top-menu">
                 <ul class="nav navbar-nav pull-right">
-                    <li class="separator hide"> 
-                       
+                    <li class="separator hide">
                     </li>
-                    <!-- BEGIN NOTIFICATION DROPDOWN -->
-                    <!-- BEGIN INBOX DROPDOWN -->
-                    <!-- DOC: Apply "dropdown-dark" class after below "dropdown-extended" to change the dropdown styte -->
 
-
-                   {{-- @if(auth()->check())
-
-                        <li class="dropdown dropdown-extended dropdown-inbox" id="header_inbox_bar">
-                            <a href="javascript:;" class="dropdown-toggle" data-toggle="dropdown" data-hover="dropdown" data-close-others="true">
+                    <!-- BEGIN USER + NOTIFICATION (same line) -->
+                    <li class="dropdown dropdown-user dropdown-dark header-user-notification" style="float: right; display: flex !important; align-items: center; height: 75px; position: relative;">
+                        @if(auth('user')->check())
+                        <div class="header-notification" style="display: flex; align-items: center; position: relative; padding: 0 6px; margin-left: 15px;">
+                            <a href="javascript:;" class="notification-bell dropdown-toggle" data-toggle="dropdown" data-hover="dropdown" data-close-others="true" style="text-decoration: none; color: #555; font-size: 18px; position: relative; cursor: pointer; padding: 8px; line-height: 1; display: flex; align-items: center;">
                                 <i class="icon-bell"></i>
-                                <span class="badge badge-danger" id ="notification_count"> {{auth()->user()->unreadNotifications->count()}}</span>
+                                @php $unreadCount = auth()->user()->unreadNotifications->count(); @endphp
+                                @if($unreadCount > 0)
+                                    <span class="badge badge-danger" style="position: absolute; top: 2px; right: 0; font-size: 10px; padding: 1px 5px; border-radius: 10px; background: #e74c3c; color: #fff; min-width: 16px; text-align: center;">{{ $unreadCount }}</span>
+                                @endif
                             </a>
-                            <ul class="dropdown-menu">
-                                <li class="external">
-                                    <h3>شما به تعداد
-                                        <span class="bold" id= "notification_bottom_count">{{auth()->user()->unreadNotifications->count()}} </span> اطلاعیه دارید</h3>
+                            <ul class="dropdown-menu" style="min-width: 420px; max-height: 500px; overflow-y: auto; left: 0; right: auto; top: 100%; bottom: auto; margin-top: 0; padding: 0; position: absolute; z-index: 9999;">
+                                <li class="external" style="padding: 12px 15px; background: #f8f9fa; border-bottom: 1px solid #eee; position: sticky; top: 0; z-index: 10;">
+                                    <h5 style="margin: 0; font-weight: 600; font-size: 14px;">
+                                        <i class="icon-bell"></i> {{ __('general.notifications') }}
+                                        @if($unreadCount > 0)
+                                            <span class="badge badge-danger" style="background: #e74c3c;">{{ $unreadCount }}</span>
+                                        @endif
+                                    </h5>
                                 </li>
-                                <li>
-                                    <ul class="dropdown-menu-list scroller" style="height: 275px;" data-handle-color="#637283">
-                                        <div id="notification" style ="margin-bottom:2px !important"></div>
-                                        @forelse(auth()->user()->notifications as $notification)
+                                <li style="max-height: 430px; overflow-y: auto; padding: 0; margin: 0;">
+                                    <ul style="padding: 0; margin: 0; list-style: none;">
+                                        <div id="notification-live" style="margin-bottom: 2px !important;"></div>
+                                        @forelse(auth()->user()->notifications->take(50) as $notification)
                                             @php
-                                                $type = $notification->type;
+                                                $ndata = $notification->data;
+                                                $ntype = $notification->type;
+                                                $action = $ndata['action'] ?? '';
+                                                $isUnread = $notification->read_at == null;
+                                                $nurl = $ndata['url'] ?? '#';
+                                                $notifDate = '';
+                                                if ($notification->created_at) {
+                                                    $nc = \Carbon\Carbon::parse($notification->created_at);
+                                                    $njParts = \Morilog\Jalali\CalendarUtils::toJalali($nc->year, $nc->month, $nc->day);
+                                                    $notifDate = implode('/', $njParts) . ' ' . $nc->format('H:i');
+                                                }
                                             @endphp
-                                            @if($notification->read_at == null)
-                                                <li onclick="makeNotificationAsRead('{{$notification->id}}')" style ="background-color: #F0FFF0">
-                                                    @if ($type == "App\Notifications\IssueCreatedNotication")
-                                                        <a target ="_blank" href="{{ route ('issues.show', $notification->data['issueCreated']['id'])}}">
-                                                <span class="subject">
-                                                    <span class="from">{{$notification->data['user']['name']}}</span>
-                                                    <span class="time">{{Carbon::parse($notification->data['issueCreated']['created_at'])->diffForHumans()}} </span>
-                                                </span>
-                                                            <span class="message"> {{ str_limit($notification->data['issueCreated']['title'], 50,'...') }}</span>
-                                                        </a>
-                                                    @elseif ($type == "App\Notifications\GraduateBookCreatedNotification")
-                                                        @php
-                                                            $title = __('general.graduates-book').' '. __('general.year').' '.$notification->data['graduateBookCreated']['graduated_year'].' '.__('general.has_been_created');
-                                                        @endphp
-                                                        <a target ="_blank" href="{{ route ('graduate-book.show', $notification->data['graduateBookCreated']['id'])}}">
-                                                <span class="subject">
-                                                    <span class="from">{{$notification->data['user']['name']}}</span>
-                                                    <span class="time">{{Carbon::parse($notification->data['graduateBookCreated']['created_at'])->diffForHumans()}} </span>
-                                                </span>
+                                            <li onclick="makeNotificationAsRead('{{ $notification->id }}')"
+                                                style="padding: 10px 15px; border-bottom: 1px solid #f0f0f0; cursor: pointer; {{ $isUnread ? 'background-color: #FFF8E1;' : 'background-color: #fff;' }}">
 
-                                                            <span class="message"> {{ str_limit($title, 50,'...') }}</span>
-                                                        </a>
-                                                    @elseif ($type == "App\Notifications\UniversitiesActivitesExcelCreatedNotification")
-                                                        @php
-                                                            $title = __('general.universities_activities').' '. __('general.year').' '.$notification->data['universitiesActivitesExcelCreated']['education_year'].' '.__('general.has_been_created');
-                                                        @endphp
-                                                        <a target ="_blank" href="{{ route ('universities_activities.show', $notification->data['universitiesActivitesExcelCreated']['id'])}}">
-                                                <span class="subject">
-                                                    <span class="from">{{$notification->data['user']['name']}}</span>
-                                                    <span class="time">{{Carbon::parse($notification->data['universitiesActivitesExcelCreated']['created_at'])->diffForHumans()}} </span>
-                                                </span>
+                                                {{-- نوتیفیکیشن رد شدن صفحه --}}
+                                                @if($action === 'page_rejected')
+                                                    <a href="{{ $nurl }}" target="_blank" style="text-decoration: none; color: #333; display: block;" onclick="event.stopPropagation(); makeNotificationAsRead('{{ $notification->id }}');">
+                                                        <span style="display: block; font-size: 13px; font-weight: 600; color: #e74c3c;">
+                                                            <i class="fa fa-times-circle"></i> {{ __('general.page_rejected') }}
+                                                            @if($isUnread) <span style="background: #e74c3c; color: #fff; font-size: 9px; padding: 1px 5px; border-radius: 8px; margin-right: 4px;">{{ __('general.new') }}</span> @endif
+                                                        </span>
+                                                        <span style="display: block; font-size: 12px; color: #555; margin-top: 3px;">
+                                                            {{ __('general.book') }}: <strong>{{ $ndata['book_name'] ?? '-' }}</strong> | {{ $ndata['page_title'] ?? '-' }}
+                                                        </span>
+                                                        <span style="display: block; font-size: 11px; color: #888; margin-top: 2px;">
+                                                            {{ __('general.rejected_by') }}: {{ $ndata['rejected_by'] ?? '-' }}
+                                                        </span>
+                                                        <span style="display: block; font-size: 11px; color: #888; margin-top: 2px;">
+                                                            {{ __('general.reason') }}: {{ \Illuminate\Support\Str::limit($ndata['reject_comment'] ?? '-', 60, '...') }}
+                                                        </span>
+                                                        <span style="display: block; font-size: 11px; color: #888; margin-top: 2px;">
+                                                            {{ __('general.rejected_at') }}: {{ $notifDate }}
+                                                        </span>
+                                                    </a>
 
-                                                            <span class="message"> {{ str_limit($title, 50,'...') }}</span>
-                                                        </a>
-                                                    @endif
-                                                </li>
-                                            @else
-                                                <li onclick="makeNotificationAsRead('{{$notification->id}}')">
-                                                    @if ($type == "App\Notifications\IssueCreatedNotication")
-                                                        <a target ="_blank" href="{{ route ('issues.show', $notification->data['issueCreated']['id'])}}">
-                                                <span class="subject">
-                                                    <span class="from">{{$notification->data['user']['name']}}</span>
-                                                    <span class="time">{{Carbon::parse($notification->data['issueCreated']['created_at'])->diffForHumans()}} </span>
-                                                </span>
-                                                            <span class="message"> {{ str_limit($notification->data['issueCreated']['title'], 50,'...') }}</span>
-                                                        </a>
-                                                    @elseif ($type == "App\Notifications\GraduateBookCreatedNotification")
-                                                        @php
-                                                            $title = __('general.graduates-book').' '. __('general.year').' '.$notification->data['graduateBookCreated']['graduated_year'].' '.__('general.has_been_created');
-                                                        @endphp
-                                                        <a target ="_blank" href="{{ route ('graduate-book.show', $notification->data['graduateBookCreated']['id'])}}">
-                                                <span class="subject">
-                                                    <span class="from">{{$notification->data['user']['name']}}</span>
-                                                    <span class="time">{{Carbon::parse($notification->data['graduateBookCreated']['created_at'])->diffForHumans()}} </span>
-                                                </span>
-                                                            <span class="message"> {{ str_limit( $title, 50,'...') }}</span>
-                                                        </a>
-                                                    @elseif ($type == "App\Notifications\UniversitiesActivitesExcelCreatedNotification")
-                                                        @php
-                                                            $title = __('general.universities_activities').' '. __('general.year').' '.$notification->data['universitiesActivitesExcelCreated']['education_year'].' '.__('general.has_been_created');
-                                                        @endphp
-                                                        <a target ="_blank" href="{{ route ('universities_activities.show', $notification->data['universitiesActivitesExcelCreated']['id'])}}">
-                                                <span class="subject">
-                                                    <span class="from">{{$notification->data['user']['name']}}</span>
-                                                    <span class="time">{{Carbon::parse($notification->data['universitiesActivitesExcelCreated']['created_at'])->diffForHumans()}} </span>
-                                                </span>
+                                                {{-- نوتیفیکیشن اصلاح شدن صفحه --}}
+                                                @elseif($action === 'page_fixed')
+                                                    <a href="{{ $nurl }}" target="_blank" style="text-decoration: none; color: #333; display: block;" onclick="event.stopPropagation(); makeNotificationAsRead('{{ $notification->id }}');">
+                                                        <span style="display: block; font-size: 13px; font-weight: 600; color: #27ae60;">
+                                                            <i class="fa fa-check-circle"></i> {{ __('general.page_fixed') }}
+                                                            @if($isUnread) <span style="background: #27ae60; color: #fff; font-size: 9px; padding: 1px 5px; border-radius: 8px; margin-right: 4px;">{{ __('general.new') }}</span> @endif
+                                                        </span>
+                                                        <span style="display: block; font-size: 12px; color: #555; margin-top: 3px;">
+                                                            {{ __('general.book') }}: <strong>{{ $ndata['book_name'] ?? '-' }}</strong> | {{ $ndata['page_title'] ?? '-' }}
+                                                        </span>
+                                                        <span style="display: block; font-size: 11px; color: #888; margin-top: 2px;">
+                                                            {{ __('general.fixed_by') }}: {{ $ndata['fixed_by'] ?? '-' }}
+                                                        </span>
+                                                        <span style="display: block; font-size: 11px; color: #888; margin-top: 2px;">
+                                                            {{ __('general.fixed_at') }}: {{ $notifDate }}
+                                                        </span>
+                                                    </a>
 
-                                                            <span class="message"> {{ str_limit($title, 50,'...') }}</span>
-                                                        </a>
-                                                    @endif
-                                                </li>
-                                            @endif
+                                                {{-- نوتیفیکیشن قدیمی: مشکل --}}
+                                                @elseif($ntype == "App\Notifications\IssueCreatedNotication")
+                                                    <a target="_blank" href="{{ route('issues.show', $ndata['issueCreated']['id']) }}" style="text-decoration: none; color: #333; display: block;" onclick="event.stopPropagation(); makeNotificationAsRead('{{ $notification->id }}');">
+                                                        <span style="display: block; font-size: 13px; font-weight: 600; color: #5b9bd1;">
+                                                            <i class="fa fa-bug"></i> {{ $ndata['user']['name'] ?? '-' }}
+                                                            @if($isUnread) <span style="background: #5b9bd1; color: #fff; font-size: 9px; padding: 1px 5px; border-radius: 8px; margin-right: 4px;">{{ __('general.new') }}</span> @endif
+                                                        </span>
+                                                        <span style="display: block; font-size: 12px; color: #555; margin-top: 3px;">
+                                                            {{ \Illuminate\Support\Str::limit($ndata['issueCreated']['title'] ?? '', 60, '...') }}
+                                                        </span>
+                                                    </a>
+
+                                                {{-- نوتیفیکیشن قدیمی: کتاب فراغت --}}
+                                                @elseif($ntype == "App\Notifications\GraduateBookCreatedNotification")
+                                                    <a target="_blank" href="{{ route('graduate-book.show', $ndata['graduateBookCreated']['id']) }}" style="text-decoration: none; color: #333; display: block;" onclick="event.stopPropagation(); makeNotificationAsRead('{{ $notification->id }}');">
+                                                        <span style="display: block; font-size: 13px; font-weight: 600; color: #8e44ad;">
+                                                            <i class="fa fa-book"></i> {{ __('general.graduates-book') }} {{ $ndata['graduateBookCreated']['graduated_year'] ?? '' }}
+                                                            @if($isUnread) <span style="background: #8e44ad; color: #fff; font-size: 9px; padding: 1px 5px; border-radius: 8px; margin-right: 4px;">{{ __('general.new') }}</span> @endif
+                                                        </span>
+                                                    </a>
+
+                                                {{-- نوتیفیکیشن سایر --}}
+                                                @else
+                                                    <a href="{{ $nurl }}" target="_blank" style="text-decoration: none; color: #333; display: block;" onclick="event.stopPropagation(); makeNotificationAsRead('{{ $notification->id }}');">
+                                                        <span style="display: block; font-size: 13px; font-weight: 600; color: #5b9bd1;">
+                                                            {{ \Illuminate\Support\Str::limit($ndata['message'] ?? ($ndata['issueCreated']['title'] ?? 'اعلان'), 80, '...') }}
+                                                            @if($isUnread) <span style="background: #5b9bd1; color: #fff; font-size: 9px; padding: 1px 5px; border-radius: 8px; margin-right: 4px;">{{ __('general.new') }}</span> @endif
+                                                        </span>
+                                                    </a>
+                                                @endif
+
+                                                <span style="display: block; font-size: 10px; color: #aaa; margin-top: 4px; text-align: left;">
+                                                    {{ $notification->created_at ? \Carbon\Carbon::parse($notification->created_at)->diffForHumans() : '' }}
+                                                </span>
+                                            </li>
                                         @empty
-                                            <li id = "no_notification"> {{trans('general.unread_notifications')}}</li>
+                                            <li id="no_notification" style="text-align: center; padding: 25px 15px; color: #999;">
+                                                <i class="icon-bell" style="font-size: 35px; display: block; margin-bottom: 8px; opacity: 0.2;"></i>
+                                                {{ __('general.no_notifications') }}
+                                            </li>
                                         @endforelse
                                     </ul>
                                 </li>
                             </ul>
-                        </li>
-                @endif  --}}
+                        </div>
+                        @endif
 
-                {{-- @if(auth()->check())
-                <li class="dropdown dropdown-extended dropdown-inbox" id="header_inbox_bar">
-                    <a href="javascript:;" class="dropdown-toggle" data-toggle="dropdown" data-hover="dropdown" data-close-others="true">
-                        <i class="icon-users"></i>
-                        <span class="badge badge-primary" id="user_role_count">
-                            {{ Auth::user()->archiveRoles->count() }}
-                        </span>
-                        
-                    </a>
-                    <ul class="dropdown-menu">
-                        <li class="external">
-                            <h3>
-                                وظایف کاربران یوزر های آرشیف
-                                <span class="badge badge-primary" id="user_role_count">
-                                    @if(Auth::user()->archiveRoles)
-                                        {{ Auth::user()->archiveRoles->count() }}
-                                    @else
-                                        {{ Auth::user()->name }}
-                                    @endif
-                                </span>
-                            </h3>
-                        </li>
-                        <li>
-                            <ul class="dropdown-menu-list scroller" style="height: 275px;" data-handle-color="#637283">
-                                @forelse(Auth::user()->archiveRoles as $role)
-                                    <li style="padding: 10px; border-bottom: 1px solid #ddd;">
-                                        <a target="_blank" href="{{ route('archiverole', ['name' => $role->role->name ?? 'unknown', 'id' => $role->id ?? 0]) }}">
-                                            <span class="subject">
-                                                <span class="from">{{ $role->user->name ?? 'کاربر نامشخص' }}</span>
-                                                <span class="time">{{ \Carbon\Carbon::parse($role->created_at)->diffForHumans() }}</span>
-                                            </span>
-                                            <span class="message">
-                                                نقش: {{ $role->role->name ?? 'نقش نامشخص' }}<br>
-                                                کتاب آرشیف: {{ $role->archive->book_name ?? 'آرشیف نامشخص' }}<br>
-                                                وضعیت: {{ $role->archivedatastatus->name ?? 'وضعیت نامشخص' }}<br>
-                                                QC وضعیت: {{ $role->archiveqcstatus->name ?? 'QC وضعیت نامشخص' }}
-                                            </span>
-                                        </a>
-                                    </li>
-                                @empty
-                                    <li id="no_roles" style="text-align: center; padding: 15px;">
-                                        {{ __('general.no_records_found') }}
-                                    </li>
-                                @endforelse
-                            </ul>
-                        </li>
-                    </ul>
-                </li>
-            @endif
-            
-                
-             --}}
-
-
-
-                <!-- END INBOX DROPDOWN -->
-
-                    <!-- BEGIN USER LOGIN DROPDOWN -->
-                    <!-- DOC: Apply "dropdown-dark" class after below "dropdown-extended" to change the dropdown styte -->
-                    <li class="dropdown dropdown-user dropdown-dark">
-                        <a href="{{ auth('user')->check() ? route('profile.password') : (auth('teacher')->check() ? route('teacher.profile.password') : route('student.profile.password') )  }}" class="dropdown-toggle" >
+                        <a href="{{ auth('user')->check() ? route('profile.password') : (auth('teacher')->check() ? route('teacher.profile.password') : route('student.profile.password') )  }}" class="dropdown-toggle" style="display: flex; align-items: center; height: 75px; padding: 0 15px 0 10px;">
                             <span class="username username-hide-on-mobile"> {{ Auth::user()->name }} </span>
-                            <!-- DOC: Do not remove below empty space(&nbsp;) as its purposely used -->
-                           {{-- <img alt="" class="img-circle" src="img/avatar.png" />   --}}
                         </a>
-                        
                     </li>
-                    
+                    <!-- END USER + NOTIFICATION -->
+
                     <li class="dropdown dropdown-extended dropdown-tasks dropdown-dark" id="header_task_bar">
                         <a href="{{ route('logout') }}" onclick="event.preventDefault();
-                           document.getElementById('logout-form').submit();" 
-                           class="dropdown-toggle" 
+                           document.getElementById('logout-form').submit();"
+                           class="dropdown-toggle"
                            title="{{ trans('general.logout') }}">
-                            <i class="icon-logout"></i>                            
-                        </a>                      
-                        
+                            <i class="icon-logout"></i>
+                        </a>
+
                         <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
                             {{ csrf_field() }}
                         </form>

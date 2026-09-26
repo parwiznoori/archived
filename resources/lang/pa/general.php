@@ -275,6 +275,19 @@ return [
 
 
     'unread_notifications' => 'نه لوستل شوی خبرتیاوې',
+    'notifications' => 'اعلانات',
+    'no_notifications' => 'اعلان شته نه دي',
+    'page_rejected' => 'صفحه بېرته لېږدل شوې',
+    'page_fixed' => 'صفحه سمتوه شوې',
+    'page_rejected_all' => 'صفحه بېرته لېږدل شوې',
+    'rejected_by' => 'بېرته لېږونکی',
+    'fixed_by' => 'سمتوونکی',
+    'rejected_at' => 'د بېرته لېږدو نیټه',
+    'fixed_at' => 'د سمتوېدو نیټه',
+    'book' => 'کتاب',
+    'reason' => 'دلیل',
+    'new' => 'نوی',
+    'click_to_view' => 'لیدل لپاره کلیک وکړئ',
     'activity' => 'د فعالیتونو گراف ',
     'activity_show' => 'ښودل',
     

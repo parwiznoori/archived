@@ -238,6 +238,42 @@ class ArchiveqcController extends Controller
 
     $archiveData->update($updateData);
 
+    // ارسال نوتیفیکیشن هنگام رد شدن صفحه
+    if ($request->approvalStatus == 4) {
+        $archive = Archive::find($archiveData->archive_id);
+        $archiveImage = Archiveimage::find($archiveData->archiveimage_id);
+
+        if ($archive && $archiveImage) {
+            $bookName = $archive->book_name ?? '-';
+            $pageTitle = 'صفحه ' . ($archiveImage->book_pagenumber ?? '-');
+            $rejectComment = $request->reject_comments;
+            $rejectedBy = auth()->user()->name;
+
+            // نوتیفیکیشن برای یوزر درج کننده
+            if ($archive->de_user_id) {
+                $deUser = \App\User::find($archive->de_user_id);
+                if ($deUser) {
+                    $deUser->notify(new \App\Notifications\ArchivePageRejectedNotification(
+                        $archive->id, $bookName, $pageTitle, $rejectComment, $rejectedBy, $archiveImage->id, $archiveData->column_number
+                    ));
+                }
+            }
+
+            // نوتیفیکیشن برای سوپر ادمین و سیستم دیوپلر
+            $adminUsers = \App\User::whereHas('roles', function ($q) {
+                $q->whereIn('name', ['super-admin', 'system-developer']);
+            })->get();
+
+            foreach ($adminUsers as $admin) {
+                if ($admin->id !== auth()->id()) {
+                    $admin->notify(new \App\Notifications\ArchivePageRejectedNotification(
+                        $archive->id, $bookName, $pageTitle, $rejectComment, $rejectedBy, $archiveImage->id, $archiveData->column_number
+                    ));
+                }
+            }
+        }
+    }
+
     // Update QC status for archive images
     $archiveDataCount = Archivedata::where('archiveimage_id', $archiveData->archiveimage_id)
         ->where('qc_status_id', 4)
