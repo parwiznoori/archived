@@ -52,6 +52,13 @@ class ArchivedataDataTable extends DataTable
                         return $className;
                     })
 
+            ->editColumn('kankor_id', function ($archivedata) {
+                $value = $archivedata->kankor_id ?? '';
+                if ($value === '') {
+                    return '-';
+                }
+                return '<span dir="ltr" style="direction:ltr; unicode-bidi:embed;">' . e($value) . '</span>';
+            })
             ->addColumn('action', function ($archivedata) {
                 $html = '<div class="btn-group">
                         <a class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown" href="javascript:;" aria-expanded="false">';
@@ -153,7 +160,7 @@ class ArchivedataDataTable extends DataTable
 
                 return $html;
             })
-            ->rawColumns(['action']); // Ensure columns with HTML are registered as raw
+            ->rawColumns(['action', 'kankor_id']); // Ensure columns with HTML are registered as raw
 
         return $datatables;
     }

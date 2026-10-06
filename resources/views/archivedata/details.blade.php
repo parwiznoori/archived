@@ -81,7 +81,7 @@
                         <td>{{ $archivedata->monograph_doc_date }}</td>
                         <td>{{ $archivedata->monograph_doc_number }}</td> --}}
                         <td>{{ $archivedata->time }}</td>
-                        <td>{{ $archivedata->kankor_id }}</td>
+                        <td dir="ltr" style="text-align:left; direction:ltr;">{{ $archivedata->kankor_id }}</td>
                         <td>{{ $semester_types[$archivedata->semester_type_id] ?? 'N/A' }}</td>
                         <td>{{ $archivedata->year_of_inclusion }}</td>
                         <td>{{ $archivedata->graduated_year }}</td>

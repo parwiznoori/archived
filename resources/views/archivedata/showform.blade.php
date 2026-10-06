@@ -197,7 +197,7 @@
         <div class="form-group {{ $errors->has('kankor_id') ? ' has-error' : '' }}">
             {!! Form::label('kankor_id', trans('general.kankor_id'), ['class' => 'control-label col-sm-3']) !!}
             <div class="col-sm-8">
-                {!! Form::text('kankor_id', null, ['class' => 'form-control']) !!}
+                {!! Form::text('kankor_id', null, ['class' => 'form-control', 'dir' => 'ltr', 'style' => 'text-align:left; direction:ltr;']) !!}
                 @if ($errors->has('kankor_id'))
                     <span class="help-block">
                                                             <strong>{{ $errors->first('kankor_id') }}</strong>

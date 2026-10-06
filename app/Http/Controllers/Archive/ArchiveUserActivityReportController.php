@@ -14,7 +14,16 @@ class ArchiveUserActivityReportController extends Controller
 {
     public function __construct()
     {
-        $this->middleware('permission:view-archive');
+        $this->middleware(function ($request, $next) {
+            if (!auth()->check()) {
+                abort(403);
+            }
+            // کاربران عادی (درج‌کننده/کنترول‌کننده) می‌توانند فقط گزارش خودشان را ببینند
+            if (auth()->user()->type == 2 || auth()->user()->can('archiveuser_activity_report') || auth()->user()->can('view-archive')) {
+                return $next($request);
+            }
+            abort(403);
+        });
     }
 
     /**
@@ -284,6 +293,11 @@ class ArchiveUserActivityReportController extends Controller
      */
     private function getUsersList(int $authUniversityId, string $userType = 'all')
     {
+        // کاربران عادی فقط خودشان را در لیست می‌بینند
+        if (auth()->user()->type == 2 || !(auth()->user()->can('archiveuser_activity_report') || auth()->user()->can('view-archive'))) {
+            return User::where('id', auth()->id())->get(['id', 'name', 'email']);
+        }
+
         if ($userType === 'de') {
             $allIds = Archive::whereNotNull('de_user_id')->distinct()->pluck('de_user_id');
         } elseif ($userType === 'qc') {
@@ -314,7 +328,13 @@ class ArchiveUserActivityReportController extends Controller
         $endDate    = $request->get('end_date');
         $userId     = $request->get('user_id');
         $userType   = $request->get('user_type', 'all');
-        
+
+        // کاربران درج‌کننده و کنترول‌کننده فقط دیتای مربوط به خودشان را می‌بینند
+        if (auth()->user()->type == 2 || !(auth()->user()->can('archiveuser_activity_report') || auth()->user()->can('view-archive'))) {
+            $userId   = auth()->id();
+            $userType = 'all';
+        }
+
         $dateRange = $this->getDateRange($dateFilter, $startDate, $endDate);
         
         $deUserReport = $this->getDeUserReport($dateRange, $userId, $authUniversityId);

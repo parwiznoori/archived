@@ -298,7 +298,7 @@
                             <td>{{ $record->birth_date }}</td>
                             <td>{{ $record->birth_place }}</td>
                             <td>{{ $record->time }}</td>
-                            <td>{{ $record->kankor_id }}</td>
+                            <td dir="ltr" style="text-align:left; direction:ltr;">{{ $record->kankor_id }}</td>
                             {{-- <td>{{ $record->semester_type_id }}</td>--}}
                             <td>{{ $record->year_of_inclusion }}</td>
                             <td>{{ $record->graduated_year }}</td>

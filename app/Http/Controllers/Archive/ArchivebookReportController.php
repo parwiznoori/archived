@@ -18,7 +18,7 @@ class ArchivebookReportController extends Controller
 {
     public function __construct()
     {
-        $this->middleware('permission:view-archive');
+        $this->middleware('permission:archivebook_report');
     }
 
     public function index(Request $request)
@@ -55,7 +55,15 @@ class ArchivebookReportController extends Controller
         if ($user_university_id > 0) {
             $query->where('university_id', $user_university_id);
         }
-        
+
+        // کاربران نوع 2 (درج‌کننده/کنترول‌کننده) فقط دیتای مربوط به خودشان را می‌بینند
+        if (auth()->user()->type == 2) {
+            $query->where(function ($q) {
+                $q->where('de_user_id', auth()->user()->id)
+                  ->orWhere('qc_user_id', auth()->user()->id);
+            });
+        }
+
         if ($request->filled('university_id')) {
             $query->where('university_id', $request->university_id);
         }

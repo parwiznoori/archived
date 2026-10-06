@@ -13,6 +13,7 @@ class ArchivereportDocController extends Controller
     public function __construct()
     {
         $this->middleware('auth');
+        $this->middleware('permission:archive_report');
     }
 
     public function report3(Request $request)

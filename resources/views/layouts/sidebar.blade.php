@@ -51,7 +51,7 @@
         </li>
 
         <!-- Archive Report Menu -->
-        @if (auth()->user()->can(['archive_report']))
+        @if (auth()->user()->can(['archive_report']) || auth()->user()->can(['archivebook_report']) || auth()->user()->can(['archiveuser_activity_report']))
         <li class="nav-item start {{ $isArchiveReport ? 'active' : '' }}">
             <a href="#" class="nav-link nav-toggle">
                 <i class="icon-bar-chart"></i>
