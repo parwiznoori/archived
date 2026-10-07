@@ -253,7 +253,7 @@ body { font-family: 'Noto Naskh Arabic', sans-serif; direction: rtl; background:
                     </tbody>
                 </table>
                 @else
-                <div class="empty-state"><div class="icon">📭</div>هیچ داده‌ای یافت نشد</div>
+                <div class="empty-state"><div class="icon">📭</div>در این دوره فعالیتی ثبت نشده است</div>
                 @endif
             </div>
         </div>
@@ -274,6 +274,8 @@ body { font-family: 'Noto Naskh Arabic', sans-serif; direction: rtl; background:
                             <th>ایمیل</th>
                             <th>تعداد کتاب</th>
                             <th>تعداد محصل</th>
+                            <th>محصلین رد شده</th>
+                            <th>محصلین تایید شده</th>
                             <th>رد شده</th>
                             <th>تایید شده</th>
                             <th>کار نشده</th>
@@ -287,6 +289,8 @@ body { font-family: 'Noto Naskh Arabic', sans-serif; direction: rtl; background:
                             <td>{{ $user['user_email'] }}</td>
                             <td>{{ number_format($user['total_books_controlled']) }}</td>
                             <td>{{ number_format($user['total_students_controlled']) }}</td>
+                            <td style="color:#ef4444; font-weight:700;">{{ number_format($user['students_rejected'] ?? 0) }}</td>
+                            <td style="color:#10b981; font-weight:700;">{{ number_format($user['students_approved'] ?? 0) }}</td>
                             <td style="color:#ef4444; font-weight:700;">{{ number_format($user['books_rejected'] ?? 0) }}</td>
                             <td style="color:#10b981; font-weight:700;">{{ number_format($user['books_approved'] ?? 0) }}</td>
                             <td style="color:#6b7280; font-weight:700;">{{ number_format($user['books_not_checked'] ?? 0) }}</td>
@@ -295,7 +299,7 @@ body { font-family: 'Noto Naskh Arabic', sans-serif; direction: rtl; background:
                     </tbody>
                 </table>
                 @else
-                <div class="empty-state"><div class="icon">📭</div>هیچ داده‌ای یافت نشد</div>
+                <div class="empty-state"><div class="icon">📭</div>در این دوره فعالیتی ثبت نشده است</div>
                 @endif
             </div>
         </div>
@@ -436,7 +440,7 @@ document.getElementById('exportExcelBtn').addEventListener('click', function () 
     qcRows.push([]);
     
     // هدر جدول
-    qcRows.push(['ردیف', 'نام کاربر', 'ایمیل', 'تعداد کتاب کنترل شده', 'تعداد محصل کنترل شده', 'رد شده', 'تایید شده', 'کار نشده']);
+    qcRows.push(['ردیف', 'نام کاربر', 'ایمیل', 'تعداد کتاب کنترل شده', 'تعداد محصل کنترل شده', 'محصلین رد شده', 'محصلین تایید شده', 'رد شده', 'تایید شده', 'کار نشده']);
 
     // داده‌ها
     REPORT_DATA.qc.users.forEach(function(user, index) {
@@ -446,6 +450,8 @@ document.getElementById('exportExcelBtn').addEventListener('click', function () 
             user.user_email,
             user.total_books_controlled,
             user.total_students_controlled,
+            user.students_rejected || 0,
+            user.students_approved || 0,
             user.books_rejected || 0,
             user.books_approved || 0,
             user.books_not_checked || 0
@@ -453,11 +459,13 @@ document.getElementById('exportExcelBtn').addEventListener('click', function () 
     });
     
     // جمع کل
+    const qsRejected = REPORT_DATA.qc.users.reduce(function (s, u) { return s + (u.students_rejected || 0); }, 0);
+    const qsApproved = REPORT_DATA.qc.users.reduce(function (s, u) { return s + (u.students_approved || 0); }, 0);
     qcRows.push([]);
-    qcRows.push(['جمع کل', '', '', REPORT_DATA.qc.total_books, REPORT_DATA.qc.total_students]);
+    qcRows.push(['جمع کل', '', '', REPORT_DATA.qc.total_books, REPORT_DATA.qc.total_students, qsRejected, qsApproved]);
     
     const wsQC = XLSX.utils.aoa_to_sheet(qcRows);
-    wsQC['!cols'] = [{wch:8}, {wch:25}, {wch:30}, {wch:18}, {wch:18}, {wch:12}, {wch:12}, {wch:12}];
+    wsQC['!cols'] = [{wch:8}, {wch:25}, {wch:30}, {wch:18}, {wch:18}, {wch:14}, {wch:14}, {wch:12}, {wch:12}, {wch:12}];
     XLSX.utils.book_append_sheet(wb, wsQC, 'کنترول کنندگان');
     
     // ذخیره فایل

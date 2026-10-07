@@ -72,9 +72,15 @@ class ArchiveUserActivityReportController extends Controller
                 }
             }]);
         
-        // اعمال فیلتر تاریخ
+        // اعمال فیلتر تاریخ: کتابی که در همین دوره ساخته شده باشد
+        // یا محصلانش در همین دوره درج شده باشند (فعالیت واقعی درج‌کننده)
         if ($dateRange['start'] && $dateRange['end']) {
-            $query->whereBetween('created_at', [$dateRange['start'], $dateRange['end']]);
+            $query->where(function ($q) use ($dateRange) {
+                $q->whereBetween('archives.created_at', [$dateRange['start'], $dateRange['end']])
+                    ->orWhereHas('archivedatas', function ($qq) use ($dateRange) {
+                        $qq->whereBetween('archivedatas.created_at', [$dateRange['start'], $dateRange['end']]);
+                    });
+            });
         }
         
         if ($authUniversityId > 0) {
@@ -154,17 +160,50 @@ class ArchiveUserActivityReportController extends Controller
     }
     
     /**
+     * شرط «محصل در همین دوره کنترول شده است»:
+     * یا وضعیت QC خودِ محصل در همین دوره تغییر کرده،
+     * یا وضعیت QC صفحه (عکس)ِ همان محصل در همین دوره تغییر کرده است.
+     */
+    private function studentControlledInPeriod(array $dateRange)
+    {
+        $range = [$dateRange['start'], $dateRange['end']];
+
+        return function ($q) use ($range) {
+            $q->where(function ($qq) use ($range) {
+                $qq->whereBetween('archivedatas.updated_at', $range)
+                    ->whereIn('archivedatas.qc_status_id', [2, 3, 4]);
+            })->orWhere(function ($qq) use ($range) {
+                $qq->whereHas('archiveimage', function ($qi) use ($range) {
+                    $qi->whereBetween('archiveimages.updated_at', $range)
+                        ->whereIn('archiveimages.qc_status_id', [3, 4]);
+                });
+            });
+        };
+    }
+
+    /**
      * گزارش کنترول‌کنندگان (qc_user_id)
      */
     private function getQcUserReport(array $dateRange, ?string $specificUserId, int $authUniversityId): array
     {
+        $hasRange = $dateRange['start'] && $dateRange['end'];
+
         $query = Archive::whereNull('deleted_at')
             ->whereNotNull('qc_user_id')
             ->whereNotNull('qc_status_id')
-            ->with('archivedatas');
+            ->with(['images', 'archivedatas' => function ($q) use ($dateRange, $hasRange) {
+                if ($hasRange) {
+                    $q->where($this->studentControlledInPeriod($dateRange));
+                }
+            }]);
         
-        if ($dateRange['start'] && $dateRange['end']) {
-            $query->whereBetween('updated_at', [$dateRange['start'], $dateRange['end']]);
+        // اعمال فیلتر تاریخ: کتابی که در همین دوره آپدیت شده باشد
+        // یا محصلی از آن در همین دوره کنترول (تایید/رد) شده باشد
+        if ($hasRange) {
+            $query->where(function ($q) use ($dateRange) {
+                $q->whereBetween('archives.updated_at', [$dateRange['start'], $dateRange['end']])
+                    ->orWhereHas('archivedatas', $this->studentControlledInPeriod($dateRange));
+            });
         }
         
         if ($authUniversityId > 0) {
@@ -196,6 +235,8 @@ class ArchiveUserActivityReportController extends Controller
                     'books_rejected'          => 0,
                     'books_approved'          => 0,
                     'books_not_checked'       => 0,
+                    'students_rejected'       => 0,
+                    'students_approved'       => 0,
                     'archives'                => [],
                 ];
             }
@@ -203,6 +244,20 @@ class ArchiveUserActivityReportController extends Controller
             $cnt = $archive->archivedatas->count();
             $report[$uid]['total_books_controlled']++;
             $report[$uid]['total_students_controlled'] += $cnt;
+
+            // شمارش وضعیت محصلان کنترول‌شده (رد شده / تایید شده)
+            // وضعیت صفحه (عکس) محصل هم لحاظ می‌شود، چون کنترول گاهی روی صفحه انجام می‌شود
+            $images = $archive->images->keyBy('id');
+            foreach ($archive->archivedatas as $student) {
+                $imageQc   = (int) ($images[$student->archiveimage_id]->qc_status_id ?? 0);
+                $studentQc = (int) $student->qc_status_id;
+
+                if ($studentQc === 4 || $imageQc === 4) {
+                    $report[$uid]['students_rejected']++;
+                } elseif ($studentQc === 3 || $imageQc === 3) {
+                    $report[$uid]['students_approved']++;
+                }
+            }
 
             // شمارش وضعیت QC کتاب
             $qc = (int) $archive->qc_status_id;
@@ -256,9 +311,10 @@ class ArchiveUserActivityReportController extends Controller
                     'label' => 'امروز'
                 ];
             case 'week':
+                // هفته کاری از شنبه شروع می‌شود (آخر هفته در افغانستان جمعه است)
                 return [
-                    'start' => $now->copy()->startOfWeek(),
-                    'end' => $now->copy()->endOfWeek(),
+                    'start' => $now->copy()->startOfWeek(Carbon::SATURDAY),
+                    'end' => $now->copy()->endOfWeek(Carbon::SATURDAY),
                     'label' => 'این هفته'
                 ];
             case 'month':
