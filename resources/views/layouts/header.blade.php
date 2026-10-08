@@ -112,110 +112,93 @@ Carbon::setLocale('da');
                     <li class="dropdown dropdown-user dropdown-dark header-user-notification" style="float: right; display: flex !important; align-items: center; height: 75px; position: relative;">
                         @if(auth('user')->check())
                         <div class="header-notification" style="display: flex; align-items: center; position: relative; padding: 0 6px; margin-left: 15px;">
+                            @php
+                                // فقط اعلان‌های خوانده‌نشده در لیست نمایش داده می‌شوند
+                                $unreadCount = auth()->user()->unreadNotifications()->count();
+                                $notificationList = auth()->user()->unreadNotifications()->latest()->take(50)->get();
+
+                                // نگاشت کتاب‌ها برای تشخیص «کاربر مربوط» (درج‌کننده / کنترول‌کننده)
+                                $archiveMap = [];
+                                $archiveIds = $notificationList->pluck('data')
+                                    ->map(function ($d) { return isset($d['archive_id']) ? $d['archive_id'] : null; })
+                                    ->filter()->unique()->values()->all();
+
+                                if (count($archiveIds)) {
+                                    foreach (\DB::table('archives')->whereIn('id', $archiveIds)->get(['id', 'de_user_id', 'qc_user_id']) as $row) {
+                                        $archiveMap[$row->id] = $row;
+                                    }
+                                }
+                            @endphp
                             <a href="javascript:;" class="notification-bell dropdown-toggle" data-toggle="dropdown" data-hover="dropdown" data-close-others="true" style="text-decoration: none; color: #555; font-size: 18px; position: relative; cursor: pointer; padding: 8px; line-height: 1; display: flex; align-items: center;">
                                 <i class="icon-bell"></i>
-                                @php $unreadCount = auth()->user()->unreadNotifications->count(); @endphp
                                 @if($unreadCount > 0)
-                                    <span class="badge badge-danger" style="position: absolute; top: 2px; right: 0; font-size: 10px; padding: 1px 5px; border-radius: 10px; background: #e74c3c; color: #fff; min-width: 16px; text-align: center;">{{ $unreadCount }}</span>
+                                    <span class="js-notification-badge badge badge-danger" style="position: absolute; top: 2px; right: 0; font-size: 10px; padding: 1px 5px; border-radius: 10px; background: #e74c3c; color: #fff; min-width: 16px; text-align: center;">{{ $unreadCount }}</span>
+                                @else
+                                    <span class="js-notification-badge badge badge-danger" style="display: none; position: absolute; top: 2px; right: 0; font-size: 10px; padding: 1px 5px; border-radius: 10px; background: #e74c3c; color: #fff; min-width: 16px; text-align: center;">0</span>
                                 @endif
                             </a>
                             <ul class="dropdown-menu" style="min-width: 420px; max-height: 500px; overflow-y: auto; left: 0; right: auto; top: 100%; bottom: auto; margin-top: 0; padding: 0; position: absolute; z-index: 9999;">
                                 <li class="external" style="padding: 12px 15px; background: #f8f9fa; border-bottom: 1px solid #eee; position: sticky; top: 0; z-index: 10;">
                                     <h5 style="margin: 0; font-weight: 600; font-size: 14px;">
                                         <i class="icon-bell"></i> {{ __('general.notifications') }}
-                                        @if($unreadCount > 0)
-                                            <span class="badge badge-danger" style="background: #e74c3c;">{{ $unreadCount }}</span>
-                                        @endif
+                                        <span class="js-notification-badge badge badge-danger" style="{{ $unreadCount > 0 ? '' : 'display: none;' }}background: #e74c3c;">{{ $unreadCount }}</span>
                                     </h5>
                                 </li>
                                 <li style="max-height: 430px; overflow-y: auto; padding: 0; margin: 0;">
-                                    <ul style="padding: 0; margin: 0; list-style: none;">
+                                    <ul id="notification-list" data-empty-text="{{ __('general.no_notifications') }}" style="padding: 0; margin: 0; list-style: none;">
                                         <div id="notification-live" style="margin-bottom: 2px !important;"></div>
-                                        @forelse(auth()->user()->notifications->take(50) as $notification)
+                                        @forelse($notificationList as $notification)
                                             @php
                                                 $ndata = $notification->data;
                                                 $ntype = $notification->type;
                                                 $action = $ndata['action'] ?? '';
                                                 $isUnread = $notification->read_at == null;
                                                 $nurl = $ndata['url'] ?? '#';
+                                                // لینک بعضی اعلان‌ها (مشکلات / کتاب فراغت) در data نیست و باید ساخته شود
+                                                if ($action === '' && $ntype === 'App\Notifications\IssueCreatedNotication' && isset($ndata['issueCreated']['id'])) {
+                                                    $nurl = route('issues.show', $ndata['issueCreated']['id']);
+                                                } elseif ($action === '' && $ntype === 'App\Notifications\GraduateBookCreatedNotification' && isset($ndata['graduateBookCreated']['id']) && Route::has('graduate-book.show')) {
+                                                    $nurl = route('graduate-book.show', $ndata['graduateBookCreated']['id']);
+                                                }
                                                 $notifDate = '';
                                                 if ($notification->created_at) {
                                                     $nc = \Carbon\Carbon::parse($notification->created_at);
                                                     $njParts = \Morilog\Jalali\CalendarUtils::toJalali($nc->year, $nc->month, $nc->day);
                                                     $notifDate = implode('/', $njParts) . ' ' . $nc->format('H:i');
                                                 }
+
+                                                // فقط کاربرِ مربوط (درج‌کننده / کنترول‌کننده) اجازه باز کردن لینک را دارد
+                                                $canOpen = true;
+                                                $archiveRow = isset($ndata['archive_id']) ? ($archiveMap[$ndata['archive_id']] ?? null) : null;
+
+                                                if ($action === 'page_rejected') {
+                                                    $canOpen = $archiveRow
+                                                        && $archiveRow->de_user_id
+                                                        && (int) $archiveRow->de_user_id === (int) auth()->id();
+                                                } elseif ($action === 'page_fixed') {
+                                                    $canOpen = $archiveRow
+                                                        && $archiveRow->qc_user_id
+                                                        && (int) $archiveRow->qc_user_id === (int) auth()->id();
+                                                } elseif ($ntype === 'App\Notifications\GraduateBookCreatedNotification' && !Route::has('graduate-book.show')) {
+                                                    $canOpen = false;
+                                                }
                                             @endphp
-                                            <li onclick="makeNotificationAsRead('{{ $notification->id }}')"
-                                                style="padding: 10px 15px; border-bottom: 1px solid #f0f0f0; cursor: pointer; {{ $isUnread ? 'background-color: #FFF8E1;' : 'background-color: #fff;' }}">
+                                            <li id="notif-{{ $notification->id }}" class="notif-item"
+                                                style="padding: 10px 15px; border-bottom: 1px solid #f0f0f0; cursor: pointer; background-color: #FFF8E1;"
+                                                onclick="makeNotificationAsRead('{{ $notification->id }}', this)">
 
-                                                {{-- نوتیفیکیشن رد شدن صفحه --}}
-                                                @if($action === 'page_rejected')
-                                                    <a href="{{ $nurl }}" target="_blank" style="text-decoration: none; color: #333; display: block;" onclick="event.stopPropagation(); makeNotificationAsRead('{{ $notification->id }}');">
-                                                        <span style="display: block; font-size: 13px; font-weight: 600; color: #e74c3c;">
-                                                            <i class="fa fa-times-circle"></i> {{ __('general.page_rejected') }}
-                                                            @if($isUnread) <span style="background: #e74c3c; color: #fff; font-size: 9px; padding: 1px 5px; border-radius: 8px; margin-right: 4px;">{{ __('general.new') }}</span> @endif
-                                                        </span>
-                                                        <span style="display: block; font-size: 12px; color: #555; margin-top: 3px;">
-                                                            {{ __('general.book') }}: <strong>{{ $ndata['book_name'] ?? '-' }}</strong> | {{ $ndata['page_title'] ?? '-' }}
-                                                        </span>
-                                                        <span style="display: block; font-size: 11px; color: #888; margin-top: 2px;">
-                                                            {{ __('general.rejected_by') }}: {{ $ndata['rejected_by'] ?? '-' }}
-                                                        </span>
-                                                        <span style="display: block; font-size: 11px; color: #888; margin-top: 2px;">
-                                                            {{ __('general.reason') }}: {{ \Illuminate\Support\Str::limit($ndata['reject_comment'] ?? '-', 60, '...') }}
-                                                        </span>
-                                                        <span style="display: block; font-size: 11px; color: #888; margin-top: 2px;">
-                                                            {{ __('general.rejected_at') }}: {{ $notifDate }}
-                                                        </span>
+                                                @if($canOpen)
+                                                    <a href="{{ $nurl }}" target="_blank" style="text-decoration: none; color: #333; display: block;"
+                                                       onclick="event.stopPropagation(); makeNotificationAsRead('{{ $notification->id }}', this);">
+                                                        @include('layouts.notification-body')
                                                     </a>
-
-                                                {{-- نوتیفیکیشن اصلاح شدن صفحه --}}
-                                                @elseif($action === 'page_fixed')
-                                                    <a href="{{ $nurl }}" target="_blank" style="text-decoration: none; color: #333; display: block;" onclick="event.stopPropagation(); makeNotificationAsRead('{{ $notification->id }}');">
-                                                        <span style="display: block; font-size: 13px; font-weight: 600; color: #27ae60;">
-                                                            <i class="fa fa-check-circle"></i> {{ __('general.page_fixed') }}
-                                                            @if($isUnread) <span style="background: #27ae60; color: #fff; font-size: 9px; padding: 1px 5px; border-radius: 8px; margin-right: 4px;">{{ __('general.new') }}</span> @endif
-                                                        </span>
-                                                        <span style="display: block; font-size: 12px; color: #555; margin-top: 3px;">
-                                                            {{ __('general.book') }}: <strong>{{ $ndata['book_name'] ?? '-' }}</strong> | {{ $ndata['page_title'] ?? '-' }}
-                                                        </span>
-                                                        <span style="display: block; font-size: 11px; color: #888; margin-top: 2px;">
-                                                            {{ __('general.fixed_by') }}: {{ $ndata['fixed_by'] ?? '-' }}
-                                                        </span>
-                                                        <span style="display: block; font-size: 11px; color: #888; margin-top: 2px;">
-                                                            {{ __('general.fixed_at') }}: {{ $notifDate }}
-                                                        </span>
-                                                    </a>
-
-                                                {{-- نوتیفیکیشن قدیمی: مشکل --}}
-                                                @elseif($ntype == "App\Notifications\IssueCreatedNotication")
-                                                    <a target="_blank" href="{{ route('issues.show', $ndata['issueCreated']['id']) }}" style="text-decoration: none; color: #333; display: block;" onclick="event.stopPropagation(); makeNotificationAsRead('{{ $notification->id }}');">
-                                                        <span style="display: block; font-size: 13px; font-weight: 600; color: #5b9bd1;">
-                                                            <i class="fa fa-bug"></i> {{ $ndata['user']['name'] ?? '-' }}
-                                                            @if($isUnread) <span style="background: #5b9bd1; color: #fff; font-size: 9px; padding: 1px 5px; border-radius: 8px; margin-right: 4px;">{{ __('general.new') }}</span> @endif
-                                                        </span>
-                                                        <span style="display: block; font-size: 12px; color: #555; margin-top: 3px;">
-                                                            {{ \Illuminate\Support\Str::limit($ndata['issueCreated']['title'] ?? '', 60, '...') }}
-                                                        </span>
-                                                    </a>
-
-                                                {{-- نوتیفیکیشن قدیمی: کتاب فراغت --}}
-                                                @elseif($ntype == "App\Notifications\GraduateBookCreatedNotification")
-                                                    <a target="_blank" href="{{ route('graduate-book.show', $ndata['graduateBookCreated']['id']) }}" style="text-decoration: none; color: #333; display: block;" onclick="event.stopPropagation(); makeNotificationAsRead('{{ $notification->id }}');">
-                                                        <span style="display: block; font-size: 13px; font-weight: 600; color: #8e44ad;">
-                                                            <i class="fa fa-book"></i> {{ __('general.graduates-book') }} {{ $ndata['graduateBookCreated']['graduated_year'] ?? '' }}
-                                                            @if($isUnread) <span style="background: #8e44ad; color: #fff; font-size: 9px; padding: 1px 5px; border-radius: 8px; margin-right: 4px;">{{ __('general.new') }}</span> @endif
-                                                        </span>
-                                                    </a>
-
-                                                {{-- نوتیفیکیشن سایر --}}
                                                 @else
-                                                    <a href="{{ $nurl }}" target="_blank" style="text-decoration: none; color: #333; display: block;" onclick="event.stopPropagation(); makeNotificationAsRead('{{ $notification->id }}');">
-                                                        <span style="display: block; font-size: 13px; font-weight: 600; color: #5b9bd1;">
-                                                            {{ \Illuminate\Support\Str::limit($ndata['message'] ?? ($ndata['issueCreated']['title'] ?? 'اعلان'), 80, '...') }}
-                                                            @if($isUnread) <span style="background: #5b9bd1; color: #fff; font-size: 9px; padding: 1px 5px; border-radius: 8px; margin-right: 4px;">{{ __('general.new') }}</span> @endif
+                                                    <div style="display: block;">
+                                                        @include('layouts.notification-body')
+                                                        <span style="display: inline-block; margin-top: 6px; font-size: 10px; color: #856404; background: #fff3cd; padding: 2px 8px; border-radius: 8px;">
+                                                            <i class="fa fa-lock"></i> فقط برای کاربر مربوط — کلیک برای بستن
                                                         </span>
-                                                    </a>
+                                                    </div>
                                                 @endif
 
                                                 <span style="display: block; font-size: 10px; color: #aaa; margin-top: 4px; text-align: left;">

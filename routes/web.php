@@ -256,8 +256,17 @@ Route::group(['middleware' => 'auth'], function() {
     });
 
     Route::get('makeNotificationAsRead/{id}', function ($id) {
-        $notification=auth()->user()->notifications->where('id',$id)->first();
-        $notification->markAsRead();
+        $notification = auth()->user()
+            ->notifications()
+            ->where('id', $id)
+            ->first();
+
+        if ($notification) {
+            $notification->markAsRead();
+            return response()->json(['success' => true]);
+        }
+
+        return response()->json(['success' => false], 404);
     });
     Route::get("migration" , "MigrationController@index");
     Route::post("migration/process" , "MigrationController@process")->name('migration.process');
