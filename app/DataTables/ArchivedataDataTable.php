@@ -294,7 +294,12 @@ class ArchivedataDataTable extends DataTable
         ->orderBy('archives.book_name');
 
        
-         $universityList = UniversityUser::where('user_id', auth()->user()->id)
+         // filter by archive_id when coming from "نمایش محصلین کتاب"
+        if (request()->filled('archive_id')) {
+            $query->where('archivedatas.archive_id', request()->get('archive_id'));
+        }
+
+        $universityList = UniversityUser::where('user_id', auth()->user()->id)
                     ->pluck ('university_id')
                     ->toArray();
                 if($universityList!=null){

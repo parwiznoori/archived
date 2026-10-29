@@ -638,7 +638,7 @@ class ArchivedataController extends Controller
 
         // "Check user authentication in url page number
         if($archiveRecord==null || $archiveRecord->de_user_id==null || $archiveRecord->de_user_id!=auth()->user()->id){
-            return redirect()->route('archive')->with('error', 'قابل دسترس نیست');
+            return redirect()->route('archive.index')->with('error', 'قابل دسترس نیست');
         }
 
 
@@ -687,7 +687,7 @@ class ArchivedataController extends Controller
 
         // "Check user authentication in url page number
         if($archiveRecord==null || $archiveRecord->de_user_id==null || $archiveRecord->de_user_id!=auth()->user()->id){
-            return redirect()->route('archive')->with('error', 'قابل دسترس نیست');
+            return redirect()->route('archive.index')->with('error', 'قابل دسترس نیست');
         }
 
 

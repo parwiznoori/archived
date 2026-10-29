@@ -109,6 +109,7 @@ class ArchiveUserActivityReportController extends Controller
                     'user_email'       => $u?->email ?? '',
                     'total_books'      => 0,
                     'total_students'   => 0,
+                    'books_empty'      => 0,
                     'books_complete'   => 0,
                     'books_process'    => 0,
                     'books_incomplete' => 0,
@@ -120,6 +121,9 @@ class ArchiveUserActivityReportController extends Controller
             $cnt = $archive->archivedatas->count();
             $report[$uid]['total_books']++;
             $report[$uid]['total_students'] += $cnt;
+            if ($cnt === 0) {
+                $report[$uid]['books_empty']++;
+            }
 
             // شمارش وضعیت کتاب
             $st = (int) $archive->status_id;
@@ -152,10 +156,11 @@ class ArchiveUserActivityReportController extends Controller
         });
         
         return [
-            'users'          => $reportArray,
-            'total_books'    => array_sum(array_column($reportArray, 'total_books')),
-            'total_students' => array_sum(array_column($reportArray, 'total_students')),
-            'total_users'    => count($reportArray),
+            'users'           => $reportArray,
+            'total_books'     => array_sum(array_column($reportArray, 'total_books')),
+            'total_students'  => array_sum(array_column($reportArray, 'total_students')),
+            'total_books_empty'=> array_sum(array_column($reportArray, 'books_empty')),
+            'total_users'     => count($reportArray),
         ];
     }
     

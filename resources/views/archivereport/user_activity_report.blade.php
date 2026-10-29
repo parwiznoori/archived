@@ -229,6 +229,7 @@ body { font-family: 'Noto Naskh Arabic', sans-serif; direction: rtl; background:
                             <th>نام کاربر</th>
                             <th>ایمیل</th>
                             <th>تعداد کتاب</th>
+                            <th>خالی</th>
                             <th>تعداد محصل</th>
                             <th>تکمیل</th>
                             <th>پروسس</th>
@@ -243,6 +244,7 @@ body { font-family: 'Noto Naskh Arabic', sans-serif; direction: rtl; background:
                             <td style="text-align:right; padding-right:14px;">{{ $user['user_name'] }}</td>
                             <td>{{ $user['user_email'] }}</td>
                             <td>{{ number_format($user['total_books']) }}</td>
+                            <td style="color:#6b7280; font-weight:700;">{{ number_format($user['books_empty'] ?? 0) }}</td>
                             <td>{{ number_format($user['total_students']) }}</td>
                             <td style="color:#10b981; font-weight:700;">{{ number_format($user['books_complete'] ?? 0) }}</td>
                             <td style="color:#3b82f6; font-weight:700;">{{ number_format($user['books_process'] ?? 0) }}</td>
@@ -405,7 +407,7 @@ document.getElementById('exportExcelBtn').addEventListener('click', function () 
     deRows.push([]);
     
     // هدر جدول
-    deRows.push(['ردیف', 'نام کاربر', 'ایمیل', 'تعداد کتاب درج شده', 'تعداد محصل درج شده', 'تکمیل', 'پروسس', 'ناتکمیل', 'معمولی']);
+    deRows.push(['ردیف', 'نام کاربر', 'ایمیل', 'تعداد کتاب درج شده', 'تعداد کتاب خالی', 'تعداد محصل درج شده', 'تکمیل', 'پروسس', 'ناتکمیل', 'معمولی']);
 
     // داده‌ها
     REPORT_DATA.de.users.forEach(function(user, index) {
@@ -414,6 +416,7 @@ document.getElementById('exportExcelBtn').addEventListener('click', function () 
             user.user_name,
             user.user_email,
             user.total_books,
+            user.books_empty || 0,
             user.total_students,
             user.books_complete || 0,
             user.books_process || 0,
@@ -427,7 +430,7 @@ document.getElementById('exportExcelBtn').addEventListener('click', function () 
     deRows.push(['جمع کل', '', '', REPORT_DATA.de.total_books, REPORT_DATA.de.total_students]);
 
     const wsDE = XLSX.utils.aoa_to_sheet(deRows);
-    wsDE['!cols'] = [{wch:8}, {wch:25}, {wch:30}, {wch:18}, {wch:18}, {wch:12}, {wch:12}, {wch:12}, {wch:12}];
+    wsDE['!cols'] = [{wch:8}, {wch:25}, {wch:30}, {wch:18}, {wch:14}, {wch:18}, {wch:12}, {wch:12}, {wch:12}, {wch:12}];
     XLSX.utils.book_append_sheet(wb, wsDE, 'درج کنندگان');
     
     // ==================== شیت ۲: کنترول‌کنندگان ====================

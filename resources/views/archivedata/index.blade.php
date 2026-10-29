@@ -2,13 +2,10 @@
 
 @section('content')
     <div class="portlet light bordered card">
-        @if (session('message'))
-            <div class="alert alert-success">
-                {{ session('message') }}
-
-            </div>
-        @endif
-
+        <div class="portlet-title">
+            <span class="caption-subject bold uppercase">لیست محصلان</span>
+            <div class="tools"> </div>
+        </div>
         <div class="portlet-body">
             {!! $dataTable->table([], true) !!}
         </div>
@@ -16,28 +13,7 @@
 @endsection
 
 @push('styles')
-<style>
-    tr.row_deleted
-    {
-        color: red;
-    }
-    .qc_status {
-        background-color: lightgreen !important;
-    }
-    .qc_status2{
-        background-color: indianred !important;
-    }
-     .pending_rejection_update{
-            background-color: rgb(245, 149, 4) !important;
-        }
-
-    tr.final_approved
-    {
-        color:rgb(11, 132, 11);
-    }
-</style>
     <link href="{{ asset('css/datatables.css') }}" rel="stylesheet">
-
 @endpush
 
 @push('scripts')

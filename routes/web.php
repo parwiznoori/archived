@@ -137,6 +137,7 @@ Route::group(['middleware' => 'auth'], function() {
         Route::get('/archiveBookDataEntryApprove','ArchivedataController@backRedirect')->name('backRedirect');
 
         Route::get('archivedatas','ArchivesearchController@index')->name('archivedatas');
+        Route::get('archivedata','ArchivesearchController@index')->name('archivedata.index');
         Route::post('archivesearch','ArchivesearchController@search')->name('archivesearch');
         Route::get('/archiveimage/{id}/{total_students}','ArchiveimageController@setPageTotal')->name('setPageTotal');
         Route::get('archiveqc','ArchiveqcController@archvieqc')->name('archiveqc');

@@ -24,13 +24,13 @@ class ArchivesearchController extends Controller
      */
 
 //index
-     public function index()
+      public function index(Request $request)
      {   
-        
- 
-         $archivesearchbar = Archivedata::all();
- 
-         return view('archivedata.archivesearch', ['archivesearchbar' => $archivesearchbar]);
+         
+   
+         $dataTable = app(\App\DataTables\ArchivedataDataTable::class);
+
+         return $dataTable->render('archivedata.index');
      }
 
 
@@ -44,8 +44,9 @@ class ArchivesearchController extends Controller
         ->join('archives', 'archives.id', '=', 'archivedatas.archive_id')
 
         ->join('universities', 'universities.id', '=', 'archives.university_id')
-        ->join('faculties', 'faculties.id', '=', 'archives.faculty_id')
-        ->join('departments', 'departments.id', '=', 'archives.department_id')
+        ->join('archive_departments', 'archive_departments.archive_id', '=', 'archives.id')
+        ->join('faculties', 'faculties.id', '=', 'archive_departments.faculty_id')
+        ->join('departments', 'departments.id', '=', 'archive_departments.department_id')
 
             ->where(function ($query) use ($search) {
                 $query->where('archivedatas.name', 'like', '%' . $search . '%')
@@ -53,10 +54,6 @@ class ArchivesearchController extends Controller
             })
             ->get();
         }
-        
-
-         
-// return $archivesearchbar;
         return view('archivedata.archivesearch', ['archivesearchbar' => $archivesearchbar]);
     //    return view('archivedata.archivesearch', compact('archivesearchbar'));
 

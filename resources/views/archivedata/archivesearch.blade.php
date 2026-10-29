@@ -23,6 +23,15 @@
             </div>      
         </div>
         
+        @if(isset($archive_id) && $archive_id)
+        <div class="portlet-body" style="margin-top:20px;">
+            <div class="alert alert-info">
+                <strong>نمایش محصلین کتاب:</strong> نمایش محصلان مربوط به کتاب شماره <strong>{{ $archive_id }}</strong>
+                <a href="{{ route('archivedata.index') }}" class="btn btn-sm btn-default" style="float:right;">نمایش تمامی کتاب‌ها</a>
+            </div>
+        </div>
+        @endif
+        
        
       
             <table class="table">

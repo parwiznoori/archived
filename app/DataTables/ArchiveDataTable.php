@@ -97,6 +97,9 @@ class ArchiveDataTable extends DataTable
                         <i class="fa fa-pencil"></i> ' . trans("general.archivedata") . '</a></li>';
                 }
 
+                $html .= '<li><a href="' . route('archivedata.index') . '?archive_id=' . $archive->id . '" target="new">
+                    <i class="fa fa-users"></i> نمایش محصلین کتاب</a></li>';
+
                 if (auth()->user()->can('reset-qc-user') && !empty($archive->qc_user_id)) {
 
                     $html .= '<li>
