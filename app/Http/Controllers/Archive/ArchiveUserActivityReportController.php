@@ -109,9 +109,8 @@ class ArchiveUserActivityReportController extends Controller
                     'user_email'       => $u?->email ?? '',
                     'total_books'      => 0,
                     'total_students'   => 0,
-                    'books_empty'      => 0,
                     'books_complete'   => 0,
-                    'books_process'    => 0,
+                    'books_skip'       => 0,
                     'books_incomplete' => 0,
                     'books_normal'     => 0,
                     'archives'         => [],
@@ -121,16 +120,13 @@ class ArchiveUserActivityReportController extends Controller
             $cnt = $archive->archivedatas->count();
             $report[$uid]['total_books']++;
             $report[$uid]['total_students'] += $cnt;
-            if ($cnt === 0) {
-                $report[$uid]['books_empty']++;
-            }
 
             // شمارش وضعیت کتاب
             $st = (int) $archive->status_id;
             if ($st === 4) {
                 $report[$uid]['books_complete']++;
             } elseif ($st === 2) {
-                $report[$uid]['books_process']++;
+                $report[$uid]['books_skip']++;
             } elseif ($st === 3) {
                 $report[$uid]['books_incomplete']++;
             } else {
@@ -159,7 +155,6 @@ class ArchiveUserActivityReportController extends Controller
             'users'           => $reportArray,
             'total_books'     => array_sum(array_column($reportArray, 'total_books')),
             'total_students'  => array_sum(array_column($reportArray, 'total_students')),
-            'total_books_empty'=> array_sum(array_column($reportArray, 'books_empty')),
             'total_users'     => count($reportArray),
         ];
     }
@@ -195,21 +190,18 @@ class ArchiveUserActivityReportController extends Controller
 
         $query = Archive::whereNull('deleted_at')
             ->whereNotNull('qc_user_id')
-            ->whereNotNull('qc_status_id')
             ->with(['images', 'archivedatas' => function ($q) use ($dateRange, $hasRange) {
                 if ($hasRange) {
                     $q->where($this->studentControlledInPeriod($dateRange));
+                } else {
+                    $q->where(function ($qq) {
+                        $qq->whereIn('archivedatas.qc_status_id', [2, 3, 4])
+                            ->orWhereHas('archiveimage', function ($qi) {
+                                $qi->whereIn('archiveimages.qc_status_id', [3, 4]);
+                            });
+                    });
                 }
             }]);
-        
-        // اعمال فیلتر تاریخ: کتابی که در همین دوره آپدیت شده باشد
-        // یا محصلی از آن در همین دوره کنترول (تایید/رد) شده باشد
-        if ($hasRange) {
-            $query->where(function ($q) use ($dateRange) {
-                $q->whereBetween('archives.updated_at', [$dateRange['start'], $dateRange['end']])
-                    ->orWhereHas('archivedatas', $this->studentControlledInPeriod($dateRange));
-            });
-        }
         
         if ($authUniversityId > 0) {
             $query->where('university_id', $authUniversityId);
@@ -234,7 +226,7 @@ class ArchiveUserActivityReportController extends Controller
                 $report[$uid] = [
                     'user_id'                 => $uid,
                     'user_name'               => $u?->name ?? 'نامشخص',
-                    'user_email'              => $u?->email ?? '',
+                    'total_books_assigned'    => 0,
                     'total_books_controlled'  => 0,
                     'total_students_controlled' => 0,
                     'books_rejected'          => 0,
@@ -244,6 +236,17 @@ class ArchiveUserActivityReportController extends Controller
                     'students_approved'       => 0,
                     'archives'                => [],
                 ];
+            }
+
+            $report[$uid]['total_books_assigned']++;
+
+            $archiveQcStatus = (int) $archive->qc_status_id;
+            $archiveControlledInPeriod = in_array($archiveQcStatus, [2, 3, 4], true)
+                && (!$hasRange
+                    || ($archive->updated_at >= $dateRange['start'] && $archive->updated_at <= $dateRange['end']));
+            $controlledInPeriod = $archiveControlledInPeriod || $archive->archivedatas->isNotEmpty();
+            if (!$controlledInPeriod) {
+                continue;
             }
 
             $cnt = $archive->archivedatas->count();
@@ -263,12 +266,10 @@ class ArchiveUserActivityReportController extends Controller
                     $report[$uid]['students_approved']++;
                 }
             }
-
             // شمارش وضعیت QC کتاب
-            $qc = (int) $archive->qc_status_id;
-            if ($qc === 4) {
+            if ($archiveQcStatus === 4) {
                 $report[$uid]['books_rejected']++;
-            } elseif ($qc === 3) {
+            } elseif ($archiveQcStatus === 3) {
                 $report[$uid]['books_approved']++;
             } else {
                 $report[$uid]['books_not_checked']++;
@@ -295,6 +296,7 @@ class ArchiveUserActivityReportController extends Controller
         
         return [
             'users'          => $reportArray,
+            'total_books_assigned' => array_sum(array_column($reportArray, 'total_books_assigned')),
             'total_books'    => array_sum(array_column($reportArray, 'total_books_controlled')),
             'total_students' => array_sum(array_column($reportArray, 'total_students_controlled')),
             'total_users'    => count($reportArray),
@@ -329,9 +331,16 @@ class ArchiveUserActivityReportController extends Controller
                     'label' => 'این ماه'
                 ];
             case 'year':
+                $jalaliNow = Jalalian::fromCarbon($now);
+                $startOfJalaliYear = $jalaliNow->getFirstDayOfYear()->toCarbon()->startOfDay();
+                $startOfNextJalaliYear = $jalaliNow->getFirstDayOfYear()
+                    ->addYears(1)
+                    ->toCarbon()
+                    ->startOfDay();
+
                 return [
-                    'start' => $now->copy()->startOfYear(),
-                    'end' => $now->copy()->endOfYear(),
+                    'start' => $startOfJalaliYear,
+                    'end' => $startOfNextJalaliYear->subSecond(),
                     'label' => 'امسال'
                 ];
             case 'custom':
