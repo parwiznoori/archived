@@ -11,6 +11,8 @@ use Spatie\Activitylog\Traits\LogsActivity;
 
 class Archivedata extends Model
 {
+    public const QC_APPROVAL_COMMENT = 'هغه موارد چې د فارغانو په سکن شوي کتاب کې موجود دي د ډیجیټلي آرشیف له اړوندو معلوماتو سره تطبیق شول صحت لري.';
+
     use SoftDeletes,UseByGrade, LogsActivity;
 
     protected $table = 'archivedatas';

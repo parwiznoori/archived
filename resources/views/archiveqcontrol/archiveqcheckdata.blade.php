@@ -65,15 +65,15 @@
                                 <th>{{ trans('general.father_name') }}</th>
                                 <th>{{ trans('general.grandfather_name') }}</th>
                                 <th>{{ trans('general.school_name') }}</th>
-                                <th>{{ trans('general.school_graduation_year') }}</th>
+                                <th>{{ trans('archiveqc.school_graduation_year') }}</th>
                                 <th>{{ trans('general.tazkira_number') }}</th>
                                 <th>{{ trans('general.birth_date') }}</th>
                                 <th>{{ trans('general.birth_place') }}</th>
                                 <th>{{ trans('general.time') }}</th>
                                 <th>{{ trans('general.kankor_id') }}</th>
                                 <th>{{ trans('general.half_year') }}</th>
-                                <th>{{ trans('general.year_of_inclusion') }}</th>
-                                <th>{{ trans('general.graduated_year') }}</th>
+                                <th>{{ trans('archiveqc.university_enrollment_year') }}</th>
+                                <th>{{ trans('archiveqc.university_graduation_year') }}</th>
                                 <th>{{ trans('general.transfer_year') }}</th>
                                 <th>{{ trans('general.leave_year') }}</th>
                                 <th>{{ trans('general.failled_year') }}</th>
@@ -134,9 +134,9 @@
                                     <td style="padding: 10px; white-space: nowrap">
                                         {!! Form::open(['route' => 'archiveqcheckdataSetStatus', 'method' => 'post', 'enctype' => 'multipart/form-data', 'class' => 'form-horizontal']) !!}
                                         {!! Form::text('recordId', $record->id, ['style' => 'display:none']) !!}
-                                        {!! Form::select('approvalStatus', $archiveStatusList, $record->qc_status_id, []) !!}
+                                        {!! Form::select('approvalStatus', $archiveStatusList, $record->qc_status_id, ['class' => 'qc-record-status']) !!}
                                         <br>
-                                        {!! Form::textarea('reject_comments',$record->reject_comments,['class' => 'form-control','rows' => 2,'placeholder' => 'دلیل رد شدن']) !!}
+                                        {!! Form::textarea('reject_comments', $record->qc_status_id == 3 ? \App\Models\Archivedata::QC_APPROVAL_COMMENT : ($record->qc_status_id == 4 ? $record->reject_comments : ''), ['class' => 'form-control','rows' => 4,'placeholder' => 'جزئیات تأیید / دلیل رد شدن']) !!}
                                         <br>
                                         <button type="submit" class="btn btn-success">{{ trans('general.save') }}</button>
                                         {!! Form::close() !!}
@@ -162,3 +162,16 @@
     </div>
 
 @endsection
+
+@push('scripts')
+    <script>
+        document.querySelectorAll('.qc-record-status').forEach(function (status) {
+            status.addEventListener('change', function () {
+                var comment = this.form.querySelector('textarea[name="reject_comments"]');
+                comment.value = this.value === '3'
+                    ? @json(\App\Models\Archivedata::QC_APPROVAL_COMMENT)
+                    : '';
+            });
+        });
+    </script>
+@endpush

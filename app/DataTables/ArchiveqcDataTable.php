@@ -180,6 +180,7 @@ if (
     {
 
         return [
+            'id' => ['name' => 'archives.id', 'title' => trans('general.id')],
             'book_name'    => ['name' => 'book_name', 'title' => trans('general.book_name')],
             'university' => ['name' => 'universities.name', 'title' => trans('general.university')],
 //            'faculty'    => ['name' => 'faculties.name', 'title' => trans('general.faculty')],

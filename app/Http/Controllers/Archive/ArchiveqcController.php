@@ -217,6 +217,7 @@ class ArchiveqcController extends Controller
 
     $updateData = [
         'qc_status_id' => $request->approvalStatus,
+        'reject_comments' => null,
     ];
 
     // اگر رد شد
@@ -232,7 +233,7 @@ class ArchiveqcController extends Controller
 
     // اگر تایید شد
     if ($request->approvalStatus == 3) {
-        $updateData['reject_comments'] = null;
+        $updateData['reject_comments'] = Archivedata::QC_APPROVAL_COMMENT;
         $updateData['re_updated'] = false;
     }
 
