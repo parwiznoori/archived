@@ -37,7 +37,8 @@ class ArchivesearchController extends Controller
     public function search(Request $request){
         $search = $request->search;
         $archivesearchbar=null;
-        if($search!=null || $search!=""){
+        if (is_string($search) && trim($search) !== '') {
+        $search = trim($search);
         $archivesearchbar = Archivedata::select('archivedatas.*', 'archiveimages.path',
         'universities.name as un_name' ,'faculties.name as fa_name' ,'departments.name as de_name' )
         ->join('archiveimages', 'archiveimages.id', '=', 'archivedatas.archiveimage_id')

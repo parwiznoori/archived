@@ -4,7 +4,6 @@ namespace App\Providers;
 
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\ServiceProvider;
-use App\Models\ArchiveRole;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -24,9 +23,6 @@ class AppServiceProvider extends ServiceProvider
         });
 
 
-        view()->composer('layouts.header', function ($view) {
-            $view->with('archiveRoles', ArchiveRole::with(['user', 'archive', 'archivedatastatus', 'archiveqcstatus', 'role'])->get());
-        });
     }
 
     /**

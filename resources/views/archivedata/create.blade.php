@@ -222,7 +222,10 @@
                                     <h4>این صفحه شامل هیچ محصل نمی باشد.</h4>
                                     <h4>در صورتیکه صفحه شامل محصل باشد و آن را فاقد محصل بسازید دیتای آن  پاک میگردد. </h4>
 
-                                    <a href="{{ route('archiveBookDataEntryPageReject', ['pageId' => $archiveImage->id, 'id' => $archiveImage->archive_id, 'step' => 1]) }}" target="new" class="btn btn-primary">تائید</a>
+                                    <form method="POST" action="{{ route('archiveBookDataEntryPageReject', ['pageId' => $archiveImage->id, 'id' => $archiveImage->archive_id, 'step' => 1]) }}">
+                                        @csrf
+                                        <button type="submit" class="btn btn-primary">تائید</button>
+                                    </form>
 
                             </div>
                         </div>

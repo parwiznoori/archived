@@ -7,7 +7,11 @@
         <div class="portlet-body">
             <!-- BEGIN FORM-->
 {{--            convert-pdf-to-jpg--}}
-            {!! Form::open(['route' => 'archive.store', 'method' => 'post', 'enctype' => 'multipart/form-data','class' => 'form-horizontal']) !!}
+            {!! Form::open(['route' => 'archive.store', 'method' => 'post', 'enctype' => 'multipart/form-data', 'class' => 'form-horizontal', 'id' => 'archive-create-form']) !!}
+            <input type="hidden" name="submission_token" value="{{ $submissionToken }}">
+            @if ($errors->has('submission_token'))
+                <div class="alert alert-danger" role="alert">{{ $errors->first('submission_token') }}</div>
+            @endif
             <div class="form-body" id="app">
 
                 <!-- University Selection -->
@@ -156,7 +160,8 @@
                     <div class="form-actions fluid">
                         <div class="row">
                             <div class="col-md-offset-2 col-md-8">
-                                <button type="submit" class="btn green">{{ trans('general.save') }}</button>
+                                <button type="submit" class="btn green" id="archive-create-submit">{{ trans('general.save') }}</button>
+                                <span id="archive-create-progress" role="status" hidden>{{ trans('archiveqc.registering_book') }}</span>
                                 <a href="{{ route('archive.index') }}"
                                    class="btn default">{{ trans('general.cancel') }}</a>
                             </div>
@@ -178,3 +183,26 @@
 
 @endsection('content')
 
+@push('scripts')
+    <script>
+        (function () {
+            var form = document.getElementById('archive-create-form');
+            var submit = document.getElementById('archive-create-submit');
+            var progress = document.getElementById('archive-create-progress');
+
+            form.addEventListener('submit', function (event) {
+                if (submit.disabled) {
+                    event.preventDefault();
+                    return;
+                }
+                submit.disabled = true;
+                progress.hidden = false;
+            });
+
+            window.addEventListener('pageshow', function () {
+                submit.disabled = false;
+                progress.hidden = true;
+            });
+        }());
+    </script>
+@endpush

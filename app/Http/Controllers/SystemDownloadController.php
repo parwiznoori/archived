@@ -2,37 +2,23 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Announcement;
 use App\Models\Attachment;
-use Illuminate\Support\Str;
-use Lang;
+use Illuminate\Support\Facades\Storage;
 
 class SystemDownloadController extends Controller
 {
-    //
-    public function download($file , array $headers = array())
+    public function download($file)
     {
-        $attachment = Attachment::find($file);
-        $filename = $attachment->file;
+        $attachment = Attachment::where('attachable_type', (new Announcement())->getMorphClass())
+            ->findOrFail($file);
+        $filename = basename(str_replace('\\', '/', $attachment->file));
+        abort_if($filename === '' || in_array($filename, ['.', '..'], true), 404);
 
-        if($filename) {
+        $path = 'attachments/' . $filename;
+        abort_unless(Storage::exists($path), 404);
+        $downloadName = basename(str_replace('\\', '/', $attachment->extension));
 
-            $filename = Str::ascii(basename($filename));
-            $downloadFIleName = $attachment->extension;
-            $path = storage_path('app').'/attachments/'. $filename;
-            if(file_exists($path))
-            {
-                return response()->download($path, $downloadFIleName , $headers);
-            }
-            else{
-                $message= \Lang::get('error.file_not_exist');
-                $message='فایل مورد نظر موجود نیست';
-                abort(404,$message);           
-            }
-            
-            
-
-
-        }
-        return "فایل وجود ندارد";
+        return Storage::download($path, $downloadName ?: $filename, ['X-Content-Type-Options' => 'nosniff']);
     }
 }

@@ -106,8 +106,14 @@
                                                 {{$attachment->title}}
                                             </td>
                                             <td>
-                                                <a href="{{URL::to('/deletefile/'.$attachment->id)}}"  onClick="doConfirm()"  class="btn dark btn-sm btn-outline sbold uppercase">
-                                                <i class="fa fa-trash"></i>  {{trans('general.delete')}} </a>
+                                                <form method="POST" action="{{ route('deletefile', $attachment->id) }}"
+                                                      onsubmit="return confirm('آیا فایل ضمیمه حذف شود؟')">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit" class="btn dark btn-sm btn-outline sbold uppercase">
+                                                        <i class="fa fa-trash"></i> {{ trans('general.delete') }}
+                                                    </button>
+                                                </form>
                                             </td>
                                         </tr>
                                     @endforeach

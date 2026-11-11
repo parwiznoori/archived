@@ -26,6 +26,7 @@ class Archivedata extends Model
     protected $guarded = [];
     protected static $logUnguarded = true;
     protected $dates = ['deleted_at'];
+    protected $casts = ['re_updated' => 'boolean'];
 
 
 

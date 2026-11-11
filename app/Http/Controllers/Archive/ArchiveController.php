@@ -19,6 +19,7 @@ use App\Models\University;
 use Illuminate\Support\Facades\Session;
 use DB;
 use Illuminate\Http\Request;
+use Illuminate\Database\QueryException;
 use App\Exports\ArchiveExcelTemplateExport;
 use Illuminate\Support\Str;
 use Maatwebsite\Excel\Facades\Excel;
@@ -59,8 +60,17 @@ class ArchiveController extends Controller
      * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\View\Factory|\Illuminate\View\View
      */
 
-    public function create()
+    public function create(Request $request)
     {
+        $submissionToken = $request->query('submission_token');
+        if (!is_string($submissionToken) || !Str::isUuid($submissionToken)) {
+            return redirect()->route('archive.create', ['submission_token' => (string) Str::uuid()]);
+        }
+
+        if ($this->archiveSubmissionExists($this->archiveSubmissionKey($submissionToken))) {
+            return $this->archiveAlreadyRegistered();
+        }
+
         $university_id = auth()->user()->university_id;
 
         if ($university_id > 0) {
@@ -78,6 +88,7 @@ class ArchiveController extends Controller
 
             'title' => trans('general.archive'),
             'description' => trans('general.create_archive'),
+            'submissionToken' => $submissionToken,
             'universities' => $universities,
 //            'faculties' => Faculty::pluck('name', 'id'),
 //            'faculty' => old('faculty') != '' ? Faculty::where('id', old('faculty'))->pluck('name', 'id') : [],
@@ -99,6 +110,14 @@ class ArchiveController extends Controller
 
     public function store(Request $request)
     {
+        $submission = $request->validate(['submission_token' => 'required|uuid']);
+        $submissionToken = $submission['submission_token'];
+        $creationKey = $this->archiveSubmissionKey($submissionToken);
+
+        if ($this->archiveSubmissionExists($creationKey)) {
+            return $this->archiveAlreadyRegistered();
+        }
+
         // Validate the input
         $request->validate([
             'university_id' => 'required',
@@ -112,17 +131,17 @@ class ArchiveController extends Controller
         $archive = null;
 
         try {
-            // Use a transaction to handle the whole archive creation.
-            // The PDF conversion and image generation are inside the transaction
-            // so that a failure after the archive row is created triggers a rollback,
-            // preventing partial/duplicate records on a browser refresh.
-            \DB::transaction(function () use ($request, &$archive) {
-                $archive = Archive::create([
+            // Reserve the request key before converting the file. A concurrent retry
+            // can only insert its own row if this transaction rolls back.
+            DB::transaction(function () use ($request, $creationKey, &$archive) {
+                $archive = new Archive([
                     'university_id' => $request->university_id,
                     'book_pagenumber' => $request->book_pagenumber,
                     'book_description' => $request->book_description,
                     'book_name' => $request->book_name,
                 ]);
+                $archive->creation_request_key = $creationKey;
+                $archive->save();
 
                 if ($request->filled('archive_year_id')) {
                     $years = array_filter($request->archive_year_id);
@@ -166,13 +185,16 @@ class ArchiveController extends Controller
                 // Bulk insert archive images into the database
                 Archiveimage::insert($archiveImages);
             });
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
+            if ($e instanceof QueryException
+                && in_array($e->errorInfo[0] ?? null, ['23000', '23505'], true)
+                && $this->archiveSubmissionExists($creationKey)) {
+                return $this->archiveAlreadyRegistered();
+            }
+
             \Log::error('Archive store error: ' . $e->getMessage(), ['trace' => $e->getTraceAsString()]);
 
-            // Post/Redirect/Get: redirect back to the form instead of returning
-            // the POST response directly, so a browser refresh cannot re-submit
-            // the form and create duplicate archives.
-            return redirect()->route('archive.create')
+            return redirect()->route('archive.create', ['submission_token' => $submissionToken])
                 ->withInput()
                 ->withErrors(['path' => 'خطا در آپلود یا تبدیل فایل. لطفاً دوباره تلاش کنید.']);
         }
@@ -215,6 +237,20 @@ class ArchiveController extends Controller
         return redirect(route('archive.index'));
     }
 
+    private function archiveSubmissionKey(string $token): string
+    {
+        return hash('sha256', auth()->id() . ':' . strtolower($token));
+    }
+
+    private function archiveSubmissionExists(string $key): bool
+    {
+        return DB::table('archives')->useWritePdo()->where('creation_request_key', $key)->exists();
+    }
+
+    private function archiveAlreadyRegistered()
+    {
+        return redirect()->route('archive.index')->with('message', trans('archiveqc.book_already_registered'));
+    }
 
     public function show($id)
     {
@@ -477,7 +513,7 @@ class ArchiveController extends Controller
 
         $user = auth()->user();
         // Check if user has the right role OR owns the resource
-        if ($user->position == 'Software Developer') {
+        if ($user->hasRole('system-developer')) {
             // Software Developer can access any archive - no further checks needed
         } elseif ($archive == null || $archive->de_user_id == null || $archive->de_user_id != $user->id) {
             // Regular users must pass ownership check
@@ -545,147 +581,110 @@ class ArchiveController extends Controller
         // Validate the request
         $validated = $request->validate([
             'csv_file' => 'required|mimes:csv,txt|max:9048',
+            'archive_id' => 'required|integer|min:1',
         ]);
+
+        $archiveId = $validated['archive_id'];
+        $this->authorizeCsvArchive(Archive::findOrFail($archiveId));
 
         try {
             if ($request->hasFile('csv_file') && $request->file('csv_file')->isValid()) {
                 $file = $request->file('csv_file');
 
                 // Store the file
-                $path = $file->storeAs('uploadscsv/Csvfile_results', 'results_' . time() . '.' . $file->getClientOriginalExtension());
-
-                $data = array_map('str_getcsv', file($file->getRealPath()));
+                $file->storeAs('uploadscsv/Csvfile_results', 'results_' . $batchId . '.csv');
+                $data = $file->openFile('r');
+                $data->setFlags(\SplFileObject::READ_CSV | \SplFileObject::READ_AHEAD | \SplFileObject::SKIP_EMPTY);
+                $hasUploadLog = \Schema::hasTable('uploaded_csv_logs');
 
                 $successfullyInserted = 0; // Counter for successful rows
                 $errors = []; // Collect errors for problematic rows
-                $newStatus = true;
-                $imageRecordId=0;
                 foreach ($data as $index => $row) {
-                    $rowErrors = [];
                     if ($index === 0) {
                         // Skip the header row
                         continue;
                     }
 
                     // Ensure the row has the correct number of columns
-                    if (count($row) < 28) {
+                    if (!is_array($row) || count($row) < 28) {
                         $errors[] = "Row " . ($index + 1) . " has incomplete data.";
                         continue;
                     }
 
-                    // Resolve the authoritative archive id. Prefer the one posted by the
-                    // upload page (always the book being viewed), fall back to the CSV column.
-                    $archiveId = $request->input('archive_id') ?: $row[0];
-
-                    // Find the matching archive image
-                    $archiveimage = Archiveimage::where('archive_id', $archiveId)
-                        ->where('book_pagenumber', $row[1])
-                        ->first();
-
-                    // Find the matching archive
-                    $archive = Archive::where('id', $archiveId)
-                        ->first();
-
-                    $archiveRole = ArchiveRole::where('archive_id', $archiveId)->first();
-
-
-
-                    if (!$archiveimage) {
-                        $errors[] = "Row " . ($index + 1) . ": No matching Archiveimage found.";
-                        continue;
-                    }
-
                     try {
-                        // Update archive image status
-                        if ($row[2] == 0) {
-                            $archiveimage->status_id = 2;
-
-                            $archiveimage->save();
-
-                            continue;
-                        } else {
-                            if ($imageRecordId!=$archiveimage->id) {
-                                $newStatus = false;
-                                $imageRecordId=$archiveimage->id;
-                                $archiveimage->total_students = 1;
-                            } else {
-                                $archiveimage->total_students += 1;
+                        DB::transaction(function () use ($archiveId, $row, $batchId, $hasUploadLog) {
+                            $archive = Archive::lockForUpdate()->findOrFail($archiveId);
+                            $this->authorizeCsvArchive($archive);
+                            $image = $archive->images()->where('book_pagenumber', $row[1])
+                                ->orderBy('id')->lockForUpdate()->firstOrFail();
+                            if (in_array((int) $archive->qc_status_id, [2, 3], true)
+                                || in_array((int) $image->qc_status_id, [2, 3], true)) {
+                                throw new \DomainException('The page is in quality review.');
                             }
 
-                            // Update statuses
-                            $archiveimage->status_id = 4;
-                            if ($archive) {
-                                $archive->status_id = 4;
+                            $records = $image->archivedatas()->where('archive_id', $archiveId);
+                            if ((string) $row[2] === '0') {
+                                if ($records->exists()) {
+                                    throw new \DomainException('The page already has student records.');
+                                }
+
+                                $image->update(['status_id' => 2, 'total_students' => 0]);
+                                return;
                             }
-                            if ($archiveRole) {
-                                $archiveRole->status_id = 4;
-//                                $archiveRole->qc_status_id = 3;
-                            }
 
-                        }
-                        if ($archiveRole) {
-                            $archiveRole->save();
-                        }
-                        $archiveimage->save();
-                        if ($archive) {
-                            $archive->save();
-                        }
-
-
-
-
-                        // Create the Archivedata record
-                        $archivedata = Archivedata::create([
-                            'archive_id' => $archiveId,
-                            'archiveimage_id' => $archiveimage->id,
-                            'column_number' => $row[2],
-                            'university_id' => $row[3],
-                            'faculty_id' => $row[4],
-                            'department_id' => $row[5],
-                            'grade_id' => $row[6],
-                            'semester_type_id' => $row[7],
-                            'name' => $row[8],
-                            'last_name' => $row[9],
-                            'father_name' => $row[10],
-                            'grandfather_name' => $row[11],
-                            'school' => $row[12],
-                            'school_graduation_year' => $row[13],
-                            'tazkira_number' => $row[14],
-                            'birth_date' => $row[15],
-                            'birth_place' => $row[16],
-                            'time' => $row[17],
-                            'kankor_id' => $row[18],
-                            'year_of_inclusion' => $row[19],
-                            'graduated_year' => $row[20],
-                            'transfer_year' => $row[21],
-                            'leave_year' => $row[22],
-                            'failled_year' => $row[23],
-                            'monograph_date' => $row[24],
-                            'monograph_number' => $row[25],
-                            'monograph_title' => $row[26],
-                            'averageOfScores' => $row[27],
-                            'status_id' => 4,
-                            'qc_status_id' => 1,
-                            'description' => 'File Uploaded By System',
-                        ]);
-
-                        // Log the upload
-                        if (\Schema::hasTable('uploaded_csv_logs')) {
-                            \DB::table('uploaded_csv_logs')->insert([
-                                'archivedata_id' => $archivedata->id,
-                                'batch_id' => $batchId,
-                                'created_at' => now(),
-                            ]);
-                        } else {
-                            // جدول لاگ هنوز ساخته نشده (میگریشن اجرا نشده)؛ ریکورد محصل بدون
-                            // ثبت لاگ قبول می‌شود تا آپلود از بین نرود. برای فعال شدن undo
-                            // باید php artisan migrate روی سرور اجرا شود.
-                            \Log::warning('uploaded_csv_logs table missing; skipping upload log', [
+                            $archivedata = Archivedata::create([
                                 'archive_id' => $archiveId,
+                                'archiveimage_id' => $image->id,
+                                'column_number' => $row[2],
+                                'university_id' => $row[3],
+                                'faculty_id' => $row[4],
+                                'department_id' => $row[5],
+                                'grade_id' => $row[6],
+                                'semester_type_id' => $row[7],
+                                'name' => $row[8],
+                                'last_name' => $row[9],
+                                'father_name' => $row[10],
+                                'grandfather_name' => $row[11],
+                                'school' => $row[12],
+                                'school_graduation_year' => $row[13],
+                                'tazkira_number' => $row[14],
+                                'birth_date' => $row[15],
+                                'birth_place' => $row[16],
+                                'time' => $row[17],
+                                'kankor_id' => $row[18],
+                                'year_of_inclusion' => $row[19],
+                                'graduated_year' => $row[20],
+                                'transfer_year' => $row[21],
+                                'leave_year' => $row[22],
+                                'failled_year' => $row[23],
+                                'monograph_date' => $row[24],
+                                'monograph_number' => $row[25],
+                                'monograph_title' => $row[26],
+                                'averageOfScores' => $row[27],
+                                'status_id' => 4,
+                                'qc_status_id' => 1,
+                                'description' => 'File Uploaded By System',
                             ]);
-                        }
 
-                        $successfullyInserted++;
+                            if ($hasUploadLog) {
+                                DB::table('uploaded_csv_logs')->insert([
+                                    'archivedata_id' => $archivedata->id,
+                                    'batch_id' => $batchId,
+                                    'created_at' => now(),
+                                ]);
+                            }
+
+                            $image->update(['status_id' => 4, 'total_students' => $records->count()]);
+                            $archive->update(['status_id' => 4]);
+                            $archiveRole = ArchiveRole::where('archive_id', $archiveId)->first();
+                            if ($archiveRole) {
+                                $archiveRole->update(['status_id' => 4]);
+                            }
+                        }, 3);
+
+                        if ((string) $row[2] !== '0') {
+                            $successfullyInserted++;
+                        }
                     } catch (\Exception $e) {
                         // ثبت خطای واقعی برای رفع اشکال (در لاگ سرور دیده می‌شود)
                         \Log::error('CSV Row Import Error: ' . $e->getMessage(), [
@@ -708,7 +707,7 @@ class ArchiveController extends Controller
                 }
                 Session::flash('message', $message);
 
-                return redirect()->route('archive.view', ['archiveId' => $archiveId ?? $request->input('archive_id')]);
+                return redirect()->route('archive.view', ['archiveId' => $archiveId]);
             } else {
                 return redirect()->back()->withErrors(['csv_file' => trans('general.invalid_file')]);
             }
@@ -832,24 +831,34 @@ public function undoLastUpload()
 }
 
 // تابع جدید برای حذف کل کتاب (با پارامتر)
+private function authorizeCsvArchive(Archive $archive)
+{
+    $user = auth()->user();
+    abort_unless((int) $archive->de_user_id === (int) $user->id || $user->hasRole('system-developer'), 403);
+}
+
 public function undoBookUpload($archiveId)
 {
+    $this->authorizeCsvArchive(Archive::findOrFail($archiveId));
+
     try {
         \Log::info('=== UNDO BOOK UPLOAD START ===', ['archive_id' => $archiveId]);
 
         // بررسی وجود آرشیو
-        $archive = Archive::find($archiveId);
+        DB::beginTransaction();
+        $archive = Archive::lockForUpdate()->find($archiveId);
         
         if (!$archive) {
+            DB::rollBack();
             return redirect()->back()->with('error', 'کتاب مورد نظر یافت نشد');
         }
+        $this->authorizeCsvArchive($archive);
 
         // بررسی وضعیت QC
         if (in_array($archive->qc_status_id, [2, 3, 4])) {
+            DB::rollBack();
             return redirect()->back()->with('error', 'این کتاب قابل لغو نیست زیرا قبلاً به کنترل کیفیت معرفی شده است.');
         }
-
-        \DB::beginTransaction();
 
         // 1. شمارش محصلین قبل از حذف
         $studentCount = Archivedata::where('archive_id', $archiveId)->count();
@@ -889,7 +898,7 @@ public function undoBookUpload($archiveId)
 
         // 6. آپدیت Archiveimage ها
         foreach ($pageStats as $imageId => $removedCount) {
-            $archiveimage = Archiveimage::find($imageId);
+            $archiveimage = $archive->images()->find($imageId);
             if ($archiveimage) {
                 $newTotal = max(0, $archiveimage->total_students - $removedCount);
                 $archiveimage->update([
@@ -923,12 +932,15 @@ public function undoBookUpload($archiveId)
 
     } catch (\Exception $e) {
         \DB::rollback();
+        if ($e instanceof \Symfony\Component\HttpKernel\Exception\HttpException) {
+            throw $e;
+        }
         \Log::error('Error undoing book upload: ' . $e->getMessage(), [
             'trace' => $e->getTraceAsString(),
             'archive_id' => $archiveId
         ]);
 
-        return redirect()->back()->with('error', 'خطا در حذف کتاب: ' . $e->getMessage());
+        return redirect()->back()->with('error', 'خطا در حذف محصلان کتاب.');
     }
 }
 

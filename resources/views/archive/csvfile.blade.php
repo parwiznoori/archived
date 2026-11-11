@@ -503,30 +503,22 @@
                         ❌ انصراف
                     </a>
 
-                    {{-- <!-- حذف آخرین آپلود -->
-                    <a href="{{ route('import.undoLastUpload', $archive->id)) }}"
-                         data-book-name="{{ $archive->book_name }}" 
-                       class="btn btn-warning btn-lg mx-2 mb-2"
-                       onclick="return confirm('آیا از حذف آخرین آپلود مطمئن هستید؟')">
-                        ↩️ لغو آخرین آپلود
-                    </a> --}}
-
-                    <!-- حذف کل کتاب -->
-                    <button type="button" 
+                    <button type="submit"
                             class="btn btn-delete-book btn-lg mx-2 mb-2"
-                            id="deleteBookBtn"
-                            data-url="{{ route('import.undoBookUpload', $archive->id) }}"
-                            data-book-name="{{ $archive->book_name }}">
+                            form="undo-book-upload">
                         🗑️ حذف کل کتاب
                     </button>
                 </div>
                 {!! Form::close() !!}
+                <form id="undo-book-upload" action="{{ route('import.undoBookUpload', $archive->id) }}" method="POST"
+                      onsubmit="return confirm('آیا می‌خواهید تمام محصلان این کتاب را حذف کنید؟')">
+                    @csrf
+                </form>
             </div>
         </div>
     </div>
 
     <!-- اسکریپت‌ها -->
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             // چاپ صفحه (اگر دکمه چاپ وجود دارد)
@@ -620,85 +612,6 @@
                 });
             }
 
-            // ==================== دکمه حذف کل کتاب ====================
-            const deleteBookBtn = document.getElementById('deleteBookBtn');
-            
-            if (deleteBookBtn) {
-                deleteBookBtn.addEventListener('click', function() {
-                    const url = this.getAttribute('data-url');
-                    const bookName = this.getAttribute('data-book-name');
-                    
-                    // استفاده از SweetAlert برای تایید
-                    Swal.fire({
-                        title: '⚠️ حذف کل کتاب',
-                        html: `
-                            <div style="text-align: right; direction: rtl; font-family: Tahoma;">
-                                <p style="font-size: 16px; margin-bottom: 15px;">آیا مطمئن هستید که می‌خواهید تمام محصلین این کتاب را حذف کنید؟</p>
-                                <p style="font-size: 15px; margin-bottom: 10px;">
-                                    <strong style="color: #4a5568;">📚 نام کتاب:</strong> 
-                                    <span style="color: #2d3748; font-weight: bold;">${bookName}</span>
-                                </p>
-                                <p style="color: #e53e3e; font-weight: bold; font-size: 14px; border: 1px solid #e53e3e; padding: 10px; border-radius: 5px; background: #fff5f5;">
-                                    ⚠️ این عمل تمام محصلین کتاب را حذف کرده و قابل بازگشت نیست!
-                                </p>
-                            </div>
-                        `,
-                        icon: 'warning',
-                        showCancelButton: true,
-                        confirmButtonColor: '#d33',
-                        cancelButtonColor: '#3085d6',
-                        confirmButtonText: '🗑️ بله، حذف کن',
-                        cancelButtonText: '❌ انصراف',
-                        reverseButtons: true,
-                        allowOutsideClick: false,
-                        allowEscapeKey: false,
-                        customClass: {
-                            popup: 'animated fadeIn',
-                            title: 'text-right',
-                            htmlContainer: 'text-right'
-                        },
-                        showClass: {
-                            popup: 'animate__animated animate__fadeInDown'
-                        },
-                        hideClass: {
-                            popup: 'animate__animated animate__fadeOutUp'
-                        }
-                    }).then((result) => {
-                        if (result.isConfirmed) {
-                            // نمایش پیام لودینگ
-                            Swal.fire({
-                                title: 'در حال حذف...',
-                                html: `
-                                    <div style="text-align: center;">
-                                        <div class="spinner-border text-danger mb-3" role="status" style="width: 3rem; height: 3rem;">
-                                            <span class="sr-only">Loading...</span>
-                                        </div>
-                                        <p style="font-size: 16px;">در حال حذف محصلین کتاب "${bookName}"</p>
-                                        <p style="font-size: 14px; color: #718096;">لطفاً چند لحظه صبر کنید...</p>
-                                    </div>
-                                `,
-                                allowOutsideClick: false,
-                                allowEscapeKey: false,
-                                showConfirmButton: false,
-                                didOpen: () => {
-                                    // پس از 500 میلی‌ثانیه به صفحه حذف هدایت شو
-                                    setTimeout(() => {
-                                        window.location.href = url;
-                                    }, 500);
-                                }
-                            });
-                        }
-                    });
-                });
-            }
-            
-            // لاگ برای دیباگ
-            console.log('Page loaded successfully');
-            console.log('Delete button:', deleteBookBtn);
-            if (deleteBookBtn) {
-                console.log('Delete URL:', deleteBookBtn.getAttribute('data-url'));
-                console.log('Book Name:', deleteBookBtn.getAttribute('data-book-name'));
-            }
         });
 
         // تابع برای درگ و دراپ (اختیاری)

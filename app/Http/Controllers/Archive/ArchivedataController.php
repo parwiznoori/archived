@@ -531,8 +531,6 @@ class ArchivedataController extends Controller
         // Fetch the specific archivedata record with the related archiveimage
         $archivedata = Archivedata::with('archiveimage')->findOrFail($id);
 
-        // Fetch all archivedata records (if needed)
-        $archivedataRecords = Archivedata::all();
 
         // Fetch archives based on the authenticated user's archive_id
         $archive_id = auth()->user()->archive_id;
@@ -553,7 +551,6 @@ class ArchivedataController extends Controller
             'title' => trans('general.archivedata'),
             'description' => trans('general.create_archivedata'),
             'archivedata' => $archivedata, // The specific record to display
-            'archivedataRecords' => $archivedataRecords, // All records (if needed)
             'archives' => $archives,
             'semester_types' => $semester_types,
             'grades' => $grades,
@@ -691,7 +688,7 @@ class ArchivedataController extends Controller
         }
 
 
-        $archiveImageCurrent = Archiveimage::find($pageId);
+        $archiveImageCurrent = $archiveRecord->images()->find($pageId);
         // Check if $archiveImageCurrent is null before proceeding
         if ($archiveImageCurrent === null) {
 
@@ -700,11 +697,11 @@ class ArchivedataController extends Controller
 
 
         $CEHCK = Archiveimage::where('archive_id', $id)
-            ->where('status_id', [1, 3])
+            ->whereIn('status_id', [1, 3])
             ->orderBy('id', 'asc')->first();
 
         $CEHCKData = Archivedata::where('archive_id', $id)
-            ->where('status_id', [1, 3])->first();
+            ->whereIn('status_id', [1, 3])->first();
 
 
         if($CEHCK!=null && $CEHCKData!=null){
@@ -785,13 +782,15 @@ class ArchivedataController extends Controller
 //ای بخش مربوط ایجاد کالم در صفحه برای محصل است
     public function archiveBookDataEntryPageData($pageId, $id, $column_number)
     {
+        $archiveRecord = Archive::findOrFail($id);
+        abort_unless((int) $archiveRecord->de_user_id === (int) auth()->id(), 403);
+        $archiveImage = $archiveRecord->images()->findOrFail($pageId);
+
         $archiveData1 =
             Archivedata::where('archive_id', $id)
                 ->where('archiveimage_id', $pageId)
                 ->where('column_number', $column_number)
                 ->first();
-
-        $archiveRecord = Archive::find($id);
 
         // Check the qc_status_id
         if ($archiveRecord->qc_status_id == 2 || $archiveRecord->qc_status_id == 3) {
@@ -800,9 +799,6 @@ class ArchivedataController extends Controller
         }
 
 
-        $archiveImageCurrent = Archiveimage::where('id', $pageId)->first();
-        $archiveImage = Archiveimage::where('archive_id', $id)
-        ->where('book_pagenumber', ($archiveImageCurrent->book_pagenumber))->orderBy('id', 'asc')->first();
         $archives = Archive::pluck('book_name', 'id');
         $semester_types = SemesterType::pluck('name', 'id');
         $grades = Grade::pluck('name', 'id');
@@ -839,20 +835,13 @@ class ArchivedataController extends Controller
 // این فنگشن مربطو فاقد محصل میشود
     public function archiveBookDataEntryPageReject($pageId, $id, $step)
     {
-        $archiveImageCurrent = Archiveimage::find($pageId);
+        DB::transaction(function () use ($pageId, $id) {
+            $image = $this->lockEditableEntryPage($id, $pageId);
+            $image->archivedatas()->where('archive_id', $id)->forceDelete();
+            $image->update(['status_id' => 2, 'total_students' => 0]);
+        }, 3);
 
-        // Check the qc_status_id
-        if ($archiveImageCurrent->qc_status_id == 2 || $archiveImageCurrent->qc_status_id == 3) {
-            session()->flash('error', 'این رکورد قابل اپدیت نیست زیرا قبلاً به کنترل کیفیت معرفی شده است.');
-            return back();
-        }
-
-        DB::delete('DELETE FROM archivedatas WHERE archiveimage_id = ?', [$pageId]);
-        $archiveImageCurrent->update([
-            'status_id' => '2',
-            'total_students' => '0',
-        ]);
-        return $this->archiveBookDataEntryPage($pageId, $id, 1);
+        return redirect()->route('archiveBookDataEntryPage', ['pageId' => $pageId, 'id' => $id, 'step' => 1]);
     }
 
     public function backRedirect(){
@@ -861,47 +850,40 @@ class ArchivedataController extends Controller
 // این فنگشن مربوط به تایید و اضافه کردن کالم محصل میشود
     public function archiveBookDataEntryApprove(Request $request)
     {
-        $archiveImageCurrent = Archiveimage::find($request->approve_page_id);
-        $statusImage = 1;
-        if ($archiveImageCurrent->total_students > $request->approve_total_student) {
-            //archive data delete
-            $v = ($archiveImageCurrent->total_students) - ($request->approve_total_student);
-            DB::delete('DELETE FROM archivedatas WHERE archiveimage_id = ? and column_number >= ? ',
-                [$request->approve_page_id, $archiveImageCurrent->total_students]);
-
-        }
-
-        // Check the qc_status_id
-        if ($archiveImageCurrent->qc_status_id == 2 || $archiveImageCurrent->qc_status_id == 3) {
-            session()->flash('error', 'این رکورد قابل اپدیت نیست زیرا قبلاً به کنترل کیفیت معرفی شده است.');
-            return back();
-        }
-
-
-        $archiveDataCount = Archivedata::where('archiveimage_id', $request->approve_page_id)->count();
-        if ($archiveDataCount == 0) {
-            $statusImage = 1;
-        } else {
-            $statusImage = 3;
-        }
-        if ($archiveDataCount == $request->approve_total_student) {
-            $statusImage = 4;
-        }
-
-        // Update total_students
-        $archiveImageCurrent->update([
-            'total_students' => $request->approve_total_student,
-            'status_id' => $statusImage,
+        $data = $request->validate([
+            'approve_archive_id' => 'required|integer|min:1',
+            'approve_page_id' => 'required|integer|min:1',
+            'approve_total_student' => 'required|integer|between:1,10',
         ]);
+        $archiveId = $data['approve_archive_id'];
+        $pageId = $data['approve_page_id'];
+        $total = (int) $data['approve_total_student'];
 
+        DB::transaction(function () use ($archiveId, $pageId, $total) {
+            $image = $this->lockEditableEntryPage($archiveId, $pageId);
+            if ($image->total_students > $total) {
+                $image->archivedatas()->where('archive_id', $archiveId)
+                    ->where('column_number', '>', $total)->forceDelete();
+            }
 
-        if ($archiveDataCount) {
-            // Assuming $dataCompleted is a condition to check if the data is completed
-            echo "Data has been successfully completed.";
-        }
+            $count = $image->archivedatas()->where('archive_id', $archiveId)->count();
+            $status = $count === $total ? 4 : ($count > 0 ? 3 : 1);
+            $image->update(['total_students' => $total, 'status_id' => $status]);
+        }, 3);
 
-        return $this->archiveBookDataEntryPage($request->approve_page_id, $request->approve_archive_id, 0);
+        return redirect()->route('archiveBookDataEntryPage', ['pageId' => $pageId, 'id' => $archiveId, 'step' => 0]);
+    }
 
+    private function lockEditableEntryPage($archiveId, $pageId): Archiveimage
+    {
+        $archive = Archive::lockForUpdate()->findOrFail($archiveId);
+        abort_unless((int) $archive->de_user_id === (int) auth()->id(), 403);
+
+        $image = $archive->images()->lockForUpdate()->findOrFail($pageId);
+        abort_if(in_array((int) $archive->qc_status_id, [2, 3], true)
+            || in_array((int) $image->qc_status_id, [2, 3], true), 409);
+
+        return $image;
     }
 
 

@@ -12,13 +12,14 @@ Route::get('/', function () {
 
 
 Route::group(['middleware' => 'auth'], function() {
-    Route::get('/php_info', 'TestController@php_info');
-    Route::get('develope/department/type','DeveloperController@department_type');
-    Route::get('develope/migrate_deprtment_deleted','DeveloperController@migrate_deprtment_deleted');
-    Route::get('develope/department/faculty','DeveloperController@department_faculty');
-    Route::get('develope/migration_create_department_faculty','DeveloperController@migration_create_department_faculty');
-    Route::post('develope/migration_store_department_faculty','DeveloperController@migration_store_department_faculty')->name('develope.migrate.migration_store_department_faculty');
-    Route::get('develope/leaves/set_department/min/{min}/max/{max}','DeveloperController@leaves_set_department');
+    Route::middleware('role:system-developer')->group(function () {
+        Route::post('develope/department/type', 'DeveloperController@department_type');
+        Route::post('develope/migrate_deprtment_deleted', 'DeveloperController@migrate_deprtment_deleted');
+        Route::post('develope/department/faculty', 'DeveloperController@department_faculty');
+        Route::get('develope/migration_create_department_faculty', 'DeveloperController@migration_create_department_faculty');
+        Route::post('develope/migration_store_department_faculty', 'DeveloperController@migration_store_department_faculty')->name('develope.migrate.migration_store_department_faculty');
+        Route::post('develope/leaves/set_department/min/{min}/max/{max}', 'DeveloperController@leaves_set_department');
+    });
     Route::get('profile/password','ProfileController@index')->name('profile.password');
     Route::put('profile/password','ProfileController@store')->name('profile.password.store');
     Route::resource('systemVariable', 'SystemVariableController');
@@ -120,10 +121,8 @@ Route::group(['middleware' => 'auth'], function() {
         Route::get('download-archive-template', 'ArchiveController@downloadTemplate')->name('downloadTemplate');
 
        
-         Route::get('/import/undoLastUpload/{archiveId}', 'ArchiveController@undoLastUpload')
-        ->name('import.undoLastUpload');
-         Route::get('/import/undoBookUpload/{archiveId}','ArchiveController@undoBookUpload')
-         ->name('import.undoBookUpload');
+        Route::post('/import/undoBookUpload/{archiveId}', 'ArchiveController@undoBookUpload')
+            ->name('import.undoBookUpload');
 
 
 
@@ -131,15 +130,14 @@ Route::group(['middleware' => 'auth'], function() {
 
         Route::get('/archiveBookDataEntryPage/{pageId}/{id}/{step}','ArchivedataController@archiveBookDataEntryPage')->name('archiveBookDataEntryPage');
 
-        Route::get('/archiveBookDataEntryPageReject/{pageId}/{id}/{step}','ArchivedataController@archiveBookDataEntryPageReject')->name('archiveBookDataEntryPageReject');
+        Route::post('/archiveBookDataEntryPageReject/{pageId}/{id}/{step}','ArchivedataController@archiveBookDataEntryPageReject')->name('archiveBookDataEntryPageReject');
         Route::get('/archiveBookDataEntryPageData/{pageId}/{id}/{column}','ArchivedataController@archiveBookDataEntryPageData')->name('archiveBookDataEntryPageData');
         Route::post('/archiveBookDataEntryApprove','ArchivedataController@archiveBookDataEntryApprove')->name('archiveBookDataEntryApprove');
         Route::get('/archiveBookDataEntryApprove','ArchivedataController@backRedirect')->name('backRedirect');
 
-        Route::get('archivedatas','ArchivesearchController@index')->name('archivedatas');
-        Route::get('archivedata','ArchivesearchController@index')->name('archivedata.index');
-        Route::post('archivesearch','ArchivesearchController@search')->name('archivesearch');
-        Route::get('/archiveimage/{id}/{total_students}','ArchiveimageController@setPageTotal')->name('setPageTotal');
+        Route::get('archivedatas','ArchivesearchController@index')->middleware('permission:view-archivedata')->name('archivedatas');
+        Route::get('archivedata','ArchivesearchController@index')->middleware('permission:view-archivedata')->name('archivedata.index');
+        Route::post('archivesearch','ArchivesearchController@search')->middleware('permission:view-archivedata')->name('archivesearch');
         Route::get('archiveqc','ArchiveqcController@archvieqc')->name('archiveqc');
         Route::get('archiveqcheck/{id}','ArchiveqcController@archiveqcheck')->name('archiveqcheck');
 
@@ -147,7 +145,6 @@ Route::group(['middleware' => 'auth'], function() {
         Route::post('archiveBookDataEntrySearch','ArchivedataController@archiveBookDataEntrySearch')->name('archiveBookDataEntrySearch');
         Route::post('archiveqcheckdataSetStatus','ArchiveqcController@archiveqcheckdataSetStatus')->name('archiveqcheckdataSetStatus');
         Route::post('archiveqcheckImageSetStatus','ArchiveqcController@archiveqcheckImageSetStatus')->name('archiveqcheckImageSetStatus');
-        Route::post('/convert-pdf-to-jpg', 'PDFToJPGController@convert')-> name('convert');
 
         Route::resource('archiveuser', 'ArchiveuserController');
 
@@ -221,9 +218,6 @@ Route::group(['middleware' => 'auth'], function() {
     });
 
 
-    Route::get('/test',function(){
-        return public_path().'\archivefiles\\';
-    });
 
 
 
@@ -232,7 +226,8 @@ Route::group(['middleware' => 'auth'], function() {
     Route::post('/cityupdate', 'HomeController@updateData');
     Route::post('/universityupdate', 'HomeController@updateData');
     Route::get('/download/{file}','SystemDownloadController@download')->name('noticeboards.download');
-    Route::get('/deletefile/{file}','FilesDeleteController@deleteFiles')->name('deletefile');
+    Route::delete('/deletefile/{file}', 'FilesDeleteController@deleteFiles')
+        ->middleware('permission:edit-announcement')->name('deletefile');
 
     Route::get('/activity/{university_id?}/{startdate?}/{enddate?}','ActivityController@index')->name('activity');
 
@@ -248,14 +243,6 @@ Route::group(['middleware' => 'auth'], function() {
     Route::post('kankor_results/department_id/store', 'KankorResultsController@store_department')->name('kankor_results.store_department');
      });
 
-    //attachments link
-    Route::get('getAttachment/{file_name}', function($filename){
-        $path = storage_path('app').'/attachments/'.$filename;
-        $image = \File::get($path);
-        $mime = \File::mimeType($path);
-        return \Response::make($image, 200)->header('Content-Type', $mime);
-    });
-
     Route::get('makeNotificationAsRead/{id}', function ($id) {
         $notification = auth()->user()
             ->notifications()
@@ -269,8 +256,10 @@ Route::group(['middleware' => 'auth'], function() {
 
         return response()->json(['success' => false], 404);
     });
-    Route::get("migration" , "MigrationController@index");
-    Route::post("migration/process" , "MigrationController@process")->name('migration.process');
+    Route::middleware('role:system-developer')->group(function () {
+        Route::get('migration', 'MigrationController@index');
+        Route::post('migration/process', 'MigrationController@process')->name('migration.process');
+    });
 
     Route::get('/locale/{locale}', function ($locale) {
 
@@ -299,12 +288,5 @@ Route::group(['middleware' => 'auth'], function() {
 });
 
 Route::get('/welcome', function () {
-
-    dispatch(function() {
-        sleep(5);
-        logger('job done!');
-    });
-
     return view('welcome');
 });
- 

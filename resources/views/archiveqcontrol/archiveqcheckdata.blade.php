@@ -191,23 +191,35 @@
 @section('content')
     @php
         $statusStyles = [1 => 'primary', 3 => 'success', 4 => 'danger'];
-        $pageStatus = $archiveStatusList->{$archiveqcheckimage->qc_status_id} ?? null;
+        $pageStatus = $archiveStatusList[$archiveqcheckimage->qc_status_id] ?? null;
     @endphp
 
     <div class="qc-page-bar">
         <nav aria-label="صفحات کتاب">
-            <a href="{{ route('archiveqcheckdata', ['archive_id' => $archive->id, 'image_archive_id' => $archiveqcheckimage->id - 1]) }}">
-                <i class="fa fa-arrow-right" aria-hidden="true"></i> صفحه قبلی
-            </a>
-            <a href="{{ route('archiveqcheckdata', ['archive_id' => $archive->id, 'image_archive_id' => $archiveqcheckimage->id + 1]) }}">
-                صفحه بعدی <i class="fa fa-arrow-left" aria-hidden="true"></i>
-            </a>
+            @if($previousPageId)
+                <a href="{{ route('archiveqcheckdata', ['archive_id' => $archive->id, 'image_archive_id' => $previousPageId]) }}">
+                    <i class="fa fa-arrow-right" aria-hidden="true"></i> صفحه قبلی
+                </a>
+            @endif
+            @if($nextPageId)
+                <a href="{{ route('archiveqcheckdata', ['archive_id' => $archive->id, 'image_archive_id' => $nextPageId]) }}">
+                    صفحه بعدی <i class="fa fa-arrow-left" aria-hidden="true"></i>
+                </a>
+            @endif
         </nav>
         <span>صفحه {{ $archiveqcheckimage->book_pagenumber }} از {{ $totalPages }}</span>
         @if($pageStatus)
             <span class="badge badge-{{ $statusStyles[$archiveqcheckimage->qc_status_id] ?? 'default' }}">{{ $pageStatus }}</span>
         @endif
     </div>
+
+    @if($errors->any())
+        <div class="alert alert-danger" role="alert">
+            @foreach($errors->all() as $error)
+                <div>{{ $error }}</div>
+            @endforeach
+        </div>
+    @endif
 
     <div class="qc-review" id="qc-review">
         <div class="qc-scan">

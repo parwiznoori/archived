@@ -30,6 +30,18 @@ class Archive extends Model
     protected static $logUnguarded = true;
     protected $dates = ['deleted_at'];
 
+    protected static function bootUseByDepartment()
+    {
+        static::addGlobalScope('department', function ($query) {
+            $user = auth()->user();
+            if ($user && !$user->allUniversities() && $user->departments->isNotEmpty()) {
+                $query->whereHas('archiveDepartments', function ($departments) use ($user) {
+                    $departments->whereIn('archive_departments.department_id', $user->departments->modelKeys());
+                });
+            }
+        });
+    }
+
     
 
     public function university()

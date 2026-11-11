@@ -4,41 +4,41 @@ namespace App\Http\Controllers;
 
 use App\Jobs\ProcessMigrationData;
 use Illuminate\Http\Request;
+use SplFileObject;
 
 class MigrationController extends Controller
 {
-    public function index(){
-
+    public function index()
+    {
         return view('migration');
     }
-    public function process(Request $request){
 
-        if($request->has('file')){
+    public function process(Request $request)
+    {
+        $request->validate(['file' => 'required|file|mimes:csv,txt|max:10240']);
 
-            //getting the file
-            $data = file($request->file);
+        $csv = $request->file('file')->openFile('r');
+        $csv->setFlags(SplFileObject::READ_CSV | SplFileObject::READ_AHEAD | SplFileObject::SKIP_EMPTY);
+        $header = null;
+        $rows = [];
 
-            // dd($data);
-            //chunnk the file in to 1000 records
-            $chuncks = array_chunk($data , 1000);
+        foreach ($csv as $row) {
+            if ($header === null) {
+                $header = $row;
+                continue;
+            }
 
-            //getting the header
-            $header = [];
-
-            //looping through each of the chenck
-            foreach($chuncks as $key => $chunck){
-                $data = array_map ('str_getcsv' , $chunck);
-
-
-            //getting the header
-                if($key == 0 ){
-
-                    $header = $data[0];
-                    unset($data[0]);
-                }
-            
-                ProcessMigrationData::dispatch($data , $header);
+            $rows[] = $row;
+            if (count($rows) === 1000) {
+                ProcessMigrationData::dispatch($rows, $header);
+                $rows = [];
             }
         }
+
+        if ($rows !== []) {
+            ProcessMigrationData::dispatch($rows, $header);
+        }
+
+        return back();
     }
 }
