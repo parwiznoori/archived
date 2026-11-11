@@ -11,6 +11,7 @@
         {{-- archive index --}}
 
         <div class="portlet-body">
+            <h4>{{ trans('archiveqc.book_id') }}: <bdi>{{ $archiveId }}</bdi></h4>
             {!! $dataTable->table([], true) !!}
         </div>
     </div>

@@ -31,9 +31,10 @@ class ArchiveqcController extends Controller
         ]);
     }
 
-    public function archiveqcheck(ArchiveQCImageDataTable $dataTable)
+    public function archiveqcheck(ArchiveQCImageDataTable $dataTable, $id)
     {
         return $dataTable->render('archiveqcontrol.archiveqcheck', [
+            'archiveId' => $id,
             'title' => trans('general.archive'),
             'description' => trans('general.archive_list'),
         ]);
