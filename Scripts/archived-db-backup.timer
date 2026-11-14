@@ -1,0 +1,9 @@
+[Unit]
+Description=Run the government archive database backup daily
+
+[Timer]
+OnCalendar=*-*-* 02:00:00 Asia/Kabul
+Persistent=true
+
+[Install]
+WantedBy=timers.target

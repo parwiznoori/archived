@@ -1,0 +1,10 @@
+[Unit]
+Description=Create and transfer the government archive database backup
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/archived-db-backup
+TimeoutStartSec=2h
+UMask=0077
