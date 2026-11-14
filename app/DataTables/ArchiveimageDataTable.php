@@ -109,7 +109,7 @@ class ArchiveimageDataTable extends DataTable
                     ->columns($this->getColumns())
                     ->minifiedAjax()
                     ->addAction(['title' => trans('general.action'), 'width' => '100px'])
-                    ->parameters(array_merge($this->getBuilderParameters([]), [
+                    ->parameters(array_merge($this->getBuilderParameters(), [
                         'dom'          => 'Brtip',
                         'initComplete' => "function (settings, data) {   
                             emptyValue = '';                                     
@@ -179,7 +179,7 @@ class ArchiveimageDataTable extends DataTable
      *
      * @return string
      */
-    protected function filename()
+    protected function filename(): string
     {
         return 'Archiveimage_' . date('YmdHis');
     }

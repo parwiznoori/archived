@@ -4,13 +4,13 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Spatie\Activitylog\Traits\LogsActivity;
+use App\Traits\LogsActivity;
 
 class AuthenticationLogReadOnly extends Model
 {
     protected $guarded = [];
     protected $table = "authentication_log";
-    protected $dates = ['login_at'];
+    protected $casts = ['login_at' => 'datetime'];
 
 }
     /**

@@ -15,6 +15,7 @@ class AppServiceProvider extends ServiceProvider
     public function boot()
     {
         Schema::defaultStringLength(191);
+        \Laravel\Passport\Passport::$clientUuids = false;
 
         \Validator::extend('valid_destination_department', function($attribute, $value, $parameters) {
             $student = \App\Models\Student::find(request()->student_id);

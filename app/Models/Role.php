@@ -3,7 +3,7 @@
 namespace App\Models;
 
 use Spatie\Permission\Models\Role as BaseRole;
-use Spatie\Activitylog\Traits\LogsActivity;
+use App\Traits\LogsActivity;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Role extends BaseRole

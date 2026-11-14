@@ -7,7 +7,7 @@ use App\Traits\UseByFaculty;
 use App\Traits\UseByDepartment;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Spatie\Activitylog\Traits\LogsActivity;
+use App\Traits\LogsActivity;
 
 class ArchiveDepartment extends Model
 {

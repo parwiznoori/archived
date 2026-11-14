@@ -3,9 +3,9 @@
 namespace App\Providers;
 
 use Illuminate\Support\Facades\Gate;
-use PavelMironchik\LaravelBackupPanel\LaravelBackupPanelApplicationServiceProvider;
+use Illuminate\Support\ServiceProvider;
 
-class LaravelBackupPanelServiceProvider extends LaravelBackupPanelApplicationServiceProvider
+class LaravelBackupPanelServiceProvider extends ServiceProvider
 {
     /**
      * Register the Laravel Backup Panel gate.
@@ -14,7 +14,7 @@ class LaravelBackupPanelServiceProvider extends LaravelBackupPanelApplicationSer
      *
      * @return void
      */
-    protected function gate()
+    public function boot(): void
     {
         Gate::define('viewLaravelBackupPanel', function ($user) {
             return in_array($user->email, [

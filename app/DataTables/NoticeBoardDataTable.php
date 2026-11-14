@@ -84,7 +84,7 @@ class NoticeBoardDataTable extends DataTable
      *
      * @return string
      */
-    protected function filename()
+    protected function filename(): string
     {
         return 'Announcement_' . date('YmdHis');
     }

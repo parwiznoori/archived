@@ -15,7 +15,7 @@ class ArchiveUserReportExport implements FromCollection, WithHeadings, WithMappi
         $this->reports = collect($reports);
     }
     
-    public function collection()
+    public function collection(): \Illuminate\Support\Enumerable
     {
         return $this->reports;
     }

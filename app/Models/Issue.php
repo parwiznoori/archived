@@ -6,7 +6,7 @@ use Carbon\Carbon;
 use App\Traits\Attachable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
-use Spatie\Activitylog\Traits\LogsActivity;
+use App\Traits\LogsActivity;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Issue extends Model

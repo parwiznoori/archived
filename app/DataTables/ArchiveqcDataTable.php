@@ -130,7 +130,7 @@ if (
                     ->columns($this->getColumns())
                     ->minifiedAjax()
                     ->addAction(['title' => trans('general.action'), 'width' => '100px'])
-                    ->parameters(array_merge($this->getBuilderParameters([]), [
+                    ->parameters(array_merge($this->getBuilderParameters(), [
                         'dom'          => 'Brtip',
                         'initComplete' => "function (settings, data) {   
                             emptyValue = '';                                     
@@ -201,7 +201,7 @@ if (
      *
      * @return string
      */
-    protected function filename()
+    protected function filename(): string
     {
         return 'Archiveqc_' . date('YmdHis');
     }

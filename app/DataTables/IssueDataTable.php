@@ -76,7 +76,7 @@ class IssueDataTable extends DataTable
      *
      * @return string
      */
-    protected function filename()
+    protected function filename(): string
     {
         return 'Issue_' . date('YmdHis');
     }

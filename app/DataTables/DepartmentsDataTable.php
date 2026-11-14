@@ -124,7 +124,7 @@ class DepartmentsDataTable extends DataTable
                     ->minifiedAjax()
                     ->addAction(['title' => trans('general.action'), 'width' => '60px'])
                     // ->parameters($this->getBuilderParameters());
-                    ->parameters(array_merge($this->getBuilderParameters([]), [
+                    ->parameters(array_merge($this->getBuilderParameters(), [
                         'dom'          => '<"top"Bl>rt<"bottom"ip>',
                         'initComplete' => "function (settings, data) {   
                             emptyValue = ''; 
@@ -202,7 +202,7 @@ class DepartmentsDataTable extends DataTable
      *
      * @return string
      */
-    protected function filename()
+    protected function filename(): string
     {
         return 'Departments_' . date('YmdHis');
     }

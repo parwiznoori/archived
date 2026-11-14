@@ -8,7 +8,7 @@ use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
-use Spatie\Permission\Middlewares\PermissionMiddleware;
+use Spatie\Permission\Middleware\PermissionMiddleware;
 use Tests\TestCase;
 
 class ArchiveCreationTest extends TestCase
@@ -63,7 +63,7 @@ class ArchiveCreationTest extends TestCase
         $user->id = 12;
         $this->actingAs($user)->withoutMiddleware(PermissionMiddleware::class);
         $this->publicDirectory = sys_get_temp_dir() . '/archive-creation-' . Str::uuid();
-        $this->app->instance('path.public', $this->publicDirectory);
+        $this->app->usePublicPath($this->publicDirectory);
     }
 
     protected function tearDown(): void

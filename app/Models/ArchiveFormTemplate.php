@@ -7,7 +7,7 @@ use App\Traits\UseByGrade;
 use App\Traits\UseBySemesterType;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Spatie\Activitylog\Traits\LogsActivity;
+use App\Traits\LogsActivity;
 
 class ArchiveFormTemplate extends Model
 {
@@ -21,7 +21,7 @@ class ArchiveFormTemplate extends Model
 
     protected $guarded = [];
     protected static $logUnguarded = true;
-    protected $dates = ['deleted_at'];
+    protected $casts = ['deleted_at' => 'datetime'];
 
 
 //    // If 'variable' is stored as JSON, use casts

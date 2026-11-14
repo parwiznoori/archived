@@ -7,7 +7,7 @@ use App\Traits\UseBySemesterType;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Morilog\Jalali\Jalalian;
-use Spatie\Activitylog\Traits\LogsActivity;
+use App\Traits\LogsActivity;
 
 class Zamayem extends Model
 {
@@ -22,7 +22,7 @@ class Zamayem extends Model
         ]; 
     protected $guarded = [];
     protected static $logUnguarded = true;
-    protected $dates = ['deleted_at'];
+    protected $casts = ['deleted_at' => 'datetime'];
 
 
   public function archivedata()

@@ -7,7 +7,7 @@ use App\Traits\UseBySemesterType;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Morilog\Jalali\Jalalian;
-use Spatie\Activitylog\Traits\LogsActivity;
+use App\Traits\LogsActivity;
 
 class Archivedata extends Model
 {
@@ -25,7 +25,6 @@ class Archivedata extends Model
          
     protected $guarded = [];
     protected static $logUnguarded = true;
-    protected $dates = ['deleted_at'];
     protected $casts = ['re_updated' => 'boolean'];
 
 

@@ -56,7 +56,11 @@ class ArchivedocController extends Controller
 
 
         // Stream the PDF to the browser with a dynamic filename
-        return $pdf->stream('Archivedata-' . $archivedata->id . '.pdf');
+        return response($pdf->output(), 200, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'inline; filename="' . 'Archivedata-' . $archivedata->id . '.pdf' . '"',
+            'Cache-Control' => 'private, no-store',
+        ]);
     }
 
     public function fdoc($id)
@@ -83,7 +87,11 @@ class ArchivedocController extends Controller
         ]);
 
         // Stream the PDF to the browser with a dynamic filename
-        return $pdf->stream('Archivedata-' . $archivedata->id . '.pdf');
+        return response($pdf->output(), 200, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'inline; filename="' . 'Archivedata-' . $archivedata->id . '.pdf' . '"',
+            'Cache-Control' => 'private, no-store',
+        ]);
     }
 
     public function archivedestalam($id)
@@ -111,7 +119,11 @@ class ArchivedocController extends Controller
         ]);
 
         // Stream the PDF to the browser with a dynamic filename
-        return $pdf->stream('Archivedata-' . $archivedata->id . '.pdf');
+        return response($pdf->output(), 200, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'inline; filename="' . 'Archivedata-' . $archivedata->id . '.pdf' . '"',
+            'Cache-Control' => 'private, no-store',
+        ]);
     }
 
     public function archivedestalam2($id)
@@ -140,7 +152,11 @@ class ArchivedocController extends Controller
         ]);
 
         // Stream the PDF to the browser with a dynamic filename
-        return $pdf->stream('Archivedata-' . $archivedata->id . '.pdf');
+        return response($pdf->output(), 200, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'inline; filename="' . 'Archivedata-' . $archivedata->id . '.pdf' . '"',
+            'Cache-Control' => 'private, no-store',
+        ]);
     }
 
 

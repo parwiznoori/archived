@@ -6,7 +6,7 @@ use App\Traits\UseByUniversity;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Spatie\Activitylog\Traits\LogsActivity;
+use App\Traits\LogsActivity;
 
 class Faculty extends Model
 {
@@ -25,7 +25,7 @@ class Faculty extends Model
         return   $this->name . " " . trans('general.'. $eventName);
     }
     /** end of log part **/
-    protected $dates = ['deleted_at'];
+    protected $casts = ['deleted_at' => 'datetime'];
     protected $table= "faculties";
 
    

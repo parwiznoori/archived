@@ -12,6 +12,14 @@ Route::get('/', function () {
 
 
 Route::group(['middleware' => 'auth'], function() {
+    Route::middleware('can:viewLaravelBackupPanel')->group(function () {
+        Route::get('backup', 'BackupController@index')->name('laravel_backup_panel.index');
+        Route::post('backup', 'BackupController@store')->name('archive-backup.store');
+        Route::get('backup/{file}/download', 'BackupController@download')->name('archive-backup.download');
+        Route::delete('backup/{file}', 'BackupController@destroy')->name('archive-backup.destroy');
+    });
+
+
     Route::middleware('role:system-developer')->group(function () {
         Route::post('develope/department/type', 'DeveloperController@department_type');
         Route::post('develope/migrate_deprtment_deleted', 'DeveloperController@migrate_deprtment_deleted');

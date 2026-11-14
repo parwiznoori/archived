@@ -146,7 +146,7 @@ class UniversitiesController extends Controller
             }
             $store = Storage::createLocalDriver(["root" => base_path()]);
             $store->put(
-                $picpath.$path, (new Image)->make($logo)->encode()
+                $picpath.$path, (string) Image::gd()->read($logo)->toJpeg()
             );
 
             $university->update([

@@ -18,7 +18,7 @@ class AllArchiveExports implements FromCollection, WithHeadings
         $this->select = $select;
     }
 
-    public function collection()
+    public function collection(): \Illuminate\Support\Enumerable
     {
         // Perform a join with archivedatas and select the required fields
         return $this->filters;

@@ -7,7 +7,7 @@ use App\Traits\UseByDepartment;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Spatie\Activitylog\Traits\LogsActivity;
+use App\Traits\LogsActivity;
 
 
 class SemesterDeprivedStudent extends Model
@@ -29,7 +29,7 @@ class SemesterDeprivedStudent extends Model
         return   " محصل محروم سمستر ".$this->student->full_name . "  " . trans('general.'. $eventName);
     }
     /** end of log part **/
-    protected $dates = ['deleted_at'];
+    protected $casts = ['deleted_at' => 'datetime'];
 
     public function university()
     {

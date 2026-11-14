@@ -6,7 +6,7 @@ use App\Traits\UseByUniversity;
 use App\Traits\UseByDepartment;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Spatie\Activitylog\Traits\LogsActivity;
+use App\Traits\LogsActivity;
 
 class LessonWeek extends Model
 {
@@ -33,7 +33,7 @@ class LessonWeek extends Model
     }
     /** end of log part **/
 
-    protected $dates = ['deleted_at'];
+    protected $casts = ['deleted_at' => 'datetime'];
 
     public function university()
     {

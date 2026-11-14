@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\DB;
 
 class ArchiveExcelTemplateExport implements FromCollection, WithHeadings
 {
-    public function collection()
+    public function collection(): \Illuminate\Support\Enumerable
     {
         // Returning empty collection for template structure
         return collect([

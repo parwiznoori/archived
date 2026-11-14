@@ -109,7 +109,7 @@ class RolesDataTable extends DataTable
                     ->columns($this->getColumns())
                     ->minifiedAjax()
                     ->addAction(['title' => trans('general.action'), 'width' => '60px'])
-                    ->parameters(array_merge($this->getBuilderParameters([]), [
+                    ->parameters(array_merge($this->getBuilderParameters(), [
                         'dom'          => '<"top"Bl>rt<"bottom"ip>',
                         'initComplete' => "function (settings, data) {   
                             emptyValue = '';                                     
@@ -173,7 +173,7 @@ class RolesDataTable extends DataTable
      *
      * @return string
      */
-    protected function filename()
+    protected function filename(): string
     {
         return 'Roles_' . date('YmdHis');
     }

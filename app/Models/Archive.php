@@ -7,7 +7,7 @@ use App\Traits\UseByFaculty;
 use App\Traits\UseByDepartment;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Spatie\Activitylog\Traits\LogsActivity;
+use App\Traits\LogsActivity;
 
 class Archive extends Model
 {
@@ -28,7 +28,7 @@ class Archive extends Model
 
     protected $guarded = [];
     protected static $logUnguarded = true;
-    protected $dates = ['deleted_at'];
+    protected $casts = ['deleted_at' => 'datetime'];
 
     protected static function bootUseByDepartment()
     {

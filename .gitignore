@@ -1,7 +1,6 @@
 /storage/*.key
 .env
 composer.phar
-composer.lock
 _ide_helper.php
 /.idea
 /.vscode
@@ -31,9 +30,13 @@ Homestead.yaml
 Homestead.json
 /.vagrant
 .phpunit.result.cache
-/composer.lock
-config/database.php
-/config
 *.ini
 *.dat
 storage/temp/mpdf/ttfontdata/
+
+composer.lock
+!/composer.lock
+/config/*
+!/config/app.php
+!/config/backup.php
+/storage/framework/composer-cache/

@@ -90,7 +90,7 @@ class UniversitiesDataTable extends DataTable
                     ->columns($this->getColumns())
                     ->minifiedAjax()
                     ->addAction(['title' => trans('general.action'), 'width' => '80px'])
-                    ->parameters(array_merge($this->getBuilderParameters([]), [
+                    ->parameters(array_merge($this->getBuilderParameters(), [
                         'dom'          => '<"top"Bl>rt<"bottom"ip>',
                         'initComplete' => "function (settings, data) {   
                             emptyValue = '';                                     
@@ -157,7 +157,7 @@ class UniversitiesDataTable extends DataTable
      *
      * @return string
      */
-    protected function filename()
+    protected function filename(): string
     {
         return 'Universities_' . date('YmdHis');
     }

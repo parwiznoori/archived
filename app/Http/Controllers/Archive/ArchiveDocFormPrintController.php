@@ -128,7 +128,11 @@ public  function printform($archivedatid){
     ]);
 
     // Stream the PDF to the browser with a dynamic filename
-    return $pdf->stream('ArchivedataForm-' . $archivedatid . '.pdf');
+    return response($pdf->output(), 200, [
+        'Content-Type' => 'application/pdf',
+        'Content-Disposition' => 'inline; filename="' . 'ArchivedataForm-' . $archivedatid . '.pdf' . '"',
+        'Cache-Control' => 'private, no-store',
+    ]);
 }
 
 

@@ -4,7 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Spatie\Activitylog\Traits\LogsActivity;
+use App\Traits\LogsActivity;
 
 class Grade extends Model
 {
@@ -13,7 +13,7 @@ class Grade extends Model
     use SoftDeletes;
     protected $guarded = [];
     protected $table = "grades";
-    protected $dates = ['deleted_at'];
+    protected $casts = ['deleted_at' => 'datetime'];
     /** 
      * log activity parts needed for model
     **/
