@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Archive\PDFToJPGController;
 use Illuminate\Foundation\Inspiring;
 
 /*
@@ -16,3 +17,7 @@ use Illuminate\Foundation\Inspiring;
 Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
 })->describe('Display an inspiring quote');
+
+Artisan::command('archive:render-scan {input} {output}', function (string $input, string $output) {
+    PDFToJPGController::renderPages($input, $output);
+})->describe('Render archive scan pages as JPEG files');

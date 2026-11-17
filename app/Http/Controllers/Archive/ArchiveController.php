@@ -22,6 +22,7 @@ use Illuminate\Http\Request;
 use Illuminate\Database\QueryException;
 use App\Exports\ArchiveExcelTemplateExport;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 use Maatwebsite\Excel\Facades\Excel;
 use Morilog\Jalali\Jalalian;
 use Illuminate\Support\Facades\Log;
@@ -124,13 +125,14 @@ class ArchiveController extends Controller
             'book_description' => 'required',
             'archive_year_id'  => 'required|array',
             'book_name' => 'required',
-            'path.*' => 'required|image|mimes:pdf,jpeg,png,jpg,gif,svg|max:1000000', 
         ]);
 
         // Initialize archive variable
         $archive = null;
 
         try {
+            $request->validate(['path' => 'required|file|mimes:pdf,jpeg,png,jpg,gif,svg|max:1000000']);
+
             // Reserve the request key before converting the file. A concurrent retry
             // can only insert its own row if this transaction rolls back.
             DB::transaction(function () use ($request, $creationKey, &$archive) {
@@ -166,25 +168,12 @@ class ArchiveController extends Controller
                     }
                 }
 
-                // Convert PDF to JPG and get the page count
-                $pageCount = PDFToJPGController::convert($request, $archive);
-
-                // Array to hold all archive images data
-                $archiveImages = [];
-
-                // Loop through each page count and generate the image paths
-                for ($i = 1; $i <= $pageCount; $i++) {
-                    $archiveImages[] = [
-                        'book_pagenumber' => $i,
-                        'archive_id' => $archive->id,
-                        'status_id' => 1,
-                        'path' => '/archivefiles/' . $archive->id.'-' .$archive->book_name . '/' . $i . '.jpg',
-                    ];
-                }
-
-                // Bulk insert archive images into the database
-                Archiveimage::insert($archiveImages);
+                $this->saveScanPages($request, $archive, replace: false);
             });
+        } catch (ValidationException $e) {
+            return redirect()->route('archive.create', ['submission_token' => $submissionToken])
+                ->withInput()
+                ->withErrors($e->errors());
         } catch (\Throwable $e) {
             if ($e instanceof QueryException
                 && in_array($e->errorInfo[0] ?? null, ['23000', '23505'], true)
@@ -327,14 +316,12 @@ class ArchiveController extends Controller
 //            'book_pagenumber' => 'required',
             'book_description' => 'required',
             'book_name' => 'required',
-            'path.*' => 'required|image|mimes:pdf,jpeg,png,jpg,gif,svg|max:1000000', // Add this line for file validation
+            'path' => 'nullable|file|mimes:pdf,jpeg,png,jpg,gif,svg|max:1000000',
         ]);
 
-        $pageCount = 0;
-      
         $archive = Archive::findOrFail($archive_id);
 
-        \DB::transaction(function () use ($pageCount, $request, $archive) {
+        \DB::transaction(function () use ($request, $archive) {
             $archive->update([
                 'university_id' => $request->university_id,
 //                'faculty_id' => $request->faculty_id,
@@ -398,34 +385,34 @@ class ArchiveController extends Controller
 //            }
 
  
-          if ($request->path != "" && $request->path != null) {
-                        // Convert PDF to JPG and get the page count
-                        $pageCount = PDFToJPGController::convert($request,$archive);
-                    }
-
-            if ($request->path != "" && $request->path != null) {
-                $directory = public_path() . '/archivefiles/' . $archive->id.'-' .$archive->book_name;
-
-                // Delete existing archive images
-                Archiveimage::where('archive_id', $archive->id)->delete();
-
-                // Upload new archive images
-                $archiveImages = [];
-                for ($i = 1; $i <= $pageCount; $i++) {
-                    $archiveImages[] = [
-                        'book_pagenumber' => $i,
-                        'archive_id' => $archive->id,
-                        'status_id' => 1,
-                        'path' => '/archivefiles/' . $archive->id.'-' .$archive->book_name . '/' . $i . '.jpg',
-                        // 'type' => $request->type,
-                    ];
-                }
-
-                Archiveimage::insert($archiveImages);
+            if ($request->hasFile('path')) {
+                $this->saveScanPages($request, $archive, replace: true);
             }
         });
 
         return redirect(route('archive.index'));
+    }
+
+
+    private function saveScanPages(Request $request, Archive $archive, bool $replace): void
+    {
+        $paths = PDFToJPGController::convert($request->file('path'), $archive);
+
+        if ($replace) {
+            Archiveimage::where('archive_id', $archive->id)->delete();
+        }
+
+        $pages = [];
+        foreach ($paths as $index => $path) {
+            $pages[] = [
+                'book_pagenumber' => $index + 1,
+                'archive_id' => $archive->id,
+                'status_id' => 1,
+                'path' => $path,
+            ];
+        }
+
+        Archiveimage::insert($pages);
     }
 
 

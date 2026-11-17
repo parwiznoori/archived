@@ -6,6 +6,7 @@ use App\User;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 use Spatie\Permission\Middleware\PermissionMiddleware;
@@ -68,15 +69,8 @@ class ArchiveCreationTest extends TestCase
 
     protected function tearDown(): void
     {
-        if (is_dir($this->publicDirectory)) {
-            foreach (glob($this->publicDirectory . '/archivefiles/*', GLOB_ONLYDIR) as $directory) {
-                foreach (glob($directory . '/*.jpg') as $file) {
-                    unlink($file);
-                }
-                rmdir($directory);
-            }
-            rmdir($this->publicDirectory . '/archivefiles');
-            rmdir($this->publicDirectory);
+        if ($this->publicDirectory && is_dir($this->publicDirectory)) {
+            File::deleteDirectory($this->publicDirectory);
         }
 
         parent::tearDown();
@@ -119,11 +113,12 @@ class ArchiveCreationTest extends TestCase
         }
 
         $token = (string) Str::uuid();
-        $invalid = UploadedFile::fake()->createWithContent('scan.png', 'invalid scan');
+        $invalid = UploadedFile::fake()->createWithContent('scan.pdf', "%PDF-1.7\nMalformed scan\n");
         $this->post('/archive', $this->bookForm($token, $invalid))
             ->assertRedirect(route('archive.create', ['submission_token' => $token]))
             ->assertSessionHasErrors('path');
         $this->assertSame(0, DB::table('archives')->count());
+        $this->assertSame([], glob($this->publicDirectory . '/archivefiles/*-scan-*'));
 
         $this->post('/archive', $this->bookForm($token, $this->imageUpload()))->assertRedirect('/archive');
         $this->assertSame(1, DB::table('archives')->count());
