@@ -108,6 +108,7 @@ Route::group(['middleware' => 'auth'], function() {
 
     Route::group(['namespace' => 'Archive'], function() {
 
+        Route::get('archive/{archiveId}/pages/{imageId}/preview', 'ArchiveController@pagePreview')->name('archive.page-preview');
         Route::resource('archive', 'ArchiveController');
         Route::resource('archiveimage', 'ArchiveimageController');
         Route::resource('archivedata', 'ArchivedataController');

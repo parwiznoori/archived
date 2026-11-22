@@ -33,7 +33,7 @@ class ArchiveController extends Controller
 {
     public function __construct()
     {
-        $this->middleware('permission:view-archive', ['only' => ['index', 'show']]);
+        $this->middleware('permission:view-archive', ['only' => ['index', 'show', 'pagePreview']]);
         $this->middleware('permission:create-archive', ['only' => ['create', 'store']]);
         $this->middleware('permission:edit-archive', ['only' => ['edit', 'update', 'updateStatus', 'update_groups']]);
         $this->middleware('permission:delete-archive', ['only' => ['destroy']]);
@@ -243,8 +243,22 @@ class ArchiveController extends Controller
 
     public function show($id)
     {
-        $archive = Archive::findOrFail($id);
+        $archive = Archive::with(['university', 'images' => fn ($query) => $query
+            ->select('id', 'archive_id', 'path', 'book_pagenumber')->orderBy('book_pagenumber')->orderBy('id')])->findOrFail($id);
         return view('archive.show', compact('archive'));
+    }
+
+    public function pagePreview(Request $request, $archiveId, $imageId)
+    {
+        $archive = Archive::findOrFail($archiveId);
+        $image = $archive->images()->findOrFail($imageId);
+        $path = (new \App\Services\ArchivePagePreview)->path($image->path);
+        $response = response()->file($path, ['Content-Type' => 'image/jpeg', 'Cache-Control' => 'private, max-age=86400']);
+        $response->setPrivate();
+        $response->setEtag(pathinfo($path, PATHINFO_FILENAME));
+        $response->setLastModified(new \DateTimeImmutable('@' . filemtime($path)));
+        $response->isNotModified($request);
+        return $response;
     }
 
 
