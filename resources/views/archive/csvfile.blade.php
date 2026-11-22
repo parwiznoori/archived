@@ -1,668 +1,132 @@
 @extends('layouts.app')
 
+@push('styles')
+    <link href="{{ asset('css/archive-csv.css') }}?v={{ filemtime(public_path('css/archive-csv.css')) }}" rel="stylesheet">
+@endpush
+
 @section('content')
-    @if (session('message'))
-        <div class="alert alert-success">
-            {{ session('message') }}
-        </div>
-    @endif
+<div class="csv-workspace" dir="rtl">
 
-    @if (session('row_errors'))
-        <div class="alert alert-danger">
-            <strong>{{ trans('general.validation_errors') }}</strong>
-            <ul>
-                @foreach (session('row_errors') as $error)
-                    <li>{{ $error }}</li>
-                @endforeach
-            </ul>
-        </div>
-    @endif
 
-    @if(session('error'))
-        <div class="alert alert-danger">
-            {{ session('error') }}
-        </div>
-    @endif
-
-       @if (session('success'))
-        <div class="alert alert-success">
-            {{ session('success') }}
-        </div>
-    @endif
-
-   
-    <style>
-        /* حذف تمام پس‌زمینه‌ها */
-        .card {
-            border: none;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-            background: #ffffff;
-        }
-        
-        .card-header {
-            background: transparent;
-            border-bottom: 2px solid #4e73df;
-            padding: 15px 20px;
-        }
-        
-        .card-body {
-            padding: 20px;
-            background: transparent;
-        }
-        
-        .table {
-            margin-bottom: 0;
-        }
-        
-        .table th {
-            font-weight: 600;
-            color: #4a5568;
-            border-top: none;
-            background: transparent;
-        }
-        
-        .table td {
-            border-top: 1px solid #e2e8f0;
-        }
-        
-        .copy-btn {
-            padding: 4px 10px;
-            font-size: 12px;
-            border-radius: 4px;
-            transition: all 0.2s;
-        }
-        
-        .copy-btn:hover {
-            transform: translateY(-1px);
-        }
-        
-        .page-badge {
-            display: inline-block;
-            width: 36px;
-            height: 36px;
-            line-height: 36px;
-            text-align: center;
-            background: white;
-            border: 2px solid #4e73df;
-            color: #4e73df;
-            border-radius: 6px;
-            margin: 3px;
-            font-weight: 600;
-            transition: all 0.3s;
-            cursor: default;
-        }
-        
-        .page-badge:hover {
-            background: #4e73df;
-            color: white;
-            transform: translateY(-2px);
-        }
-        
-        .page-badge.empty {
-            border-color: #a0aec0;
-            color: #a0aec0;
-        }
-        
-        .page-badge.filled {
-            border-color: #38a169;
-            color: #38a169;
-        }
-        
-        .info-box {
-            border: 1px solid #e2e8f0;
-            border-radius: 6px;
-            padding: 15px;
-            margin-bottom: 15px;
-        }
-        
-        .code-example {
-            border: 1px solid #e2e8f0;
-            border-radius: 6px;
-            padding: 12px;
-            direction: ltr;
-            text-align: left;
-            font-family: 'Courier New', monospace;
-            font-size: 13px;
-            line-height: 1.4;
-            overflow-x: auto;
-            white-space: nowrap;
-        }
-        
-        .badge-primary-custom {
-            background: #4e73df;
-            color: white;
-            padding: 5px 10px;
-            border-radius: 4px;
-            font-weight: 600;
-            font-size: 12px;
-        }
-        
-        .badge-success-custom {
-            background: #38a169;
-            color: white;
-            padding: 5px 10px;
-            border-radius: 4px;
-            font-weight: 600;
-            font-size: 12px;
-        }
-        
-        .file-upload-area {
-            border: 2px dashed #cbd5e0;
-            border-radius: 6px;
-            padding: 25px;
-            text-align: center;
-            transition: all 0.3s;
-        }
-        
-        .file-upload-area:hover {
-            border-color: #4e73df;
-        }
-        
-        .btn-custom-primary {
-            background: #4e73df;
-            border-color: #4e73df;
-            color: white;
-            padding: 10px 20px;
-            font-weight: 600;
-            border-radius: 6px;
-            transition: all 0.3s;
-        }
-        
-        .btn-custom-primary:hover {
-            background: #2d50c3;
-            border-color: #2d50c3;
-            transform: translateY(-1px);
-        }
-        
-        .btn-custom-secondary {
-            background: #718096;
-            border-color: #718096;
-            color: white;
-            padding: 10px 20px;
-            font-weight: 600;
-            border-radius: 6px;
-            transition: all 0.3s;
-        }
-        
-        .btn-custom-secondary:hover {
-            background: #4a5568;
-            border-color: #4a5568;
-            transform: translateY(-1px);
-        }
-        
-        .btn-custom-danger {
-            background: #e53e3e;
-            border-color: #e53e3e;
-            color: white;
-            padding: 10px 20px;
-            font-weight: 600;
-            border-radius: 6px;
-            transition: all 0.3s;
-        }
-        
-        .btn-custom-danger:hover {
-            background: #c53030;
-            border-color: #c53030;
-            transform: translateY(-1px);
-        }
-        
-        .section-title {
-            color: #4a5568;
-            font-weight: 600;
-            margin-bottom: 15px;
-            padding-bottom: 10px;
-            border-bottom: 1px solid #e2e8f0;
-        }
-        
-        .custom-file-label {
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-        }
-        
-        .btn-delete-book {
-            background: linear-gradient(135deg, #e53e3e 0%, #c53030 100%);
-            border-color: #c53030;
-            color: white;
-            padding: 10px 20px;
-            font-weight: 600;
-            border-radius: 6px;
-            transition: all 0.3s;
-        }
-        
-        .btn-delete-book:hover {
-            background: linear-gradient(135deg, #c53030 0%, #9b2c2c 100%);
-            border-color: #9b2c2c;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(229, 62, 62, 0.3);
-        }
-        
-        @media print {
-            .no-print {
-                display: none !important;
-            }
-        }
-        
-        /* استایل برای SweetAlert فارسی */
-        .swal2-title {
-            direction: rtl !important;
-            text-align: right !important;
-        }
-        
-        .swal2-html-container {
-            direction: rtl !important;
-            text-align: right !important;
-        }
-        
-        .swal2-confirm, .swal2-cancel {
-            font-family: inherit !important;
-        }
-    </style>
-
-    <div class="container-fluid">
-        <!-- بخش اطلاعات آرشیف -->
-        <div class="card mb-4">
-            <div class="card-header">
-                <h5 class="m-0 font-weight-bold text-gray-800">📚 اطلاعات آرشیف</h5>
-            </div>
-            <div class="card-body">
-                <div class="table-responsive">
-                    <table class="table table-hover">
-                        <thead>
-                            <tr>
-                                <th>نام آرشیف</th>
-                                <th>ID آرشیف</th>
-                                <th>پوهنتون</th>
-                                <th>ایدی پوهنتون</th>
-                                <th>نام پوهنځی</th>
-                                <th>ایدی پوهنځی</th>
-                                <th>نام دیپارتمنت</th>
-                                <th>ایدی دیپارتمنت</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr class="table-light">
-                                <td><strong>{{ $archive->book_name }}</strong></td>
-                                <td>
-                                    <div class="d-flex align-items-center">
-                                        <strong>{{ $archive->id }}</strong>
-                                        <button class="btn btn-sm btn-outline-primary copy-btn ml-2" 
-                                                data-copy="{{ $archive->id }}">
-                                            کپی
-                                        </button>
-                                    </div>
-                                </td>
-                                <td>{{ $universities[$archive->university_id] ?? '---' }}</td>
-                                <td>
-                                    <div class="d-flex align-items-center">
-                                        {{ $archive->university_id }}
-                                        <button class="btn btn-sm btn-outline-primary copy-btn ml-2" 
-                                                data-copy="{{ $archive->university_id }}">
-                                            کپی
-                                        </button>
-                                    </div>
-                                </td>
-                                <td colspan="4" class="text-center">
-                                    <span class="badge badge-light">جزئیات پوهنځی و دیپارتمنت</span>
-                                </td>
-                            </tr>
-                            @foreach ($archiveDepartments as $archiveDepartment)
-                                <tr>
-                                    <td colspan="3"></td>
-                                    <td></td>
-                                    <td>{{ $archiveDepartment->faculty->name ?? '---' }}</td>
-                                    <td>
-                                        <div class="d-flex align-items-center">
-                                            {{ $archiveDepartment->faculty_id }}
-                                            <button class="btn btn-sm btn-outline-secondary copy-btn ml-2" 
-                                                    data-copy="{{ $archiveDepartment->faculty_id }}">
-                                                کپی
-                                            </button>
-                                        </div>
-                                    </td>
-                                    <td>{{ $archiveDepartment->department->name ?? '---' }}</td>
-                                    <td>
-                                        <div class="d-flex align-items-center">
-                                            {{ $archiveDepartment->department_id }}
-                                            <button class="btn btn-sm btn-outline-secondary copy-btn ml-2" 
-                                                    data-copy="{{ $archiveDepartment->department_id }}">
-                                                کپی
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-
-        <!-- بخش نمایش صفحات کتاب -->
-        <div class="card mb-4">
-            <div class="card-header">
-                <h5 class="m-0 font-weight-bold text-gray-800">📄 صفحات کتاب ({{ $totalPages }} صفحه)</h5>
-            </div>
-            <div class="card-body">
-                @php
-                    $archiveImages = \App\Models\Archiveimage::where('archive_id', $archive->id)
-                        ->orderBy('book_pagenumber')
-                        ->get();
-                    
-                    $pageStudents = [];
-                    foreach ($archiveImages as $image) {
-                        $students = \App\Models\Archivedata::where('archiveimage_id', $image->id)
-                            ->select('name', 'last_name', 'column_number')
-                            ->get();
-                        $pageStudents[$image->book_pagenumber] = $students;
-                    }
-                @endphp
-                
-                <div class="mb-4">
-                    <div class="d-flex flex-wrap mb-4">
-                        @foreach($archiveImages as $image)
-                            @php
-                                $studentCount = $pageStudents[$image->book_pagenumber]->count();
-                                $statusClass = $studentCount > 0 ? 'filled' : ($image->status_id == 2 ? 'empty' : '');
-                            @endphp
-                            <div class="page-badge {{ $statusClass }}" 
-                                 title="صفحه {{ $image->book_pagenumber }} | محصلین: {{ $studentCount }}">
-                                {{ $image->book_pagenumber }}
-                            </div>
-                        @endforeach
-                    </div>
-                    
-                    <div class="alert alert-light border">
-                        <div class="row">
-                            <div class="col-12">
-                                
-                                <ul class="mb-0">
-                                    <h5 class="font-weight-bold text-dark mb-3">راهنما:</h5>
-                                    <li>در فایل CSV ستون <code>archiveimage_id</code> باید شماره صفحه را وارد کنید</li>
-                                    <li>ستون <code>column_number</code> تعداد محصل در صفحه است (برای صفحه خالی: <strong>0</strong>)</li>
-                                    <li>ابتدا قالب را دانلود و سپس پر کنید</li>
-                                    <li>ترتیب ستون‌ها را تغییر ندهید</li>
-                                </ul>
-                            </div>
-                        </div>
-                           <!-- بخش کدهای سیستم -->
-                <div class="card mb-4">
-                   
-                    <div class="card-body">
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <div class="info-box">
-                                    <h5 class="font-weight-bold text-dark mb-3">🎓 مقطع تحصیلی</h5>
-                                    <div>
-                                        <span class="badge badge-primary-custom mb-3 d-block">1 = چهارده پاس</span>
-                                        <span class="badge badge-primary-custom mb-3 d-block">2 = لیسانس</span>
-                                        <span class="badge badge-primary-custom d-block">3 = ماستر</span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <div class="info-box">
-                                    <h5 class="font-weight-bold text-dark mb-3">📅 سمستر</h5>
-                                    <div>
-                                        <span class="badge badge-success-custom mb-3 d-block">1 = سمستر بهاری</span>
-                                        <span class="badge badge-success-custom d-block">2 = سمستر خزانی</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                    </div>
-                </div>
-
-             
-                
-                <br>
-                <!-- دکمه دانلود قالب -->
-                <div class="text-left mb-4">
-                    <a href="{{ route('downloadTemplate') }}" class="btn btn-custom-primary btn-lg">
-                        📥 دانلود قالب فایل CSV
-                    </a>
-                </div>
-                
-                @if($archiveImages->count() > 0)
-                    <div class="row">
-                        @foreach($archiveImages as $image)
-                            @if($pageStudents[$image->book_pagenumber]->count() > 0)
-                                <div class="col-md-6 col-lg-4 mb-3">
-                                    <div class="card border-left">
-                                        <div class="card-header py-2">
-                                            <h6 class="m-0 font-weight-bold">
-                                                صفحه {{ $image->book_pagenumber }}
-                                                <span class="badge badge-primary float-right">
-                                                    {{ $pageStudents[$image->book_pagenumber]->count() }} محصل
-                                                </span>
-                                            </h6>
-                                        </div>
-                                        <div class="card-body py-3">
-                                            <ul class="list-unstyled mb-0">
-                                                @foreach($pageStudents[$image->book_pagenumber] as $student)
-                                                    <li class="mb-2">
-                                                        <div class="font-weight-bold">{{ $student->name }} {{ $student->last_name }}</div>
-                                                        <div class="text-muted small">شماره: {{ $student->column_number }}</div>
-                                                    </li>
-                                                @endforeach
-                                            </ul>
-                                        </div>
-                                    </div>
-                                </div>
-                            @endif
-                        @endforeach
-                    </div>
-                @endif
-            </div>
-        </div>
-
-        <!-- بخش آپلود فایل -->
-        <div class="card">
-            <div class="card-header">
-                <h5 class="m-0 font-weight-bold text-gray-800">⬆️ آپلود فایل CSV</h5>
-            </div>
-            <div class="card-body">
-                {!! Form::open(['route' => 'archivedata.import', 'method' => 'post', 'enctype' => 'multipart/form-data', 'class' => 'form-horizontal', 'id' => 'uploadForm']) !!}
-                
-                <div class="file-upload-area mb-4" id="dropArea">
-                    <i class="fas fa-cloud-upload-alt fa-2x text-primary mb-3"></i>
-                    <h5 class="font-weight-bold text-dark mb-3">فایل CSV را انتخاب کنید</h5>
-                    <p class="text-muted mb-3">حداکثر حجم: 9MB</p>
-                    <div class="custom-file" style="max-width: 400px; margin: 0 auto;">
-                        {!! Form::file('csv_file', [
-                            'class' => 'custom-file-input', 
-                            'id' => 'csv_file',
-                            'accept' => '.csv',
-                            'required' => true
-                        ]) !!}
-                        {{-- <label class="custom-file-label text-left" for="csv_file" id="fileLabel">
-                            انتخاب فایل CSV
-                        </label> --}}
-                    </div>
-                    @if ($errors->has('csv_file'))
-                        <div class="alert alert-danger mt-3 mb-0">
-                            <i class="fas fa-exclamation-circle"></i> {{ $errors->first('csv_file') }}
-                        </div>
-                    @endif
-                </div>
-                <br>
-                <!-- فیلدهای مخفی -->
-                {!! Form::hidden('university_id', $archive->university_id) !!}
-                {!! Form::hidden('archive_id', $archive->id) !!}
-                {!! Form::hidden('department_id', $archive->department_id) !!}
-
-                <!-- دکمه‌های عملیات -->
-                <div class="form-actions text-center pt-4 border-top">
-                    <button type="submit" class="btn btn-custom-primary btn-lg mx-2 mb-2" id="submitBtn">
-                        📤 آپلود فایل
-                    </button>
-
-                    <a href="{{ route('archive.index') }}" class="btn btn-custom-secondary btn-lg mx-2 mb-2">
-                        ❌ انصراف
-                    </a>
-
-                    <button type="submit"
-                            class="btn btn-delete-book btn-lg mx-2 mb-2"
-                            form="undo-book-upload">
-                        🗑️ حذف کل کتاب
-                    </button>
-                </div>
-                {!! Form::close() !!}
-                <form id="undo-book-upload" action="{{ route('import.undoBookUpload', $archive->id) }}" method="POST"
-                      onsubmit="return confirm('آیا می‌خواهید تمام محصلان این کتاب را حذف کنید؟')">
-                    @csrf
-                </form>
-            </div>
-        </div>
+    <div class="csv-hero">
+        <div><h2>{{ $archive->book_name }}</h2><p>{{ $universities[$archive->university_id] ?? '—' }}</p></div>
+        <a href="{{ route('downloadTemplate') }}" class="csv-btn"><i class="fa fa-download" aria-hidden="true"></i> دانلود قالب CSV</a>
     </div>
 
-    <!-- اسکریپت‌ها -->
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // چاپ صفحه (اگر دکمه چاپ وجود دارد)
-            const printButton = document.getElementById('printButton');
-            if (printButton) {
-                printButton.addEventListener('click', function() {
-                    window.print();
-                });
-            }
+    @foreach (['error' => 'danger', 'success' => 'success', 'message' => 'info'] as $key => $style)
+        @if(session($key))<div class="alert alert-{{ $style }}">{{ session($key) }}</div>@endif
+    @endforeach
+    @if($errors->any())
+        <div class="alert alert-danger" role="alert"><strong>فایل قابل پردازش نیست</strong><ul class="mb-0">@foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul></div>
+    @endif
 
-            // عملکرد کپی کردن
-            document.querySelectorAll('.copy-btn').forEach(button => {
-                button.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    const text = this.getAttribute('data-copy');
-                    
-                    if (!text) return;
-                    
-                    navigator.clipboard.writeText(text).then(() => {
-                        const originalText = this.innerHTML;
-                        this.innerHTML = 'کپی شد ✓';
-                        this.classList.add('btn-success');
-                        this.classList.remove('btn-outline-primary', 'btn-outline-secondary');
-                        
-                        setTimeout(() => {
-                            this.innerHTML = originalText;
-                            this.classList.remove('btn-success');
-                            if (originalText.includes('کپی')) {
-                                this.classList.add('btn-outline-primary');
-                            } else {
-                                this.classList.add('btn-outline-secondary');
-                            }
-                        }, 2000);
-                    });
-                });
-            });
+    @if($report = session('csv_report'))
+        <section class="csv-panel" aria-label="نتیجه آپلود">
+            <h3>نتیجه بررسی فایل CSV</h3>
+            <div class="csv-grid">
+                <div class="csv-stat good"><strong>{{ $report['inserted'] }}</strong>محصل درج شد</div>
+                <div class="csv-stat warn"><strong>{{ $report['duplicate'] }}</strong>محصل از قبل موجود / تکراری</div>
+                <div class="csv-stat bad"><strong>{{ $report['error'] }}</strong>ردیف نیازمند اصلاح</div>
+                <div class="csv-stat"><strong>{{ $report['empty'] }}</strong>ردیف صفحه بدون محصل</div>
+            </div>
+            <p class="csv-hint mt-3">ردیف‌های سالم درج شدند. خطاها را اصلاح و فایل را دوباره آپلود کنید؛ محصلین موجود دوباره درج نمی‌شوند. شماره ردیف از عنوان ستون‌ها (ردیف ۱) حساب می‌شود.</p>
+            <div class="csv-scroll">
+                <table><thead><tr><th>صفحه فایل</th><th>درج شد</th><th>تکراری</th><th>خطا</th><th>بدون محصل</th></tr></thead><tbody>
+                @foreach($report['pages'] as $page => $counts)
+                    <tr><td>{{ $page }}</td><td>{{ $counts['inserted'] }}</td><td>{{ $counts['duplicate'] }}</td><td>{{ $counts['error'] }}</td><td>{{ $counts['empty'] }}</td></tr>
+                @endforeach
+                </tbody></table>
+            </div>
+            <details open class="mt-3"><summary>جزئیات ردیف‌ها و ستون‌های مشکل‌دار ({{ $report['total'] }} ردیف)</summary>
+                <div class="csv-scroll"><table><thead><tr><th>ردیف CSV</th><th>صفحه فایل</th><th>نام محصل</th><th>نتیجه</th><th>توضیح / روش اصلاح</th></tr></thead><tbody>
+                @foreach($report['details'] as $detail)
+                    <tr><td>{{ $detail['row'] }}</td><td>{{ $detail['page'] ?? '—' }}</td><td>{{ $detail['name'] ?? '—' }}</td><td><span class="csv-label {{ $detail['status'] }}">{{ ['inserted'=>'درج شد','duplicate'=>'تکراری','error'=>'خطا','empty'=>'بدون محصل'][$detail['status']] }}</span></td><td>{{ $detail['message'] }}</td></tr>
+                @endforeach
+                </tbody></table></div>
+            </details>
+        </section>
+    @endif
 
-            // نمایش نام فایل
-            const fileInput = document.getElementById('csv_file');
-            const fileLabel = document.getElementById('fileLabel');
-            const dropArea = document.getElementById('dropArea');
-            
-            if (fileInput) {
-                fileInput.addEventListener('change', function() {
-                    if (this.files.length > 0) {
-                        fileLabel.textContent = this.files[0].name;
-                        dropArea.style.borderColor = '#38a169';
-                        
-                        const fileName = this.files[0].name.toLowerCase();
-                        if (!fileName.endsWith('.csv')) {
-                            alert('فقط فایل‌های CSV مجاز هستند');
-                            this.value = '';
-                            fileLabel.textContent = 'انتخاب فایل CSV';
-                            dropArea.style.borderColor = '#cbd5e0';
-                        }
-                    }
-                });
-            }
+    <section class="csv-panel">
+        <h3>مشخصات کتاب</h3>
+        <div class="csv-grid">
+            <div class="csv-stat"><span class="csv-hint">شناسه کتاب / archive_id</span><strong>{{ $archive->id }} <button type="button" class="csv-copy" data-copy="{{ $archive->id }}">کپی</button></strong></div>
+            <div class="csv-stat"><span class="csv-hint">{{ $universities[$archive->university_id] ?? 'پوهنتون' }}</span><strong>{{ $archive->university_id }} <button type="button" class="csv-copy" data-copy="{{ $archive->university_id }}">کپی</button></strong><span class="csv-hint">university_id</span></div>
+            <div class="csv-stat"><span class="csv-hint">صفحات کتاب</span><strong>{{ $totalPages }}</strong></div>
+        </div>
+        <div class="table-responsive mt-3"><table><thead><tr><th>پوهنځی</th><th>faculty_id</th><th>دیپارتمنت</th><th>department_id</th></tr></thead><tbody>
+            @foreach($archiveDepartments as $item)<tr><td>{{ $item->faculty->name ?? '—' }}</td><td>{{ $item->faculty_id }} <button type="button" class="csv-copy" data-copy="{{ $item->faculty_id }}">کپی</button></td><td>{{ $item->department->name ?? '—' }}</td><td>{{ $item->department_id }} <button type="button" class="csv-copy" data-copy="{{ $item->department_id }}">کپی</button></td></tr>@endforeach
+        </tbody></table></div>
+    </section>
 
-            // اعتبارسنجی فرم
-            const form = document.getElementById('uploadForm');
-            const submitBtn = document.getElementById('submitBtn');
-            
-            if (form) {
-                form.addEventListener('submit', function(e) {
-                    if (!fileInput || !fileInput.files.length) {
-                        e.preventDefault();
-                        alert('لطفا یک فایل CSV انتخاب کنید');
-                        return false;
-                    }
-                    
-                    const file = fileInput.files[0];
-                    if (file.size > 9 * 1024 * 1024) {
-                        e.preventDefault();
-                        alert('حجم فایل نباید بیشتر از 9 مگابایت باشد');
-                        return false;
-                    }
-                    
-                    if (!file.name.toLowerCase().endsWith('.csv')) {
-                        e.preventDefault();
-                        alert('فقط فایل‌های CSV قابل قبول هستند');
-                        return false;
-                    }
-                    
-                    if (submitBtn) {
-                        submitBtn.disabled = true;
-                        submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm mr-2"></span>در حال آپلود...';
-                    }
-                    
-                    return true;
-                });
-            }
+    <section class="csv-panel">
+        <h3>آپلود فایل CSV</h3>
+        <details class="mb-3"><summary>راهنمای تکمیل ستون‌ها</summary>
+            <ul class="csv-hint">
+                <li>فایل را با قالب CSV UTF-8 ذخیره کنید؛ کاما، نقطه‌ویرگول و Tab پشتیبانی می‌شوند.</li>
+                <li><code>archiveimage_id</code> شماره صفحه در کتاب است، نه شناسه داخلی تصویر.</li>
+                <li><code>column_number</code> شماره محصل در صفحه است؛ برای صفحه بدون محصل عدد صفر وارد کنید.</li>
+                <li>برای محصل، ستون‌های شماره صفحه، شماره محصل، پوهنتون، پوهنځی، دیپارتمنت، نام، نام پدر، سال شمولیت و سال فراغت ضروری هستند.</li>
+                <li>ستون‌های اختیاری می‌توانند خالی باشند. نام انگلیسی عنوان ستون‌ها را حفظ کنید؛ ترتیب آن‌ها قابل تغییر است.</li>
+                <li><code>grade_id</code>: ۱ چهارده‌پاس، ۲ لیسانس، ۳ ماستر. <code>semester_type_id</code>: ۱ بهاری، ۲ خزانی.</li>
+                <li>محصل با مشخصات یکسان در همین کتاب تکراری است؛ در پیام نتیجه، صفحه موجود نمایش داده می‌شود.</li>
+            </ul>
+        </details>
+        <form id="uploadForm" action="{{ route('archivedata.import') }}" method="POST" enctype="multipart/form-data">
+            @csrf
+            <input type="hidden" name="archive_id" value="{{ $archive->id }}">
+            <div class="csv-drop" id="dropArea">
+                <i class="fas fa-file-csv fa-2x mb-3" aria-hidden="true"></i>
+                <div><label for="csv_file"><strong>فایل CSV را انتخاب کنید یا اینجا رها کنید</strong></label></div>
+                <input type="file" name="csv_file" id="csv_file" accept=".csv,text/csv" required>
+                <div id="fileLabel" class="csv-hint" aria-live="polite">حداکثر حجم فایل: ۹ مگابایت</div>
+                <div id="fileError" class="text-danger mt-2" role="alert"></div>
+            </div>
+            <div class="csv-actions"><button type="submit" class="csv-btn primary" id="submitBtn">بررسی و درج محصلین</button><a href="{{ route('archive.index') }}" class="csv-btn">بازگشت به کتاب‌ها</a></div>
+        </form>
+        <div class="csv-danger-zone"><div><strong>حذف محصلین این کتاب</strong><div class="csv-hint">تمام محصلین کتاب حذف می‌شوند. پس از حذف، می‌توانید CSV را دوباره درج کنید.</div></div>
+            <form action="{{ route('import.undoBookUpload', $archive->id) }}" method="POST" onsubmit="return confirm('تمام محصلین این کتاب حذف شوند؟')">@csrf<button type="submit" class="csv-btn danger">حذف کل محصلین کتاب</button></form>
+        </div>
+    </section>
 
-        });
-
-        // تابع برای درگ و دراپ (اختیاری)
-        if (document.getElementById('dropArea')) {
-            const dropArea = document.getElementById('dropArea');
-            
-            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-                dropArea.addEventListener(eventName, preventDefaults, false);
-            });
-            
-            function preventDefaults(e) {
-                e.preventDefault();
-                e.stopPropagation();
-            }
-            
-            ['dragenter', 'dragover'].forEach(eventName => {
-                dropArea.addEventListener(eventName, highlight, false);
-            });
-            
-            ['dragleave', 'drop'].forEach(eventName => {
-                dropArea.addEventListener(eventName, unhighlight, false);
-            });
-            
-            function highlight() {
-                dropArea.style.borderColor = '#4e73df';
-                dropArea.style.backgroundColor = 'rgba(78, 115, 223, 0.05)';
-            }
-            
-            function unhighlight() {
-                dropArea.style.borderColor = '#cbd5e0';
-                dropArea.style.backgroundColor = 'transparent';
-            }
-            
-            dropArea.addEventListener('drop', handleDrop, false);
-            
-            function handleDrop(e) {
-                const dt = e.dataTransfer;
-                const files = dt.files;
-                
-                if (files.length > 0) {
-                    fileInput.files = files;
-                    fileLabel.textContent = files[0].name;
-                    
-                    const fileName = files[0].name.toLowerCase();
-                    if (!fileName.endsWith('.csv')) {
-                        alert('فقط فایل‌های CSV مجاز هستند');
-                        fileInput.value = '';
-                        fileLabel.textContent = 'انتخاب فایل CSV';
-                    }
-                }
-            }
-        }
-    </script>
+    <section class="csv-panel"><h3>صفحات کتاب</h3>
+        <div class="csv-pages">
+            @foreach($archiveImages as $image)
+                <div class="csv-page {{ $image->archivedatas->isNotEmpty() ? 'filled' : '' }}">صفحه {{ $image->book_pagenumber }} · {{ $image->archivedatas->count() }} محصل {{ $image->status_id == 2 ? '(بدون محصل)' : '' }}</div>
+            @endforeach
+        </div>
+        <details class="mt-3"><summary>مشاهده محصلین درج‌شده در صفحات</summary><div class="csv-scroll"><table><thead><tr><th>صفحه</th><th>شماره محصل</th><th>نام و تخلص</th></tr></thead><tbody>
+            @foreach($archiveImages as $image)
+                @foreach($image->archivedatas as $student)
+                    <tr><td>{{ $image->book_pagenumber }}</td><td>{{ $student->column_number }}</td><td>{{ $student->name }} {{ $student->last_name }}</td></tr>
+                @endforeach
+            @endforeach
+        </tbody></table></div></details>
+    </section>
+</div>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const form = document.getElementById('uploadForm'), input = document.getElementById('csv_file'), area = document.getElementById('dropArea'), label = document.getElementById('fileLabel'), error = document.getElementById('fileError'), button = document.getElementById('submitBtn');
+    document.querySelectorAll('.csv-copy').forEach(button => button.addEventListener('click', async () => {
+        try {
+            await navigator.clipboard.writeText(button.dataset.copy);
+            button.textContent = 'کپی شد';
+            setTimeout(() => { button.textContent = 'کپی'; }, 1800);
+        } catch (_) { button.textContent = 'کپی نشد'; }
+    }));
+    function validate() {
+        const file = input.files[0];
+        error.textContent = '';
+        label.textContent = file ? file.name : 'حداکثر حجم فایل: ۹ مگابایت';
+        if (!file) { error.textContent = 'لطفاً یک فایل CSV انتخاب کنید.'; return false; }
+        if (!file.name.toLowerCase().endsWith('.csv')) { error.textContent = 'فقط فایل CSV قابل قبول است.'; return false; }
+        if (file.size > 9 * 1024 * 1024) { error.textContent = 'حجم فایل نباید بیشتر از ۹ مگابایت باشد.'; return false; }
+        return true;
+    }
+    input.addEventListener('change', validate);
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(event => area.addEventListener(event, e => { e.preventDefault(); e.stopPropagation(); area.classList.toggle('active', event === 'dragenter' || event === 'dragover'); }));
+    area.addEventListener('drop', e => { if (e.dataTransfer.files.length) { input.files = e.dataTransfer.files; validate(); } });
+    form.addEventListener('submit', e => { if (!validate()) { e.preventDefault(); return; } button.disabled = true; button.textContent = 'در حال بررسی و درج…'; });
+});
+</script>
 @endsection

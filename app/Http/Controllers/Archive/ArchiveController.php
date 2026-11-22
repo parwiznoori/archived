@@ -547,6 +547,9 @@ class ArchiveController extends Controller
             'archive' => $archive, // Pass the specific archive details
             'archiveDepartments' => $archiveDepartments, // Pass the related faculties and departments
             'archiveImage' => $archiveImage,
+            'archiveImages' => $archive->images()->with(['archivedatas' => function ($query) {
+                $query->select('id', 'archiveimage_id', 'name', 'last_name', 'column_number')->orderBy('column_number');
+            }])->orderBy('book_pagenumber')->get(),
             'totalPages' => $totalPages,
 
 
@@ -563,150 +566,33 @@ class ArchiveController extends Controller
 
     public function import(Request $request)
     {
-        $batchId = Str::uuid(); // Generate a unique batch ID
-
-        // Validate the request
         $validated = $request->validate([
-            'csv_file' => 'required|mimes:csv,txt|max:9048',
+            'csv_file' => 'required|file|mimes:csv,txt|max:9216',
             'archive_id' => 'required|integer|min:1',
+        ], [
+            'csv_file.required' => 'لطفاً فایل CSV را انتخاب کنید.',
+            'csv_file.mimes' => 'فقط فایل CSV قابل قبول است.',
+            'csv_file.max' => 'حجم فایل نباید بیشتر از ۹ مگابایت باشد.',
         ]);
-
-        $archiveId = $validated['archive_id'];
+        $archiveId = (int) $validated['archive_id'];
         $this->authorizeCsvArchive(Archive::findOrFail($archiveId));
-
         try {
-            if ($request->hasFile('csv_file') && $request->file('csv_file')->isValid()) {
-                $file = $request->file('csv_file');
-
-                // Store the file
-                $file->storeAs('uploadscsv/Csvfile_results', 'results_' . $batchId . '.csv');
-                $data = $file->openFile('r');
-                $data->setFlags(\SplFileObject::READ_CSV | \SplFileObject::READ_AHEAD | \SplFileObject::SKIP_EMPTY);
-                $hasUploadLog = \Schema::hasTable('uploaded_csv_logs');
-
-                $successfullyInserted = 0; // Counter for successful rows
-                $errors = []; // Collect errors for problematic rows
-                foreach ($data as $index => $row) {
-                    if ($index === 0) {
-                        // Skip the header row
-                        continue;
-                    }
-
-                    // Ensure the row has the correct number of columns
-                    if (!is_array($row) || count($row) < 28) {
-                        $errors[] = "Row " . ($index + 1) . " has incomplete data.";
-                        continue;
-                    }
-
-                    try {
-                        DB::transaction(function () use ($archiveId, $row, $batchId, $hasUploadLog) {
-                            $archive = Archive::lockForUpdate()->findOrFail($archiveId);
-                            $this->authorizeCsvArchive($archive);
-                            $image = $archive->images()->where('book_pagenumber', $row[1])
-                                ->orderBy('id')->lockForUpdate()->firstOrFail();
-                            if (in_array((int) $archive->qc_status_id, [2, 3], true)
-                                || in_array((int) $image->qc_status_id, [2, 3], true)) {
-                                throw new \DomainException('The page is in quality review.');
-                            }
-
-                            $records = $image->archivedatas()->where('archive_id', $archiveId);
-                            if ((string) $row[2] === '0') {
-                                if ($records->exists()) {
-                                    throw new \DomainException('The page already has student records.');
-                                }
-
-                                $image->update(['status_id' => 2, 'total_students' => 0]);
-                                return;
-                            }
-
-                            $archivedata = Archivedata::create([
-                                'archive_id' => $archiveId,
-                                'archiveimage_id' => $image->id,
-                                'column_number' => $row[2],
-                                'university_id' => $row[3],
-                                'faculty_id' => $row[4],
-                                'department_id' => $row[5],
-                                'grade_id' => $row[6],
-                                'semester_type_id' => $row[7],
-                                'name' => $row[8],
-                                'last_name' => $row[9],
-                                'father_name' => $row[10],
-                                'grandfather_name' => $row[11],
-                                'school' => $row[12],
-                                'school_graduation_year' => $row[13],
-                                'tazkira_number' => $row[14],
-                                'birth_date' => $row[15],
-                                'birth_place' => $row[16],
-                                'time' => $row[17],
-                                'kankor_id' => $row[18],
-                                'year_of_inclusion' => $row[19],
-                                'graduated_year' => $row[20],
-                                'transfer_year' => $row[21],
-                                'leave_year' => $row[22],
-                                'failled_year' => $row[23],
-                                'monograph_date' => $row[24],
-                                'monograph_number' => $row[25],
-                                'monograph_title' => $row[26],
-                                'averageOfScores' => $row[27],
-                                'status_id' => 4,
-                                'qc_status_id' => 1,
-                                'description' => 'File Uploaded By System',
-                            ]);
-
-                            if ($hasUploadLog) {
-                                DB::table('uploaded_csv_logs')->insert([
-                                    'archivedata_id' => $archivedata->id,
-                                    'batch_id' => $batchId,
-                                    'created_at' => now(),
-                                ]);
-                            }
-
-                            $image->update(['status_id' => 4, 'total_students' => $records->count()]);
-                            $archive->update(['status_id' => 4]);
-                            $archiveRole = ArchiveRole::where('archive_id', $archiveId)->first();
-                            if ($archiveRole) {
-                                $archiveRole->update(['status_id' => 4]);
-                            }
-                        }, 3);
-
-                        if ((string) $row[2] !== '0') {
-                            $successfullyInserted++;
-                        }
-                    } catch (\Exception $e) {
-                        // ثبت خطای واقعی برای رفع اشکال (در لاگ سرور دیده می‌شود)
-                        \Log::error('CSV Row Import Error: ' . $e->getMessage(), [
-                            'row' => $index + 1,
-                            'archive_id' => $archiveId,
-                            'data' => count($row) >= 6
-                                ? ['faculty_id' => $row[4], 'department_id' => $row[5], 'grade_id' => $row[6]]
-                                : null,
-                            'trace' => $e->getTraceAsString(),
-                        ]);
-                        $errors[] = "Row " . ($index + 1) . ": " . "این فایل مشکل دارد";
-                        continue;
-                    }
-                }
-
-                // Prepare success and error messages
-                $message = "به تعداد " . $successfullyInserted . " محصل آپلود شد.";
-                if (!empty($errors)) {
-                    $message .= " خطا: " . implode('; ', $errors);
-                }
-                Session::flash('message', $message);
-
-                return redirect()->route('archive.view', ['archiveId' => $archiveId]);
-            } else {
-                return redirect()->back()->withErrors(['csv_file' => trans('general.invalid_file')]);
-            }
-        } catch (\Exception $e) {
-            \Log::error('CSV Upload Error: ' . $e->getMessage(), ['trace' => $e->getTraceAsString()]);
-
-            return redirect()->back();
+            $report = (new \App\Services\ArchiveCsvImporter)->import(
+                $request->file('csv_file')->getRealPath(),
+                $archiveId,
+                fn ($archive) => $this->authorizeCsvArchive($archive)
+            );
+            return redirect()->route('archive.view', ['archiveId' => $archiveId])->with('csv_report', $report);
+        } catch (ValidationException $e) {
+            throw $e;
+        } catch (\Symfony\Component\HttpKernel\Exception\HttpExceptionInterface $e) {
+            throw $e;
+        } catch (\Throwable $e) {
+            Log::error('Archive CSV import failed', ['archive_id' => $archiveId, 'exception' => $e]);
+            return redirect()->route('archive.view', ['archiveId' => $archiveId])
+                ->with('error', 'خواندن فایل متوقف شد. ردیف‌های درج‌شده محفوظ هستند؛ فایل را بررسی و دوباره آپلود کنید. موارد موجود تکرار نمی‌شوند.');
         }
     }
-
-   
-
 // تابع برای حذف آخرین آپلود (بدون پارامتر)
 public function undoLastUpload()
 {
@@ -842,7 +728,8 @@ public function undoBookUpload($archiveId)
         $this->authorizeCsvArchive($archive);
 
         // بررسی وضعیت QC
-        if (in_array($archive->qc_status_id, [2, 3, 4])) {
+        if (in_array((int) $archive->qc_status_id, [2, 3, 4], true)
+            || $archive->images()->whereIn('qc_status_id', [2, 3, 4])->exists()) {
             DB::rollBack();
             return redirect()->back()->with('error', 'این کتاب قابل لغو نیست زیرا قبلاً به کنترل کیفیت معرفی شده است.');
         }
@@ -869,7 +756,7 @@ public function undoBookUpload($archiveId)
             ->toArray();
 
         // 4. حذف لاگ‌های مربوطه اگر IDها وجود دارند
-        if (!empty($archivedataIds)) {
+        if (!empty($archivedataIds) && \Schema::hasTable('uploaded_csv_logs')) {
             \DB::table('uploaded_csv_logs')
                 ->whereIn('archivedata_id', $archivedataIds)
                 ->delete();
@@ -887,7 +774,7 @@ public function undoBookUpload($archiveId)
         foreach ($pageStats as $imageId => $removedCount) {
             $archiveimage = $archive->images()->find($imageId);
             if ($archiveimage) {
-                $newTotal = max(0, $archiveimage->total_students - $removedCount);
+                $newTotal = $archiveimage->archivedatas()->where('archive_id', $archiveId)->count();
                 $archiveimage->update([
                     'total_students' => $newTotal,
                     'status_id' => $newTotal > 0 ? 4 : 1,

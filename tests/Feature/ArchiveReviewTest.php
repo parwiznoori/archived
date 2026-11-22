@@ -158,9 +158,9 @@ class ArchiveReviewTest extends TestCase
     {
         Storage::fake('local');
         DB::table('archiveimages')->where('id', 5)->update(['status_id' => 1, 'book_pagenumber' => 2]);
-        $header = implode(',', array_fill(0, 28, 'column'));
+        $header = implode(',', (new \App\Exports\ArchiveExcelTemplateExport)->headings());
         $row = static function ($page) {
-            return '2,' . $page . ',0,' . str_repeat('x,', 24) . 'x';
+            return '1,' . $page . ',0,' . str_repeat('x,', 24) . 'x';
         };
         $upload = static function () use ($header, $row) {
             return UploadedFile::fake()->createWithContent('records.csv', implode("\n", [$header, $row(1), $row(2)]));
