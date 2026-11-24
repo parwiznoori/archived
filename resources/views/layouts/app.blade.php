@@ -22,6 +22,7 @@
     <link href="{{ asset('css/list-view.css') }}" rel="stylesheet">
     <link href="{{ asset('css/all.css') }}" rel="stylesheet">
 
+    <link href="{{ asset('css/archive-column-filters.css') }}" rel="stylesheet">
     @stack('styles')
     <style>
         .ltr {
@@ -217,6 +218,7 @@
     
     
     <script src="{{ asset('js/notification.js') }}" type="text/javascript"></script>
+    <script src="{{ asset('js/archive-column-filters.js') }}"></script>
     @stack('scripts')
 
 </body>

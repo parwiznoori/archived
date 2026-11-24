@@ -1,0 +1,13 @@
+table.dataTable > tfoot.archive-column-filters {
+    display: table-row-group;
+}
+
+table.dataTable > tfoot.archive-column-filters th {
+    padding: 5px 7px;
+}
+
+.archive-column-filters :is(input, select) {
+    box-sizing: border-box;
+    width: 100%;
+    min-width: 4.5em;
+}

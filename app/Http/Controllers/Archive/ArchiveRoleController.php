@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Archive;
 
+use App\DataTables\ArchiveRoleDataTable;
 use App\Http\Controllers\Controller;
 use App\Models\Archive;
 use App\Models\University;
@@ -22,35 +23,9 @@ class ArchiveRoleController extends Controller
         // $this->middleware('permission:delete-archive', ['only' => ['destroy']]);
     }
 
-    public function index(Request $request)
+    public function index(ArchiveRoleDataTable $dataTable)
     {
-        \Carbon\Carbon::setLocale('fa');
-        $query = ArchiveRole::with(['user', 'archive', 'archivedatastatus', 'archiveqcstatus', 'role']);
-
-        // Check if there's a search query
-        if ($request->has('search') && !empty($request->search)) {
-            $search = $request->search;
-
-            $query->whereHas('user', function ($q) use ($search) {
-                $q->where('name', 'like', '%' . $search . '%');
-            })
-                ->orWhereHas('archive', function ($q) use ($search) {
-                    $q->where('book_name', 'like', '%' . $search . '%');
-                })
-                ->orWhereHas('archive', function ($q) use ($search) {
-                    $q->whereHas('university', function ($q) use ($search) {
-                        $q->where('name', 'like', '%' . $search . '%');
-                    });
-                })
-                ->orWhereHas('role', function ($q) use ($search) {
-                    $q->where('title', 'like', '%' . $search . '%');
-                });
-                
-        }
-
-        $archiveRoles = $query->orderBy('created_at', 'desc')->paginate(15);
-
-        return view('archiverole.index', compact('archiveRoles'));
+        return $dataTable->render('archiverole.index');
     }
 
 
